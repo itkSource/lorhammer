@@ -1,7 +1,8 @@
 package prometheus
 
 import (
-	"github.com/prometheus/client_golang/api/prometheus"
+	client "github.com/prometheus/client_golang/api"
+	api "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
 	"golang.org/x/net/context"
 	"lorhammer/src/tools"
@@ -13,7 +14,7 @@ type ApiClient interface {
 }
 
 type apiClientImpl struct {
-	queryApi prometheus.QueryAPI
+	queryApi api.API
 }
 
 func NewApiClient(consulClient tools.Consul) (ApiClient, error) {
@@ -21,12 +22,12 @@ func NewApiClient(consulClient tools.Consul) (ApiClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := prometheus.New(prometheus.Config{Address: address})
+	c, err := client.NewClient(client.Config{Address: address})
 	if err != nil {
 		return nil, err
 	}
 	return &apiClientImpl{
-		queryApi: prometheus.NewQueryAPI(client),
+		queryApi: api.NewAPI(c),
 	}, nil
 }
 

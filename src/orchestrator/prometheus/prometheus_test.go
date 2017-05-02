@@ -1,10 +1,10 @@
 package prometheus
 
 import (
+	"context"
 	"errors"
-	"github.com/prometheus/client_golang/api/prometheus"
+	api "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
-	"golang.org/x/net/context"
 	"lorhammer/src/tools"
 	"testing"
 	"time"
@@ -35,7 +35,11 @@ func (f fakePrometheusApi) Query(ctx context.Context, query string, ts time.Time
 	}
 	return model.Vector(values), f.resultsError
 }
-func (f fakePrometheusApi) QueryRange(ctx context.Context, query string, r prometheus.Range) (model.Value, error) {
+func (f fakePrometheusApi) QueryRange(ctx context.Context, query string, r api.Range) (model.Value, error) {
+	return nil, nil
+}
+
+func (f fakePrometheusApi) LabelValues(ctx context.Context, label string) (model.LabelValues, error) {
 	return nil, nil
 }
 

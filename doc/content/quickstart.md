@@ -305,6 +305,19 @@ Type : **optional(boolean)**
  
 When this flag is at 'true', the activation by personalization is activated for the provisioning. Note that in this case, the **appskey** and **nwskey** are mandatory on the 'init' descriptor
 
+#### login 
+
+Type : **optional(string)**
+ 
+The provided application server username.
+
+
+#### Password 
+
+Type : **optional(string)**
+ 
+The provided application server password.
+
 #### nsAddress 
 
 Type : **optional(string)**
