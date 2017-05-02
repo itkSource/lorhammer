@@ -66,15 +66,15 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 
 	//TODO : create organization before the app for the test to be totally stateless
 	asApp := AsApp{
-		Name:        "stress-app",
-		Description: "stress-app",
-		Rx1DROffset: 0,
-		Rx2DR:       0,
-		RxDelay:     0,
-		RxWindow:    "RX1",
-		IsABP:       loraserver.Abp,
-		AdrInterval: 0,
-		OrganizationId:"1",
+		Name:           "stress-app",
+		Description:    "stress-app",
+		Rx1DROffset:    0,
+		Rx2DR:          0,
+		RxDelay:        0,
+		RxWindow:       "RX1",
+		IsABP:          loraserver.Abp,
+		AdrInterval:    0,
+		OrganizationId: "1",
 	}
 
 	LOG_LORASERVER.WithFields(logrus.Fields{
@@ -220,15 +220,15 @@ type NodeActivation struct {
 }
 
 type AsApp struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	IsABP       bool   `json:"isABP"`
-	Rx1DROffset int    `json:"rx1DROffset"`
-	Rx2DR       int    `json:"rx2DR"`
-	RxDelay     int    `json:"rxDelay"`
-	RxWindow    string `json:"rxWindow"`
-	AdrInterval int    `json:"adrInterval"`
-	OrganizationId  string `json:"organizationID"`
+	Name           string `json:"name"`
+	Description    string `json:"description"`
+	IsABP          bool   `json:"isABP"`
+	Rx1DROffset    int    `json:"rx1DROffset"`
+	Rx2DR          int    `json:"rx2DR"`
+	RxDelay        int    `json:"rxDelay"`
+	RxWindow       string `json:"rxWindow"`
+	AdrInterval    int    `json:"adrInterval"`
+	OrganizationId string `json:"organizationID"`
 }
 
 type RequestHeader struct {
