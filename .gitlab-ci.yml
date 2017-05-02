@@ -1,4 +1,4 @@
-image: golang:1.8
+image: itkweb/golang
 
 before_script:
     - ln -s /builds/itk.fr/lorhammer /go/src/lorhammer
@@ -8,6 +8,8 @@ before_script:
 stages:
     - lint
     - test
+    - integration
+    - compile
     - doc
 
 lint:gofmt:
@@ -31,6 +33,55 @@ test:coverage:
     coverage: /total[^\d]+(\d+.\d+\%)/
     script:
         - ./resources/scripts/cover.sh -terminal
+
+.integration: &integration
+  stage: integration
+  script:
+    - LORHAMMER_PROMETHEUS_IP="prometheus" LORHAMMER_MQTT_IP="mqtt" LORHAMMER_CONSUL_IP="consul" LORHAMMER_GRAFANA_IP="grafana" ./resources/scripts/launchTools.sh
+    - sleep 10
+    - echo "Start 1 lorhammer"
+    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_BUILD_ID} up -d lorhammer
+    - sleep 30
+    - echo "Start orchestrator to launch scenario and check all is ok"
+    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_BUILD_ID} run orchestrator
+    - echo "All is ok clean docker deamon"
+    - docker-compose -p ${CI_BUILD_ID} down --remove-orphans
+
+integration:oneShot:
+  <<: *integration
+  variables:
+    FROM_FILE: "./resources/scenarios/ci/ci-integration-oneShot.json"
+
+integration:ramp:
+  <<: *integration
+  variables:
+    FROM_FILE: "./resources/scenarios/ci/ci-integration-ramp.json"
+
+integration:repeat:
+  <<: *integration
+  variables:
+    FROM_FILE: "./resources/scenarios/ci/ci-integration-repeat.json"
+
+compile:all:
+  stage: compile
+  script:
+    - sh ./resources/scripts/buildAllEnv.sh
+  only:
+    - master@itk.fr/lorhammer
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 week
+
+compile:tag:
+  stage: compile
+  script:
+    - sh ./resources/scripts/buildAllEnv.sh
+  only:
+    - tags
+  artifacts:
+    paths:
+      - build
 
 pages:
   stage: doc
