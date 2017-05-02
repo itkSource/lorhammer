@@ -39,5 +39,5 @@ pages:
   artifacts:
     paths:
       - public_min
-    only:
+  only:
     - master
