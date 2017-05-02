@@ -8,6 +8,7 @@ before_script:
 stages:
     - lint
     - test
+    - doc
 
 lint:gofmt:
     stage: lint
@@ -30,3 +31,13 @@ test:coverage:
     coverage: /total[^\d]+(\d+.\d+\%)/
     script:
         - ./resources/scripts/cover.sh -terminal
+
+pages:
+  stage: doc
+  script:
+    - resources/scripts/makeDoc.sh
+  artifacts:
+    paths:
+      - public_min
+    only:
+    - master
