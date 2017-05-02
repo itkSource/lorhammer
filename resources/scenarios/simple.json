@@ -1,0 +1,37 @@
+[{
+  "test": {
+    "type": "oneShot",
+    "rampTime": "0",
+    "repeatTime": "0"
+  },
+  "stopAllLorhammerTime": "0",
+  "shutdownAllLorhammerTime": "0",
+  "init": {
+    "nsAddress": "127.0.0.1:1700",
+    "nbGatewayPerLorhammer": 1,
+    "nbNodePerGateway": [1, 1],
+    "scenarioSleepTime": ["10s", "10s"],
+    "gatewaySleepTime": ["100ms", "500ms"],
+    "payloads" : []
+  },
+  "provisioning": {
+    "type": "none",
+    "config": {
+      "apiUrl": "https://127.0.0.1:9999",
+      "nsAddress": "127.0.0.1:1701",
+      "asAddress": "127.0.0.1:4000",
+      "csAddress": "127.0.0.1:5000",
+      "ncAddress": "127.0.0.1:6000"
+    }
+  },
+  "prometheusCheck": [],
+  "deploy": {
+    "type": "local",
+    "sleepAfterDeployTime": "5s",
+    "config": {
+      "pathFile": "./build/lorhammer",
+      "cleanPreviousInstances": true,
+      "nbInstanceToLaunch": 1
+    }
+  }
+}]

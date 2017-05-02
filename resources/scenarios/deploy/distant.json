@@ -1,0 +1,34 @@
+[{
+  "test": {
+    "type": "oneShot",
+    "rampTime": "0",
+    "repeatTime": "0"
+  },
+  "stopAllLorhammerTime": "0",
+  "shutdownAllLorhammerTime": "0",
+  "init": {
+    "nsAddress": "127.0.0.1:1700",
+    "nbGatewayPerLorhammer": 1,
+    "nbNodePerGateway": [1, 1],
+    "scenarioSleepTime": ["10s", "10s"],
+    "gatewaySleepTime": ["100ms", "500ms"]
+  },
+  "provisioning": {
+    "type": "none"
+  },
+  "prometheusCheck": [],
+  "deploy": {
+    "type": "distant",
+    "sleepAfterDeployTime": "20s",
+    "config": {
+      "sshKeyPath": "",
+      "user": "",
+      "ipServer": "",
+      "pathFile": "",
+      "pathWhereScp": "",
+      "beforeCmd": "",
+      "afterCmd": "",
+      "nbDistantToLaunch": 0
+    }
+  }
+}]

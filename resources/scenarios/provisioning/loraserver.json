@@ -1,0 +1,36 @@
+[{
+  "test": {
+    "type": "oneShot",
+    "rampTime": "0",
+    "repeatTime": "0"
+  },
+  "stopAllLorhammerTime": "20s",
+  "shutdownAllLorhammerTime": "21s",
+  "init": {
+    "nsAddress": "127.0.0.1:1700",
+    "nbGatewayPerLorhammer": 1,
+    "nbNodePerGateway": [1, 1],
+    "scenarioSleepTime": ["3s", "3s"],
+    "gatewaySleepTime": ["100ms", "500ms"],
+    "withJoin" : false,
+    "appskey" : "APPSKEY",
+    "nwskey" : "NWSKEY",
+    "payloads" : []
+  },
+  "provisioning": {
+    "type": "brocaar",
+    "config": {
+      "apiUrl": "https://127.0.0.1:9999",
+      "abp" : true
+    }
+  },
+  "prometheusCheck": [
+    {"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 95000, "resultMax": 105000, "description": "nb messages sent"},
+    {"query": "count(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb lorhammer"},
+    {"query": "sum(lorhammer_gateway)", "resultMin": 90, "resultMax": 100, "description": "nb gateways"},
+    {"query": "sum(lorhammer_node)", "resultMin": 4500, "resultMax": 5000, "description": "nb nodes"}
+  ],
+  "deploy": {
+    "type": "none"
+  }
+}]

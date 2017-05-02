@@ -1,0 +1,32 @@
+image: golang:1.8
+
+before_script:
+    - ln -s /builds/platform-iot/lorhammer /go/src/lorhammer
+    - cd /go/src/lorhammer
+    - sh install.sh
+
+stages:
+    - lint
+    - test
+
+lint:gofmt:
+    stage: lint
+    script:
+        - diff -u <(echo -n) <(gofmt -d ./src)
+        - if [ $? -eq 0 ]; then echo "code formatted"; else echo "run > gofmt -w -d ./src" && exit 1; fi
+
+lint:vet:
+    stage: lint
+    script:
+        - go tool vet -composites=false -shadow=true src/**/*.go
+
+test:unit:
+    stage: test
+    script:
+        - go test -race $(go list ./src/...)
+
+test:coverage:
+    stage: test
+    coverage: /total[^\d]+(\d+.\d+\%)/
+    script:
+        - ./resources/scripts/cover.sh -terminal

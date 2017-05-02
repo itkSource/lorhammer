@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+
+  lorhammer:
+    build:
+      context: .
+      dockerfile: ./docker/lorhammer/Dockerfile
+    command: /bin/lorhammer -consul consul:8500 -local-ip lorhammer
+    depends_on:
+      - consul
+      - mqtt
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: ./docker/lorhammer/Dockerfile
+    command: /bin/orchestrator -consul consul:8500 -from-file "${FROM_FILE}"
+    depends_on:
+      - consul
+      - mqtt
+      - prometheus

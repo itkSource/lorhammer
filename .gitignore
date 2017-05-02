@@ -1,0 +1,8 @@
+.idea
+build
+lorhammer.iml
+data
+report.json
+doc/themes
+doc/public
+doc/public_min

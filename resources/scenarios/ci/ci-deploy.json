@@ -1,0 +1,28 @@
+[{
+  "test": {
+    "type": "none",
+    "rampTime": "0",
+    "repeatTime": "0"
+  },
+  "stopAllLorhammerTime": "0",
+  "shutdownAllLorhammerTime": "0",
+  "init": {},
+  "provisioning": {
+    "type": "none"
+  },
+  "prometheusCheck": [],
+  "deploy": {
+    "type": "distant",
+    "sleepAfterDeployTime": "0",
+    "config": {
+      "sshKeyPath": "~/.ssh/id_rsa",
+      "user": "itk",
+      "ipServer": "192.168.10.133",
+      "pathFile": "./build/lorhammer",
+      "pathWhereScp": "/home/itk/lorhammer/build/",
+      "beforeCmd": "if pgrep lorhammer; then pkill lorhammer; fi",
+      "afterCmd": "nohup /home/itk/lorhammer/build/lorhammer -consul 127.0.0.1:8500 > lorahmmer.log 2>&1 &",
+      "nbDistantToLaunch": 5
+    }
+  }
+}]
