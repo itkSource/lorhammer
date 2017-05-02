@@ -1,7 +1,7 @@
 image: golang:1.8
 
 before_script:
-    - ln -s /builds/platform-iot/lorhammer /go/src/lorhammer
+    - ln -s /builds/itk.fr/lorhammer /go/src/lorhammer
     - cd /go/src/lorhammer
     - sh install.sh
 

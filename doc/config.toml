@@ -29,8 +29,8 @@ favicons = [
 
     [params.header]
     links = [
-        '<a href="https://gitlab.itkweb.fr/platform-iot/lorhammer/commits/master" target="blank"><img alt="build status" src="https://gitlab.itkweb.fr/platform-iot/lorhammer/badges/master/build.svg"></a>',
-        '<a href="https://gitlab.itkweb.fr/platform-iot/lorhammer/commits/master"><img alt="coverage report" src="https://gitlab.itkweb.fr/platform-iot/lorhammer/badges/master/coverage.svg" /></a>',
+        '<a href="https://gitlab.com/itk.fr/lorhammer/commits/master"><img alt="build status" src="https://gitlab.com/itk.fr/lorhammer/badges/master/build.svg" /></a>',
+        '<a href="https://gitlab.com/itk.fr/lorhammer/commits/master"><img alt="coverage report" src="https://gitlab.com/itk.fr/lorhammer/badges/master/coverage.svg" /></a>',
 		'<a href="http://www.itk.fr" target="blank" class="btn">itk</a>',
 		'<a href="http://gitlab.com/itk.fr" target="blank" class="btn">ForkMe</a>'
     ]

@@ -21,7 +21,7 @@ This page describes the development environment installation of lorhammer and gi
 
 ```shell
 cd $GOPATH/src
-git clone git@gitlab.lan.itkweb.fr:platform-iot/lorhammer.git
+git clone git@gitlab.com:itk.fr/lorhammer.git
 cd lorhammer
 sh install.sh
 ```
