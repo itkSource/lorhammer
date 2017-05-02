@@ -22,8 +22,11 @@ type Loraserver struct {
 	Abp                 bool   `json:"abp"`
 	AppsKey             string `json:"appskey"`
 	Nwskey              string `json:"nwskey"`
+	Login               string `json:"login"`
+	Password            string `json:"password"`
 	appId               string
 	cleanedProvisioning bool
+	JwtToKen            string
 }
 
 func NewLoraserver(rawConfig json.RawMessage) (provisioner, error) {
@@ -40,10 +43,38 @@ func NewLoraserver(rawConfig json.RawMessage) (provisioner, error) {
 
 func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error {
 
-	//TODO add is Abp field to be compliant with last Appserver version
+	loginReq := LoginRequest{
+		Login:    loraserver.Login,
+		Password: loraserver.Password,
+	}
+
+	marshalledLogin, err := json.Marshal(loginReq)
+	if err != nil {
+		return err
+	}
+
+	responseBody, err := doRequest(loraserver.ApiUrl+"/api/internal/login", "POST", marshalledLogin, "")
+	if err != nil {
+		return err
+	}
+	var loginResp = new(LoginResponse)
+	err = json.Unmarshal(responseBody, &loginResp)
+	if err != nil {
+		return err
+	}
+	loraserver.JwtToKen = loginResp.Jwt
+
+	//TODO : create organization before the app for the test to be totally stateless
 	asApp := AsApp{
 		Name:        "stress-app",
 		Description: "stress-app",
+		Rx1DROffset: 0,
+		Rx2DR:       0,
+		RxDelay:     0,
+		RxWindow:    "RX1",
+		IsABP:       loraserver.Abp,
+		AdrInterval: 0,
+		OrganizationId:"1",
 	}
 
 	LOG_LORASERVER.WithFields(logrus.Fields{
@@ -56,7 +87,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 		return err
 	}
 
-	responseBody, err := doRequest(loraserver.ApiUrl+"/api/applications", "POST", marshalledApp)
+	responseBody, err = doRequest(loraserver.ApiUrl+"/api/applications", "POST", marshalledApp, loraserver.JwtToKen)
 	if err != nil {
 		return err
 	}
@@ -76,25 +107,19 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 				"name": "STRESSNODE" + strconv.Itoa(idNode),
 			}).Info("Registering sensor")
 
-			//TODO add useApplicationSettings field to be compliant with last Appserver version
 			asnode := AsNode{
 				DevEUI:        sensor.DevEUI.String(),
 				AppEUI:        sensor.AppEUI.String(),
 				AppKey:        sensor.AppKey.String(),
-				AdrInterval:   0,
 				ApplicationID: creationResponse.Id,
 				Description:   "stresstool node",
 				Name:          "STRESSNODE" + strconv.Itoa(idNode),
-				Rx1DROffset:   0,
-				Rx2DR:         0,
-				RxDelay:       0,
-				RxWindow:      "RX1",
-				IsABP:         loraserver.Abp,
+				UseApplicationSettings: true,
 			}
 			if marshalledNode, err := json.Marshal(asnode); err != nil {
 				return err
 			} else {
-				if _, err := doRequest(loraserver.ApiUrl+"/api/nodes", "POST", marshalledNode); err != nil {
+				if _, err := doRequest(loraserver.ApiUrl+"/api/nodes", "POST", marshalledNode, loraserver.JwtToKen); err != nil {
 					return err
 				}
 			}
@@ -113,7 +138,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 					LOG_LORASERVER.Panic(err)
 
 				}
-				doRequest(loraserver.ApiUrl+"/api/nodes/"+asnode.DevEUI+"/activation", "POST", marshalledActivation)
+				doRequest(loraserver.ApiUrl+"/api/nodes/"+asnode.DevEUI+"/activation", "POST", marshalledActivation, loraserver.JwtToKen)
 			}
 
 			idNode++
@@ -122,7 +147,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 	return nil
 }
 
-func doRequest(url string, method string, marshalledObject []byte) ([]byte, error) {
+func doRequest(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error) {
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalledObject))
@@ -130,6 +155,9 @@ func doRequest(url string, method string, marshalledObject []byte) ([]byte, erro
 		return nil, err
 	}
 
+	if jwtToken != "" {
+		req.Header.Set("Grpc-Metadata-Authorization", jwtToken)
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := httpClient.Do(req)
@@ -159,7 +187,7 @@ func doRequest(url string, method string, marshalledObject []byte) ([]byte, erro
 func (loraserver *Loraserver) DeProvision() error {
 	if !loraserver.cleanedProvisioning {
 		if loraserver.ApiUrl != "" && loraserver.appId != "" {
-			if _, err := doRequest(loraserver.ApiUrl+"/api/applications/"+loraserver.appId, "DELETE", nil); err != nil {
+			if _, err := doRequest(loraserver.ApiUrl+"/api/applications/"+loraserver.appId, "DELETE", nil, loraserver.JwtToKen); err != nil {
 				return err
 			}
 			loraserver.cleanedProvisioning = true
@@ -171,20 +199,15 @@ func (loraserver *Loraserver) DeProvision() error {
 }
 
 type AsNode struct {
-	DevEUI        string `json:"devEUI"`
-	AppEUI        string `json:"appEUI"`
-	AppKey        string `json:"appKey"`
-	AppsKey       string `json:"appsKey"`
-	NWsKey        string `json:"NWsKey"`
-	AdrInterval   int    `json:"adrInterval"`
-	ApplicationID string `json:"applicationID"`
-	Description   string `json:"description"`
-	Name          string `json:"name"`
-	Rx1DROffset   int    `json:"rx1DROffset"`
-	Rx2DR         int    `json:"rx2DR"`
-	RxDelay       int    `json:"rxDelay"`
-	RxWindow      string `json:"rxWindow"`
-	IsABP         bool   `json:"isABP"`
+	DevEUI                 string `json:"devEUI"`
+	AppEUI                 string `json:"appEUI"`
+	AppKey                 string `json:"appKey"`
+	AppsKey                string `json:"appsKey"`
+	NWsKey                 string `json:"NWsKey"`
+	ApplicationID          string `json:"applicationID"`
+	Description            string `json:"description"`
+	Name                   string `json:"name"`
+	UseApplicationSettings bool   `json:"useApplicationSettings"`
 }
 
 type NodeActivation struct {
@@ -199,6 +222,28 @@ type NodeActivation struct {
 type AsApp struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	IsABP       bool   `json:"isABP"`
+	Rx1DROffset int    `json:"rx1DROffset"`
+	Rx2DR       int    `json:"rx2DR"`
+	RxDelay     int    `json:"rxDelay"`
+	RxWindow    string `json:"rxWindow"`
+	AdrInterval int    `json:"adrInterval"`
+	OrganizationId  string `json:"organizationID"`
+}
+
+type RequestHeader struct {
+	Alg string `json:"alg"`
+	Typ string `json:"typ"`
+}
+
+// Claims defines the struct containing the token claims.
+type LoginResponse struct {
+	Jwt string `json:"jwt"`
+}
+
+type LoginRequest struct {
+	Login    string `json:"username"`
+	Password string `json:"password"`
 }
 
 type CreationResponse struct {
