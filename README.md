@@ -12,7 +12,7 @@ Lorhammer is here to do that. You can launch as much lorhammers as you want to s
 
 * Can stress a lorawan network-server, through scenarios
 * Can check if result are good over prometheus api call
-* Can display what append over grafana
+* Can display what happend over grafana
 * Can be distributed
 * An orchestrator is available to manage lorhammers, through mqtt
 * lorhammers can be deployed over ssh on amazon
