@@ -1,4 +1,4 @@
-image: itkweb/golang
+image: registry.gitlab.com/itk.fr/lorhammer/build
 
 before_script:
     - ln -s /builds/itk.fr/lorhammer /go/src/lorhammer
