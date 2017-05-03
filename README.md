@@ -59,9 +59,9 @@ We want to thank [brocaar](https://github.com/brocaar) for his great job on open
 
 ## Links
 
-* [Issues](https://gitlab.com/itk.fr/lorhammer/issues), please be sure to have read the [contributing](contributing/#reporting-bugs) page before.
-* [Quickstart](quickstart) to use lorhammer
-* [Develop](develop) to add features on lorhammer, please be sure to have read the [contributing](contributing/#code-contribution) page before.
+* [Issues](https://gitlab.com/itk.fr/lorhammer/issues), please be sure to have read the [contributing](http://lorhammer.team-froggies.fr/contributing/#reporting-bugs) page before.
+* [Quickstart](http://lorhammer.team-froggies.fr/quickstart) to use lorhammer
+* [Develop](http://lorhammer.team-froggies.fr/develop) to add features on lorhammer, please be sure to have read the [contributing](http://lorhammer.team-froggies.fr/contributing/#code-contribution) page before.
 
 ## Versioning
 

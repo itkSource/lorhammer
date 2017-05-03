@@ -1,5 +1,5 @@
 theme = "hugorha"
-baseurl = "http://nexus3.lan.itkweb.fr/repository/static/lorhammer/LATEST/lorhammer/"
+baseurl = "http://lorhammer.team-froggies.fr/"
 title = "Lorhammer"
 PygmentsCodeFences = true
 relativeURLs = true
