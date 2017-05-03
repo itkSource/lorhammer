@@ -5,7 +5,7 @@
     "repeatTime": "0"
   },
   "stopAllLorhammerTime": "0",
-  "shutdownAllLorhammerTime": "10m",
+  "shutdownAllLorhammerTime": "1m",
   "init": {
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 10,
@@ -17,7 +17,7 @@
     "type": "none"
   },
   "prometheusCheck": [
-    {"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 21000, "resultMax": 23000, "description": "nb messages"},
+    {"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 2100, "resultMax": 2300, "description": "nb messages"},
     {"query": "count(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb lorhammer"},
     {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"},
     {"query": "sum(lorhammer_node)", "resultMin": 500, "resultMax": 500, "description": "nb nodes"}
