@@ -1,8 +1,8 @@
 # Changelog
 
-## 2017-04-13 Version 0.1.0
+## 2017-05-03 Version 0.1.0
 
-First version, lorhammer is intensively develop. **We do not care about api change.** Use lorhammer with cation.
+First version, lorhammer is intensively develop. **We do not care about api change.** Use lorhammer with caution.
 
 Features :
 

@@ -10,6 +10,14 @@ subnav: "true"
 
 This page describes how to run lorhammer from the simplest to more complex use case.
 
+# Download
+
+To download the binaries, go on [tags](https://gitlab.com/itk.fr/lorhammer/tags) page and click on the "download icon" next to the last release. Then select the `Download 'compile:tag'` item in the `Artifacts` category.
+
+[![download-image](/images/quickstart/download.png)](/images/quickstart/download.png)
+
+Inside the downloaded zip you will find lorhammer binaries for linux, mac and windows.
+
 # Simple launch
 
 To start only one lorhammer simulating 10 gateways with 5 nodes per gateway :
