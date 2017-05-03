@@ -94,8 +94,10 @@ pages:
   stage: doc
   script:
     - resources/scripts/makeDoc.sh
+    - rm -rf doc/public
+    - mv doc/public_min public
   artifacts:
     paths:
-      - doc/public_min
+      - public
   only:
     - master
