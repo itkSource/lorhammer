@@ -38,8 +38,6 @@ test:coverage:
   stage: integration
   services:
     - docker:dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
   script:
     - LORHAMMER_PROMETHEUS_IP="prometheus" LORHAMMER_MQTT_IP="mqtt" LORHAMMER_CONSUL_IP="consul" LORHAMMER_GRAFANA_IP="grafana" ./resources/scripts/launchTools.sh
     - sleep 10
@@ -50,21 +48,26 @@ test:coverage:
     - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_BUILD_ID} run orchestrator
     - echo "All is ok clean docker deamon"
     - docker-compose -p ${CI_BUILD_ID} down --remove-orphans
+  tags:
+    - docker
 
 integration:oneShot:
   <<: *integration
   variables:
     FROM_FILE: "./resources/scenarios/ci/ci-integration-oneShot.json"
+    DOCKER_HOST: tcp://docker:2375
 
 integration:ramp:
   <<: *integration
   variables:
     FROM_FILE: "./resources/scenarios/ci/ci-integration-ramp.json"
+    DOCKER_HOST: tcp://docker:2375
 
 integration:repeat:
   <<: *integration
   variables:
     FROM_FILE: "./resources/scenarios/ci/ci-integration-repeat.json"
+    DOCKER_HOST: tcp://docker:2375
 
 compile:all:
   stage: compile
