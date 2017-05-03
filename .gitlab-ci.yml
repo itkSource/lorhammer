@@ -1,4 +1,4 @@
-image: golang:1.8
+image: registry.gitlab.com/itk.fr/lorhammer/build
 
 before_script:
     - ln -s /builds/itk.fr/lorhammer /go/src/lorhammer
@@ -8,6 +8,8 @@ before_script:
 stages:
     - lint
     - test
+    - integration
+    - compile
     - doc
 
 lint:gofmt:
@@ -32,12 +34,68 @@ test:coverage:
     script:
         - ./resources/scripts/cover.sh -terminal
 
+.integration: &integration
+  stage: integration
+  services:
+    - docker:dind
+  script:
+    - LORHAMMER_PROMETHEUS_IP="prometheus" LORHAMMER_MQTT_IP="mqtt" LORHAMMER_CONSUL_IP="consul" LORHAMMER_GRAFANA_IP="grafana" ./resources/scripts/launchTools.sh
+    - sleep 10
+    - echo "Start 1 lorhammer"
+    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_BUILD_ID} up -d lorhammer
+    - sleep 30
+    - echo "Start orchestrator to launch scenario and check all is ok"
+    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_BUILD_ID} run orchestrator
+    - echo "All is ok clean docker deamon"
+    - docker-compose -p ${CI_BUILD_ID} down --remove-orphans
+  tags:
+    - docker
+
+integration:oneShot:
+  <<: *integration
+  variables:
+    FROM_FILE: "./resources/scenarios/ci/ci-integration-oneShot.json"
+    DOCKER_HOST: tcp://docker:2375
+
+integration:ramp:
+  <<: *integration
+  variables:
+    FROM_FILE: "./resources/scenarios/ci/ci-integration-ramp.json"
+    DOCKER_HOST: tcp://docker:2375
+
+integration:repeat:
+  <<: *integration
+  variables:
+    FROM_FILE: "./resources/scenarios/ci/ci-integration-repeat.json"
+    DOCKER_HOST: tcp://docker:2375
+
+compile:all:
+  stage: compile
+  script:
+    - sh ./resources/scripts/buildAllEnv.sh
+  only:
+    - master@itk.fr/lorhammer
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 week
+
+compile:tag:
+  stage: compile
+  script:
+    - sh ./resources/scripts/buildAllEnv.sh
+  only:
+    - tags
+  artifacts:
+    paths:
+      - build
+
 pages:
   stage: doc
   script:
     - resources/scripts/makeDoc.sh
   artifacts:
     paths:
-      - public_min
+      - doc/public_min
   only:
     - master

@@ -1,4 +1,4 @@
-FROM golang:1.8.0
+FROM golang:1.8
 
 ADD ./ $GOPATH/src/lorhammer/
 
