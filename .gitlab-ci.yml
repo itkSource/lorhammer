@@ -96,6 +96,6 @@ pages:
     - resources/scripts/makeDoc.sh
   artifacts:
     paths:
-      - public_min
+      - doc/public_min
   only:
     - master
