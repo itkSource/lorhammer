@@ -36,6 +36,10 @@ test:coverage:
 
 .integration: &integration
   stage: integration
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
   script:
     - LORHAMMER_PROMETHEUS_IP="prometheus" LORHAMMER_MQTT_IP="mqtt" LORHAMMER_CONSUL_IP="consul" LORHAMMER_GRAFANA_IP="grafana" ./resources/scripts/launchTools.sh
     - sleep 10
