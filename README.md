@@ -55,7 +55,7 @@ Lorhammer is here to do that. You can launch as much lorhammers as you want to s
 
 Lorhammer has been inspired by [Gatling](http://gatling.io/) but for lorawan networks and with distribution in mind. One day, lorhammer will become hammer with flavours like lorhammer and resthammer...
  
-We want to thank [brocaar](https://github.com/brocaar) for his great job on opensourcing his projects, we have been inspired by [brocaar/loraserver](https://github.com/brocaar/loraserver) and particularly [brocaar/lorawan](https://github.com/brocaar/lorawan) witch is used in lorhammer.
+We want to thank [brocaar](https://github.com/brocaar) for his great job on opensourcing his projects, we have been inspired by [brocaar/loraserver](https://github.com/brocaar/loraserver) and particularly [brocaar/lorawan](https://github.com/brocaar/lorawan) which we use in lorhammer.
 
 ## Links
 
