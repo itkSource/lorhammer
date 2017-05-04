@@ -7,7 +7,6 @@ import (
 	"lorhammer/src/model"
 	"lorhammer/src/orchestrator/cli"
 	"lorhammer/src/orchestrator/command"
-	"lorhammer/src/orchestrator/prometheus"
 	"lorhammer/src/orchestrator/provisioning"
 	"lorhammer/src/orchestrator/testSuite"
 	"lorhammer/src/tools"
@@ -75,12 +74,6 @@ func main() {
 		}
 	}
 
-	// PROMETHEUS
-	prometheusApiClient, err := prometheus.NewApiClient(consulClient)
-	if err != nil {
-		LOG.WithError(err).Error("Error while constructing new prometheus api client")
-	}
-
 	// GRAFANA
 	grafanaClient, err := tools.NewGrafana(consulClient)
 	if err != nil {
@@ -98,7 +91,7 @@ func main() {
 		}
 		for _, test := range tests {
 			currentTestSuite = test
-			testReport, err := testSuite.LaunchTest(consulClient, mqttClient, &test, prometheusApiClient, grafanaClient)
+			testReport, err := testSuite.LaunchTest(consulClient, mqttClient, &test, grafanaClient)
 			if err != nil {
 				LOG.WithError(err).Error("Error during test")
 			} else if err := testSuite.WriteFile(testReport, *reportFile); err != nil {
@@ -109,6 +102,6 @@ func main() {
 		}
 	}
 	if *startCli {
-		cli.Start(mqttClient, consulClient, prometheusApiClient)
+		cli.Start(mqttClient, consulClient)
 	}
 }
