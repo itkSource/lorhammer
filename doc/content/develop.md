@@ -108,7 +108,7 @@ We can imagine make `pic` test with creation and deletion of gateways over the t
 
 A provisioner permit to register sensors and gateways to a network-server. Like that the network-server can accept messages from sensors and gateways.
 
-Today we have 3 kind of provisioner : none to not provision, loraserver to provision a loraserver network server and semtechv4 to provision a semtech v4 network server.
+Today we have 3 kind of provisioner : none to not provision, loraserver to provision a [loraserver](https://docs.loraserver.io) network server and semtechv4 to provision a [semtech](http://iot.semtech.com/) v4 network server.
  
 The semtechv4 provisioner is a work in progress, any help to do it will be useful. Please add comments in [issues/13](https://gitlab.com/itk.fr/lorhammer/issues/13) if you want to contribute on it.
  
@@ -159,7 +159,7 @@ We will happy to see lot of implementations of provisioner for different network
 
 A deployer permit to the orchestrator to deploy and instantiate lorhammers. 
 
-Today we have 5 kind of deployer. None to do nothing. Local to launch a local (sub-process) instance of lorhammer. Distant to scp and start lorhammers on other server. And Amazone to provision server on amazon, deploy and launch lorhammers. 
+Today we have 5 kind of deployer. None to do nothing. Local to launch a local (sub-process) instance of lorhammer. Distant to scp and start over ssh lorhammers on other server. And amazon to provision server on [aws](https://aws.amazon.com/), deploy and launch lorhammers. 
 
 To add a deployer you need to have a fabric function which take config json.RawMessage and a consul client in parameters and return an implementation of `Deployer` interface :
 
@@ -204,4 +204,4 @@ func init() {
 }
 ```
 
-We can image adding new deployer like DigitalOcean, Kubernetes or Swarm...
+We can image adding new deployer like [DigitalOcean](https://www.digitalocean.com/), [Kubernetes](https://kubernetes.io/) or [Swarm](https://docs.docker.com/engine/swarm/)...
