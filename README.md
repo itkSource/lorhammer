@@ -67,6 +67,16 @@ We want to thank [brocaar](https://github.com/brocaar) for his great job on open
 
 We use SemVer for versioning. For the versions available, see the tags on this repository.
 
+## Powered by ITK
+
+[![itk_logo](doc/static/images/ITK_PredictandDecide.png)](doc/static/images/ITK_PredictandDecide.png)
+
+itk is globally recognized for leadership and innovation in scientific knowledge capture and transfer for more sustainability in agriculture and of the environment.
+
+Lorhammer is a project powered by [itk](http://www.itk.fr/). We use it internally to choose the right network-server for our IoT infrastructure. 
+Furthermore we use it to run integration tests every time we accept merge-request (same as pull-request but in gitlab world). 
+Indeed every new modification, a stress test is launched over our IoT plateform and checkers check if all is ok, in terms of time response and data process.
+
 ## License
 
 This project is licensed under the Apache 2 License - see the `LICENSE.md` file for details
