@@ -205,3 +205,59 @@ func init() {
 ```
 
 We can image adding new deployer like [DigitalOcean](https://www.digitalocean.com/), [Kubernetes](https://kubernetes.io/) or [Swarm](https://docs.docker.com/engine/swarm/)...
+
+## Add a checker
+
+A checker is a way to test if all is ok in our IoT system. For example it can count the number of messages sand by lorhammers and check if result is 20000.
+But, checker permit also, to test if our platform has accepted x messages. Useful for integration continue orchestrator will exit(1) if all checks don't pass.
+ 
+Today we have 2 kinds of checkers : none to not test and prometheus to request it and test result.
+
+To add a checker you need to have a fabric function which take config json.RawMessage and a consul client in parameters and return an implementation of `Checker` interface :
+
+```go
+type CheckerSuccess interface {
+	Details() map[string]interface{}
+}
+
+type CheckerError interface {
+	Details() map[string]interface{}
+}
+
+type Checker interface {
+	Check() ([]CheckerSuccess, []CheckerError)
+}
+```
+
+For example the none implementation :
+
+```go
+type none struct{}
+
+func newNone(_ tools.Consul, _ json.RawMessage) (Checker, error) {
+	return none{}, nil
+}
+
+func (_ none) Check() ([]CheckerSuccess, []CheckerError) {
+	return make([]CheckerSuccess, 0), make([]CheckerError, 0)
+}
+```
+
+A checker need to have a type :
+
+```go
+const NoneType = Type("none")
+```
+
+And you need to register your implementation in the map hosted by `src/orchestrator/checker/checker.go` :
+
+```go
+var checkers = make(map[Type]func(consulClient tools.Consul, config json.RawMessage) (Checker, error))
+
+func init() {
+	checkers[NoneType] = newNone
+	checkers[PrometheusType] = newPrometheus
+}
+```
+
+We can imagine add a file checker, if your application write processing in csv format, you will be abble to check if the csv is confirmed with the expected result. Execute it every time you push new code on your platform and you will have a continuous integration testing suite.
