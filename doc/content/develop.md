@@ -205,5 +205,3 @@ func init() {
 ```
 
 We can image adding new deployer like DigitalOcean, Kubernetes or Swarm...
-
-## Add personal push data
