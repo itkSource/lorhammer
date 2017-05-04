@@ -71,11 +71,11 @@ We use SemVer for versioning. For the versions available, see the tags on this r
 
 [![itk_logo](doc/static/images/ITK_PredictandDecide.png)](doc/static/images/ITK_PredictandDecide.png)
 
-itk is globally recognized for leadership and innovation in scientific knowledge capture and transfer for more sustainability in agriculture and of the environment.
+itk is globally recognized as being an innovation leader in scientific knowledge and software for a more sustainable agriculture in general.
 
 Lorhammer is a project powered by [itk](http://www.itk.fr/). We use it internally to choose the right network-server for our IoT infrastructure. 
-Furthermore we use it to run integration tests every time we accept merge-request (same as pull-request but in gitlab world). 
-Indeed every new modification, a stress test is launched over our IoT plateform and checkers check if all is ok, in terms of time response and data process.
+Furthermore, we use it to run integration tests every time we accept merge-request (same thing as a pull-request but in the gitlab world). 
+Indeed, for every new update, a stress test is launched over our IoT plateform and checkers check if all is ok, taking in consideration response time delays and data processing.
 
 ## License
 
