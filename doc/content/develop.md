@@ -68,7 +68,37 @@ Each time you modify a doc file, the doc will be refresh in your browser.
 
 ## Add a test type
 
-TODO make it
+Today we have 4 types of test, none do nothing, one shot build nbGateway and launch them, reapeat is the same as one shot but repeat creation of nbGateway every repeatTime and ramp do the same but distribute the creation of gateway to ahve nbGateway after the rampTime.
+
+A test type is a function which take a Test, a model.Init and a client tool.mqtt. This function will be started in a go routine and must call command.LaunchScenario(mqttClient, model.init) when nbGateway need to be launched.
+
+The none implementation is the most simple :
+
+```go
+func startNone(_ Test, _ model.Init, _ tools.Mqtt) {
+	LOG_NONE.WithField("type", "none").Warn("Nothing to test")
+}
+```
+
+You can find other implementations in `src/orchestrator/testType` package.
+
+A test type is also represented by a testType.Type type like that :
+
+```go
+const TypeNone Type = "none"
+```
+
+To finish you need to add your implementation in the map hosted by `src/orchestrator/testType/testType.go` :
+
+```go
+func init() {
+	testers[TypeNone] = startNone
+}
+```
+
+Test it by creating a scenario file with your test type.
+
+We can imagine make `pic` test with creation and deletion of gateways over the time. Or a ramp node test which build node in existing gateway over the time.
 
 ## Add a provisioner
 
