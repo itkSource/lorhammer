@@ -281,10 +281,10 @@ Describes the provisioning of your sensors on the network-server system
 
 ### type 
 
-Type : **string/enum** : Can be `none`, `brocaar` or `semtechv4`
+Type : **string/enum** : Can be `none`, `loraserver` or `semtechv4`
 
 * `none` no provisioning is required
-* `brocaar` call the api of lorawanserver and add sensors
+* `loraserver` call the api of [loraserver application server](https://docs.loraserver.io/loraserver/application-server/) and add sensors
 * `semtechv4` send tcp order to add gateways and sensors
 
 ### config
