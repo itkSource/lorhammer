@@ -68,7 +68,9 @@ Each time you modify a doc file, the doc will be refresh in your browser.
 
 ## Add a test type
 
-Today we have 4 types of test, none do nothing, one shot build nbGateway and launch them, reapeat is the same as one shot but repeat creation of nbGateway every repeatTime and ramp do the same but distribute the creation of gateway to ahve nbGateway after the rampTime.
+A test type is a launcher of gateways. It's describe how the orchestrator will build gateways to realize the scenario.
+
+Today we have 4 types of test, none do nothing, one shot build nbGateway and launch them, repeat is the same as one shot but repeat creation of nbGateway every repeatTime and ramp do the same but distribute the creation of gateway to have nbGateway after the rampTime.
 
 A test type is a function which take a Test, a model.Init and a client tool.mqtt. This function will be started in a go routine and must call command.LaunchScenario(mqttClient, model.init) when nbGateway need to be launched.
 
@@ -91,6 +93,8 @@ const TypeNone Type = "none"
 To finish you need to add your implementation in the map hosted by `src/orchestrator/testType/testType.go` :
 
 ```go
+var testers = make(map[Type]func(test Test, init model.Init, mqttClient tools.Mqtt))
+
 func init() {
 	testers[TypeNone] = startNone
 }
@@ -102,7 +106,9 @@ We can imagine make `pic` test with creation and deletion of gateways over the t
 
 ## Add a provisioner
 
-Today we have 3 kind of provisioner : none to not provision, loraserver to provision a loraserver network server and semtechv4 to provision a semetch v4 network server.
+A provisioner permit to register sensors and gateways to a network-server. Like that the network-server can accept messages from sensors and gateways.
+
+Today we have 3 kind of provisioner : none to not provision, loraserver to provision a loraserver network server and semtechv4 to provision a semtech v4 network server.
  
 The semtechv4 provisioner is a work in progress, any help to do it will be useful. Please add comments in [issues/13](https://gitlab.com/itk.fr/lorhammer/issues/13) if you want to contribute on it.
  
@@ -115,7 +121,7 @@ type provisioner interface {
 }
 ```
 
-The simplier implementation is the NoneProvisioner :
+The simpler implementation is the NoneProvisioner :
 
 ```go
 type none struct{}
@@ -133,9 +139,11 @@ The fabric function must have a provisioning.Type :
 const NoneType = Type("none")
 ```
 
-And you need to register your implementation in the map hosted by `src/orchestrator/proviioning/provisioning.go` :
+And you need to register your implementation in the map hosted by `src/orchestrator/provisioning/provisioning.go` :
 
 ```go
+var provisioners = make(map[Type]func(config json.RawMessage) (provisioner, error))
+
 func init() {
 	provisioners[NoneType] = NewNone
 	provisioners[LoraserverType] = NewLoraserver
@@ -143,12 +151,59 @@ func init() {
 }
 ```
 
-Test it by creating a scenario file with your provioning type and the configuration required by it.
+Test it by creating a scenario file with your provisioning type and the configuration required by it.
 
 We will happy to see lot of implementations of provisioner for different network-server open-source or proprietary. 
 
 ## Add a deployer
 
+A deployer permit to the orchestrator to deploy and instantiate lorhammers. 
 
+Today we have 5 kind of deployer. None to do nothing. Local to launch a local (sub-process) instance of lorhammer. Distant to scp and start lorhammers on other server. And Amazone to provision server on amazon, deploy and launch lorhammers. 
+
+To add a deployer you need to have a fabric function which take config json.RawMessage and a consul client in parameters and return an implementation of `Deployer` interface :
+
+```go
+type Deployer interface {
+	RunBefore() error
+	Deploy() error
+	RunAfter() error
+}
+```
+
+The None implementation is really simple :
+
+```go
+type none struct{}
+
+func (_ none) RunBefore() error { return nil }
+func (_ none) Deploy() error    { return nil }
+func (_ none) RunAfter() error  { return nil }
+
+func NewNone(_ json.RawMessage, _ tools.Consul) (Deployer, error) {
+	return none{}, nil
+}
+```
+
+A deployer need to have a type :
+
+```go
+const TypeNone = Type("none")
+```
+
+And you need to register your implementation in the map hosted by `src/orchestrator/deploy/deploy.go` :
+
+```go
+var deployers = make(map[Type]func(config json.RawMessage, consulClient tools.Consul) (Deployer, error))
+
+func init() {
+	deployers[TypeNone] = NewNone
+	deployers[TypeDistant] = NewDistantFromJson
+	deployers[TypeAmazon] = NewAmazonFromJson
+	deployers[TypeLocal] = NewLocalFromJson
+}
+```
+
+We can image adding new deployer like DigitalOcean, Kubernetes or Swarm...
 
 ## Add personal push data
