@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lorhammer/src/model"
 	"lorhammer/src/orchestrator/provisioning"
+	"lorhammer/src/tools"
 	"testing"
 )
 
@@ -18,7 +19,7 @@ type testLaunch struct {
 	init             string
 	provisioning     string
 	needProvisioning bool
-	prometheusCheck  string
+	check            string
 	deploy           string
 }
 
@@ -32,7 +33,7 @@ var testsLaunch = []testLaunch{
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
-		prometheusCheck:  `[]`,
+		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
 	},
 	{
@@ -44,7 +45,7 @@ var testsLaunch = []testLaunch{
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
-		prometheusCheck:  `[]`,
+		check:            `{"type": "none"}`,
 		deploy:           `{"type": "fake"}`,
 	},
 	{
@@ -56,7 +57,7 @@ var testsLaunch = []testLaunch{
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
-		prometheusCheck:  `[]`,
+		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
 	},
 	{
@@ -68,7 +69,7 @@ var testsLaunch = []testLaunch{
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
-		prometheusCheck:  `[]`,
+		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
 	},
 	{
@@ -80,7 +81,7 @@ var testsLaunch = []testLaunch{
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
-		prometheusCheck:  `[]`,
+		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
 	},
 	{
@@ -92,7 +93,7 @@ var testsLaunch = []testLaunch{
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
-		prometheusCheck:  `[{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb messages"}]`,
+		check:            `{"type": "prometheus", "config": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb messages"}]}`,
 		deploy:           `{"type": "none"}`,
 	},
 	{
@@ -104,17 +105,17 @@ var testsLaunch = []testLaunch{
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
-		prometheusCheck:  `[{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"}]`,
+		check:            `{"type": "prometheus", "config": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"}]}`,
 		deploy:           `{"type": "none"}`,
 	},
 }
 
-var templateLaunch = `[{"test": %s,"rampTime": "%s","repeatTime": "%s","stopAllLorhammerTime": "%s","shutdownAllLorhammerTime": "%s","init": %s,"provisioning": %s,"prometheusCheck": %s, "deploy": %s}]`
+var templateLaunch = `[{"test": %s,"rampTime": "%s","repeatTime": "%s","stopAllLorhammerTime": "%s","shutdownAllLorhammerTime": "%s","init": %s,"provisioning": %s,"check": %s, "deploy": %s}]`
 
 func TestLaunchTest(t *testing.T) {
 	for _, test := range testsLaunch {
 		var ct = test
-		data := []byte(fmt.Sprintf(templateLaunch, ct.test, ct.rampTime, ct.repeatTime, ct.stopAll, ct.shutdownAll, ct.init, ct.provisioning, ct.prometheusCheck, ct.deploy))
+		data := []byte(fmt.Sprintf(templateLaunch, ct.test, ct.rampTime, ct.repeatTime, ct.stopAll, ct.shutdownAll, ct.init, ct.provisioning, ct.check, ct.deploy))
 		tests, err := FromFile(data)
 		if err != nil {
 			t.Fatalf(`valid scenario should not return err %s for : "%s"`, err, ct.description)
@@ -125,7 +126,7 @@ func TestLaunchTest(t *testing.T) {
 		if test.needProvisioning {
 			provisioning.Provision(tests[0].Uuid, tests[0].Provisioning, model.Register{})
 		}
-		report, err := LaunchTest(nil, &fakeMqtt{}, &tests[0], fakePrometheus{}, nil)
+		report, err := LaunchTest(fakeConsul{}, &fakeMqtt{}, &tests[0], nil)
 		if ct.testValid && err != nil {
 			t.Fatal("valid test should not throw err")
 		} else if ct.testValid && report == nil {
@@ -149,7 +150,14 @@ func (m *fakeMqtt) PublishSubCmd(topic string, cmdName model.CommandName, subCmd
 	return nil
 }
 
-type fakePrometheus struct {
+type fakeConsul struct {
+	serviceFirstError error
 }
 
-func (_ fakePrometheus) ExecQuery(query string) (float64, error) { return 1, nil }
+func (_ fakeConsul) GetAddress() string                                      { return "" }
+func (_ fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
+func (f fakeConsul) ServiceFirst(name string, prefix string) (string, error) {
+	return "prometheusUrl", f.serviceFirstError
+}
+func (_ fakeConsul) DeRegister(string) error                     { return nil }
+func (_ fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }

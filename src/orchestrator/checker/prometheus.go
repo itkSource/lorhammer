@@ -53,7 +53,7 @@ func (err PrometheusCheckError) Details() map[string]interface{} {
 }
 
 func newPrometheus(consulClient tools.Consul, rawConfig json.RawMessage) (Checker, error) {
-	var checks = make([]prometheusCheck, 0)
+	var checks = new([]prometheusCheck)
 	if err := json.Unmarshal(rawConfig, checks); err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func newPrometheus(consulClient tools.Consul, rawConfig json.RawMessage) (Checke
 	}
 	return prometheusChecker{
 		apiClient: prometheusApiClient,
-		checks:    checks,
+		checks:    *checks,
 	}, nil
 }
 
