@@ -102,6 +102,53 @@ We can imagine make `pic` test with creation and deletion of gateways over the t
 
 ## Add a provisioner
 
+Today we have 3 kind of provisioner : none to not provision, loraserver to provision a loraserver network server and semtechv4 to provision a semetch v4 network server.
+ 
+The semtechv4 provisioner is a work in progress, any help to do it will be useful. Please add comments in [issues/13](https://gitlab.com/itk.fr/lorhammer/issues/13) if you want to contribute on it.
+ 
+A provisioner must have a fabric function which take config json.RawMessage in parameters and return an implementation of `Provisioner` interface :
+
+```go
+type provisioner interface {
+	Provision(sensorsToRegister model.Register) error
+	DeProvision() error
+}
+```
+
+The simplier implementation is the NoneProvisioner :
+
+```go
+type none struct{}
+
+func NewNone(_ json.RawMessage) (provisioner, error) { return none{}, nil }
+
+func (_ none) Provision(sensorsToRegister model.Register) error { return nil }
+
+func (_ none) DeProvision() error { return nil }
+```
+
+The fabric function must have a provisioning.Type :
+
+```go
+const NoneType = Type("none")
+```
+
+And you need to register your implementation in the map hosted by `src/orchestrator/proviioning/provisioning.go` :
+
+```go
+func init() {
+	provisioners[NoneType] = NewNone
+	provisioners[LoraserverType] = NewLoraserver
+	provisioners[SemtechV4Type] = NewSemtechV4
+}
+```
+
+Test it by creating a scenario file with your provioning type and the configuration required by it.
+
+We will happy to see lot of implementations of provisioner for different network-server open-source or proprietary. 
+
 ## Add a deployer
+
+
 
 ## Add personal push data
