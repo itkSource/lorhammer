@@ -70,6 +70,13 @@ func TestNewPrometheusErrorConsul(t *testing.T) {
 	}
 }
 
+func TestPrometheusChecker_Start(t *testing.T) {
+	check, _ := newPrometheus(fakeConsul{}, json.RawMessage([]byte(`[]`)))
+	if err := check.Start(); err != nil {
+		t.Fatal("Prometheus checker should not return error on start")
+	}
+}
+
 func TestReturnNothingIfNoTest(t *testing.T) {
 	prometheusApiClient := initPrometheusClientApi([]float64{float64(0)}, nil)
 	checks := make([]prometheusCheck, 0)

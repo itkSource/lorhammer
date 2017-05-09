@@ -22,6 +22,7 @@ type CheckerError interface {
 }
 
 type Checker interface {
+	Start() error
 	Check() ([]CheckerSuccess, []CheckerError)
 }
 
@@ -30,11 +31,19 @@ var checkers = make(map[Type]func(consulClient tools.Consul, config json.RawMess
 func init() {
 	checkers[NoneType] = newNone
 	checkers[PrometheusType] = newPrometheus
+	checkers[KafkaType] = newKafka
 }
 
 func Get(consulClient tools.Consul, checker Model) (Checker, error) {
 	if checkers[checker.Type] == nil {
 		return nil, fmt.Errorf("Unknown checker type %s", checker.Type)
 	}
-	return checkers[checker.Type](consulClient, checker.Config)
+	c, err := checkers[checker.Type](consulClient, checker.Config)
+	if err != nil {
+		return nil, err
+	}
+	if err := c.Start(); err != nil {
+		return nil, err
+	}
+	return c, nil
 }
