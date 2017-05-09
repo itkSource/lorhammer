@@ -55,19 +55,22 @@ integration:oneShot:
   <<: *integration
   variables:
     FROM_FILE: "./resources/scenarios/ci/ci-integration-oneShot.json"
-    DOCKER_HOST: tcp://docker:2375
+    DOCKER_HOST: "tcp://docker:2375"
+    COMPOSE_HTTP_TIMEOUT: "200"
 
 integration:ramp:
   <<: *integration
   variables:
     FROM_FILE: "./resources/scenarios/ci/ci-integration-ramp.json"
-    DOCKER_HOST: tcp://docker:2375
+    DOCKER_HOST: "tcp://docker:2375"
+    COMPOSE_HTTP_TIMEOUT: "200"
 
 integration:repeat:
   <<: *integration
   variables:
     FROM_FILE: "./resources/scenarios/ci/ci-integration-repeat.json"
-    DOCKER_HOST: tcp://docker:2375
+    DOCKER_HOST: "tcp://docker:2375"
+    COMPOSE_HTTP_TIMEOUT: "200"
 
 compile:all:
   stage: compile

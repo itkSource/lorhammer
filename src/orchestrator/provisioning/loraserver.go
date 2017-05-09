@@ -15,7 +15,7 @@ import (
 
 var LOG_LORASERVER = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
 
-const LoraserverType = Type("brocaar")
+const LoraserverType = Type("loraserver")
 
 type Loraserver struct {
 	ApiUrl              string `json:"apiUrl"`
@@ -77,10 +77,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 		OrganizationId: "1",
 	}
 
-	LOG_LORASERVER.WithFields(logrus.Fields{
-		"ref":     "orchestrator/brocaarProvisionner:provisionBrocaarApplicationServer()",
-		"appName": asApp.Name,
-	}).Info("Creating app in brocaar AS")
+	LOG_LORASERVER.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
 
 	marshalledApp, err := json.Marshal(asApp)
 	if err != nil {
@@ -103,9 +100,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 
 		for _, sensor := range gateway.Nodes {
 
-			LOG_LORASERVER.WithFields(logrus.Fields{
-				"name": "STRESSNODE" + strconv.Itoa(idNode),
-			}).Info("Registering sensor")
+			LOG_LORASERVER.WithField("name", "STRESSNODE"+strconv.Itoa(idNode)).Info("Registering sensor")
 
 			asnode := AsNode{
 				DevEUI:        sensor.DevEUI.String(),
