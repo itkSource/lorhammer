@@ -24,14 +24,13 @@ type Loraserver struct {
 	Nwskey              string `json:"nwskey"`
 	Login               string `json:"login"`
 	Password            string `json:"password"`
-	appId               string
+	AppId               string `json:"appId"`
 	cleanedProvisioning bool
 	JwtToKen            string
 }
 
 func NewLoraserver(rawConfig json.RawMessage) (provisioner, error) {
 	config := &Loraserver{
-		appId:               "",
 		cleanedProvisioning: false,
 	}
 	if err := json.Unmarshal(rawConfig, config); err != nil {
@@ -64,53 +63,57 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 	}
 	loraserver.JwtToKen = loginResp.Jwt
 
-	//TODO : create organization before the app for the test to be totally stateless
-	asApp := AsApp{
-		Name:           "stress-app",
-		Description:    "stress-app",
-		Rx1DROffset:    0,
-		Rx2DR:          0,
-		RxDelay:        0,
-		RxWindow:       "RX1",
-		IsABP:          loraserver.Abp,
-		AdrInterval:    0,
-		OrganizationId: "1",
-	}
+	if loraserver.AppId == "" {
+		//TODO : create organization before the app for the test to be totally stateless
+		asApp := AsApp{
+			Name:           "stress-app",
+			Description:    "stress-app",
+			Rx1DROffset:    0,
+			Rx2DR:          0,
+			RxDelay:        0,
+			RxWindow:       "RX1",
+			IsABP:          loraserver.Abp,
+			AdrInterval:    0,
+			OrganizationId: "1",
+		}
 
-	LOG_LORASERVER.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
+		LOG_LORASERVER.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
 
-	marshalledApp, err := json.Marshal(asApp)
-	if err != nil {
-		return err
-	}
+		marshalledApp, err := json.Marshal(asApp)
+		if err != nil {
+			return err
+		}
 
-	responseBody, err = doRequest(loraserver.ApiUrl+"/api/applications", "POST", marshalledApp, loraserver.JwtToKen)
-	if err != nil {
-		return err
+		responseBody, err = doRequest(loraserver.ApiUrl+"/api/applications", "POST", marshalledApp, loraserver.JwtToKen)
+		if err != nil {
+			return err
+		}
+		var creationResponse = new(CreationResponse)
+		err = json.Unmarshal(responseBody, &creationResponse)
+		if err != nil {
+			return err
+		}
+		loraserver.AppId = creationResponse.Id
 	}
-	var creationResponse = new(CreationResponse)
-	err = json.Unmarshal(responseBody, &creationResponse)
-	if err != nil {
-		return err
-	}
-	loraserver.appId = creationResponse.Id
 
 	idNode := 0
 	for _, gateway := range sensorsToRegister.Gateways {
 
 		for _, sensor := range gateway.Nodes {
-
-			LOG_LORASERVER.WithField("name", "STRESSNODE"+strconv.Itoa(idNode)).Info("Registering sensor")
-
 			asnode := AsNode{
 				DevEUI:        sensor.DevEUI.String(),
 				AppEUI:        sensor.AppEUI.String(),
 				AppKey:        sensor.AppKey.String(),
-				ApplicationID: creationResponse.Id,
+				ApplicationID: loraserver.AppId,
 				Description:   "stresstool node",
-				Name:          "STRESSNODE" + strconv.Itoa(idNode),
+				Name:          "STRESSNODE_" + sensor.DevEUI.String() + "_" + strconv.Itoa(idNode),
 				UseApplicationSettings: true,
 			}
+
+			LOG_LORASERVER.WithFields(logrus.Fields{
+				"name": asnode.Name,
+			}).Info("Registering sensor")
+
 			if marshalledNode, err := json.Marshal(asnode); err != nil {
 				return err
 			} else {
@@ -181,13 +184,13 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 
 func (loraserver *Loraserver) DeProvision() error {
 	if !loraserver.cleanedProvisioning {
-		if loraserver.ApiUrl != "" && loraserver.appId != "" {
-			if _, err := doRequest(loraserver.ApiUrl+"/api/applications/"+loraserver.appId, "DELETE", nil, loraserver.JwtToKen); err != nil {
+		if loraserver.ApiUrl != "" && loraserver.AppId != "" {
+			if _, err := doRequest(loraserver.ApiUrl+"/api/applications/"+loraserver.AppId, "DELETE", nil, loraserver.JwtToKen); err != nil {
 				return err
 			}
 			loraserver.cleanedProvisioning = true
 		} else {
-			return fmt.Errorf("ApiUrl (%s) and appId (%s) can not be empty", loraserver.ApiUrl, loraserver.appId)
+			return fmt.Errorf("ApiUrl (%s) and appId (%s) can not be empty", loraserver.ApiUrl, loraserver.AppId)
 		}
 	}
 	return nil
