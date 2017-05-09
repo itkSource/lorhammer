@@ -67,6 +67,10 @@ func newPrometheus(consulClient tools.Consul, rawConfig json.RawMessage) (Checke
 	}, nil
 }
 
+func (_ prometheusChecker) Start() error {
+	return nil
+}
+
 func (prom prometheusChecker) Check() ([]CheckerSuccess, []CheckerError) {
 	success := make([]CheckerSuccess, 0)
 	errs := make([]CheckerError, 0)

@@ -12,3 +12,4 @@ go get -u -v golang.org/x/sys/windows
 go get -u -v github.com/brocaar/lorawan
 go get -u -v github.com/aws/aws-sdk-go
 go get -u -v github.com/brocaar/lora-gateway-bridge/gateway/
+go get -u -v github.com/Shopify/sarama

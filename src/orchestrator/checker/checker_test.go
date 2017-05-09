@@ -1,6 +1,9 @@
 package checker
 
 import (
+	"encoding/json"
+	"errors"
+	"lorhammer/src/tools"
 	"testing"
 )
 
@@ -26,5 +29,38 @@ func TestGetNone(t *testing.T) {
 		t.Fatal("None checker should not return err")
 	} else if len(success) > 0 {
 		t.Fatal("None checker should not return success")
+	}
+}
+
+type other struct {
+	startError error
+}
+
+func (o other) Start() error                              { return o.startError }
+func (_ other) Check() ([]CheckerSuccess, []CheckerError) { return nil, nil }
+
+func TestOtherError(t *testing.T) {
+	checkers[Type("other")] = func(consulClient tools.Consul, config json.RawMessage) (Checker, error) {
+		return nil, errors.New("error")
+	}
+	check, err := Get(nil, Model{Type: "other"})
+	if err == nil {
+		t.Fatal("other type should return error")
+	}
+	if check != nil {
+		t.Fatal("other type should not return checker")
+	}
+}
+
+func TestOtherStartError(t *testing.T) {
+	checkers[Type("other")] = func(consulClient tools.Consul, config json.RawMessage) (Checker, error) {
+		return other{startError: errors.New("error")}, nil
+	}
+	check, err := Get(nil, Model{Type: "other"})
+	if err == nil {
+		t.Fatal("other type should return error on start")
+	}
+	if check != nil {
+		t.Fatal("other type should not return checker")
 	}
 }
