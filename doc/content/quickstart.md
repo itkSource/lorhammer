@@ -140,10 +140,21 @@ A scenario is an array of tests. A test is the description needed by the orchest
     }
   },
   "check": {
-    "type": "none | prometheus",
+    "type": "none | prometheus | kafka",
     "config": [
       {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"}
-    ]
+    ],
+    "config": {
+      "address": ["127.0.0.1:9092"],
+      "topic": "test",
+      "checks": [
+        {
+          "description": "MY_DATA",
+          "remove": "\"time\":[^,]+,",
+          "text": "DATA"
+        }
+      ]
+    }
   },
   "deploy": {
     "type": "local | distant | amazon",
@@ -361,12 +372,13 @@ Describes the check orchestrator must do at the end of scenario
 
 ### type 
 
-Type : **string/enum** : Can be `none` or `prometheus`
+Type : **string/enum** : Can be `none`, `prometheus` or `kafka`
 
 * `none` no check is required
 * `prometheus` call the api of prometheus and compare results
+* `kafka` listen kafka queue and check if messages are good
 
-### config 
+### prometheus config 
 
 Type : **array(object/struct)**
 
@@ -376,7 +388,18 @@ Allows to check, at the end of a test, if the results are good or not depending 
 * resultMin **int** : the result min you want (put min == max when you expect an exact value )
 * resultMax **int** : the result max you want (put min == max when you expect an exact value)
 * description **string** : the description logged if check fail
-    
+
+### kafka config 
+
+Type : **object/struct**
+
+* address **array(string)** : the kafka ip:port of brokers
+* topic **string** : the kafka topic to listen
+* checks **array(object)** : A logic `or` will be executed on each checks described bellow
+    * description **string** : the description logged if check fail
+    * remove **string** : A regexp to clean random data of the test (timestamp...)
+    * text **string** : The text to check
+
 ## deploy 
 
 Type : **object/struct**

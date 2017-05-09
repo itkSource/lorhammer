@@ -1,5 +1,9 @@
 # Changelog
 
+## [UNREALEASED]
+
+* Checker kafka : listen kafka queue and check message
+
 ## 2017-05-03 Version 0.1.0
 
 First version, lorhammer is intensively develop. **We do not care about api change.** Use lorhammer with caution.
