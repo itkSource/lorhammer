@@ -128,7 +128,7 @@ A scenario is an array of tests. A test is the description needed by the orchest
     "gatewaySleepTime": ["100ms", "500ms"]
   },
   "provisioning": {
-    "type": "none",
+    "type": "none | loraserver | semtechv4",
     "config": {
       "apiUrl": "127.0.0.1:9999"
     },
@@ -139,9 +139,12 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "ncAddress": "127.0.0.1:6000"
     }
   },
-  "prometheusCheck": [
-    {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"}
-  ],
+  "check": {
+    "type": "none | prometheus",
+    "config": [
+      {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"}
+    ]
+  },
   "deploy": {
     "type": "local | distant | amazon",
     "config": {
@@ -350,7 +353,20 @@ Type : **optional(string)**
 
 ip:port to contact semtechv4 netwrok-controller
 
-## prometheusCheck 
+## check 
+
+Type : **object/struct**
+
+Describes the check orchestrator must do at the end of scenario
+
+### type 
+
+Type : **string/enum** : Can be `none` or `prometheus`
+
+* `none` no check is required
+* `prometheus` call the api of prometheus and compare results
+
+### config 
 
 Type : **array(object/struct)**
 

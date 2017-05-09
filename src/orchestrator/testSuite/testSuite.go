@@ -13,24 +13,24 @@ import (
 
 // Describe a test to execute scenarios
 type TestSuite struct {
-	Uuid                     string                    `json:"uuid"`
-	Test                     testType.Test             `json:"test"`
-	StopAllLorhammerTime     time.Duration             `json:"stopAllLorhammerTime"`
-	ShutdownAllLorhammerTime time.Duration             `json:"shutdownAllLorhammerTime"`
-	Init                     model.Init                `json:"init"`
-	PrometheusCheck          []checker.PrometheusCheck `json:"prometheusCheck"`
-	Provisioning             provisioning.Model        `json:"provisioning"`
-	Deploy                   deploy.Model              `json:"deploy"`
+	Uuid                     string             `json:"uuid"`
+	Test                     testType.Test      `json:"test"`
+	StopAllLorhammerTime     time.Duration      `json:"stopAllLorhammerTime"`
+	ShutdownAllLorhammerTime time.Duration      `json:"shutdownAllLorhammerTime"`
+	Init                     model.Init         `json:"init"`
+	Check                    checker.Model      `json:"check"`
+	Provisioning             provisioning.Model `json:"provisioning"`
+	Deploy                   deploy.Model       `json:"deploy"`
 }
 
 type jsonTestSuite struct {
-	Test                     testType.Test             `json:"test"`
-	StopAllLorhammerTime     string                    `json:"stopAllLorhammerTime"`
-	ShutdownAllLorhammerTime string                    `json:"shutdownAllLorhammerTime"`
-	Init                     model.Init                `json:"init"`
-	PrometheusCheck          []checker.PrometheusCheck `json:"prometheusCheck"`
-	Provisioning             provisioning.Model        `json:"provisioning"`
-	Deploy                   deploy.Model              `json:"deploy"`
+	Test                     testType.Test      `json:"test"`
+	StopAllLorhammerTime     string             `json:"stopAllLorhammerTime"`
+	ShutdownAllLorhammerTime string             `json:"shutdownAllLorhammerTime"`
+	Init                     model.Init         `json:"init"`
+	Check                    checker.Model      `json:"check"`
+	Provisioning             provisioning.Model `json:"provisioning"`
+	Deploy                   deploy.Model       `json:"deploy"`
 }
 
 func FromFile(configFile []byte) ([]TestSuite, error) {
@@ -53,10 +53,10 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 			Test:                     test.Test,
 			StopAllLorhammerTime:     stopAllLorhammerTime,
 			ShutdownAllLorhammerTime: shutdownAllLorhammerTime,
-			Init:            test.Init,
-			PrometheusCheck: test.PrometheusCheck,
-			Provisioning:    test.Provisioning,
-			Deploy:          test.Deploy,
+			Init:         test.Init,
+			Check:        test.Check,
+			Provisioning: test.Provisioning,
+			Deploy:       test.Deploy,
 		}
 	}
 	return res, nil

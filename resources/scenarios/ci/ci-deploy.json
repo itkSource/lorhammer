@@ -10,7 +10,9 @@
   "provisioning": {
     "type": "none"
   },
-  "prometheusCheck": [],
+  "check": {
+    "type": "none"
+  },
   "deploy": {
     "type": "distant",
     "sleepAfterDeployTime": "0",

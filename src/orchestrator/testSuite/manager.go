@@ -5,7 +5,6 @@ import (
 	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/deploy"
-	"lorhammer/src/orchestrator/prometheus"
 	"lorhammer/src/orchestrator/provisioning"
 	"lorhammer/src/orchestrator/testType"
 	"lorhammer/src/tools"
@@ -15,7 +14,13 @@ import (
 
 var LOG = logrus.WithField("logger", "orchestrator/testSuite/test")
 
-func LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, test *TestSuite, prometheusApiClient prometheus.ApiClient, grafanaClient *tools.GrafanaClient) (*TestReport, error) {
+func LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, test *TestSuite, grafanaClient *tools.GrafanaClient) (*TestReport, error) {
+	check, err := checker.Get(consulClient, test.Check) //build checker here because no need to start test if checker is bad configured
+	if err != nil {
+		LOG.WithError(err).Error("Error to get checker")
+		return nil, err
+	}
+
 	if err := deploy.Start(test.Deploy, consulClient); err != nil {
 		LOG.WithError(err).Error("Error to deploy")
 		return nil, err
@@ -40,7 +45,7 @@ func LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, test *TestSuit
 
 	//wait until shutdown minus time we have already passed in stop (0 or negative value means no shutdown)
 	time.Sleep(test.ShutdownAllLorhammerTime - test.StopAllLorhammerTime)
-	success, errors := check(prometheusApiClient, test)
+	success, errors := checkResults(check)
 	if test.ShutdownAllLorhammerTime > 0 {
 		command.ShutdownLorhammers(mqttClient)
 
@@ -75,32 +80,21 @@ func LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, test *TestSuit
 	}, nil
 }
 
-func check(prometheusApiClient prometheus.ApiClient, test *TestSuite) ([]checker.PrometheusCheckOk, []checker.PrometheusCheckError) {
-	if len(test.PrometheusCheck) > 0 {
-		ok, errs := checker.Check(prometheusApiClient, test.PrometheusCheck)
-
-		if len(errs) > 0 {
-			LOG.WithField("nb", len(errs)).Error("Check results errors")
-			for _, err := range errs {
-				LOG.WithFields(logrus.Fields{
-					"query":  err.Query,
-					"reason": err.Reason,
-					"val":    err.Val,
-				}).Error("Check result error")
-			}
+func checkResults(check checker.Checker) ([]checker.CheckerSuccess, []checker.CheckerError) {
+	ok, errs := check.Check()
+	if len(errs) > 0 {
+		LOG.WithField("nb", len(errs)).Error("Check results errors")
+		for _, err := range errs {
+			LOG.WithFields(logrus.Fields(err.Details())).Error("Check result error")
 		}
-
-		if len(ok) > 0 {
-			LOG.WithField("nb", len(ok)).Info("Check results good")
-			for _, o := range ok {
-				LOG.WithFields(logrus.Fields{
-					"query": o.Query,
-					"val":   o.Val,
-				}).Info("Check result good")
-			}
-		}
-
-		return ok, errs
 	}
-	return make([]checker.PrometheusCheckOk, 0), make([]checker.PrometheusCheckError, 0)
+
+	if len(ok) > 0 {
+		LOG.WithField("nb", len(ok)).Info("Check results good")
+		for _, o := range ok {
+			LOG.WithFields(logrus.Fields(o.Details())).Info("Check result good")
+		}
+	}
+
+	return ok, errs
 }

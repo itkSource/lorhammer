@@ -205,3 +205,59 @@ func init() {
 ```
 
 We can image adding new deployer like [DigitalOcean](https://www.digitalocean.com/), [Kubernetes](https://kubernetes.io/) or [Swarm](https://docs.docker.com/engine/swarm/)...
+
+## Add a checker
+
+A checker is a way to verify that what have been sent by lorhammers have been correctly received by the IOT plateform. It aims to count the messages sent by lorhammers and check if result is equal to the expected value.
+Checkers also allow to test if platform has accepted x messages (and not only received them). Useful for continious integration, orchestrator will exit(1) if all checks don't pass.
+ 
+Today we have 2 kinds of checkers : 'none' for no checker and 'prometheus' to check number of messages sent againt the ones recieved by lorhammers .
+
+To add a checker you need to have a factory function that takes a config json.RawMessage and a consul client as parameters and returns an implementation of `Checker` interface : 
+
+```go
+type CheckerSuccess interface {
+	Details() map[string]interface{}
+}
+
+type CheckerError interface {
+	Details() map[string]interface{}
+}
+
+type Checker interface {
+	Check() ([]CheckerSuccess, []CheckerError)
+}
+```
+
+The 'none' implementation example :
+
+```go
+type none struct{}
+
+func newNone(_ tools.Consul, _ json.RawMessage) (Checker, error) {
+	return none{}, nil
+}
+
+func (_ none) Check() ([]CheckerSuccess, []CheckerError) {
+	return make([]CheckerSuccess, 0), make([]CheckerError, 0)
+}
+```
+
+A checker needs to have a type :
+
+```go
+const NoneType = Type("none")
+```
+
+A registration is needed for your implementation in the map hosted by `src/orchestrator/checker/checker.go` :
+
+```go
+var checkers = make(map[Type]func(consulClient tools.Consul, config json.RawMessage) (Checker, error))
+
+func init() {
+	checkers[NoneType] = newNone
+	checkers[PrometheusType] = newPrometheus
+}
+```
+
+We can imagine adding a file checker, if your application outputs processing on csv format, you will be abble to check if the csv is confirmed with the expected results. Execute it every time you push new code on your platform what enables you to have a continuous integration testing suite.

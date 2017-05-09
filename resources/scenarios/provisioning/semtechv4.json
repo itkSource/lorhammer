@@ -23,7 +23,9 @@
       "ncAddress": "127.0.0.1:6000"
     }
   },
-  "prometheusCheck": [],
+  "check": {
+    "type": "none"
+  },
   "deploy": {
     "type": "none"
   }

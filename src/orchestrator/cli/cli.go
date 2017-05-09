@@ -12,7 +12,7 @@ import (
 
 var LOG = logrus.WithField("logger", "orchestrator/cli/cli")
 
-func Start(mqttClient tools.Mqtt, consulClient tools.Consul, prometheusApiClient prometheus.ApiClient) {
+func Start(mqttClient tools.Mqtt, consulClient tools.Consul) {
 	scanner := bufio.NewScanner(os.Stdin)
 	LOG.Warn("What do you wan to do ?")
 	LOG.Warn("1 - stop all scenarios")
@@ -25,11 +25,11 @@ func Start(mqttClient tools.Mqtt, consulClient tools.Consul, prometheusApiClient
 	case "2":
 		command.ShutdownLorhammers(mqttClient)
 	case "3":
-		fetchAndDisplayNbLorhammer(prometheusApiClient)
+		fetchAndDisplayNbLorhammer(consulClient)
 	case "4":
 		cleanConsulServices(scanner, consulClient)
 	}
-	Start(mqttClient, consulClient, prometheusApiClient) // infinite recursion
+	Start(mqttClient, consulClient) // infinite recursion
 }
 
 func scanChoose(scanner *bufio.Scanner, chooses []string) string {
@@ -49,7 +49,11 @@ func scanChoose(scanner *bufio.Scanner, chooses []string) string {
 	}
 }
 
-func fetchAndDisplayNbLorhammer(prometheusApiClient prometheus.ApiClient) {
+func fetchAndDisplayNbLorhammer(consulClient tools.Consul) {
+	prometheusApiClient, err := prometheus.NewApiClient(consulClient)
+	if err != nil {
+		LOG.WithError(err).Error("Error while constructing new prometheus api client")
+	}
 	if nbLorhammer, err := prometheusApiClient.ExecQuery("count(lorhammer_durations_count)"); err != nil {
 		LOG.WithError(err).Error("Error while retreiving nb lorhammer")
 	} else {

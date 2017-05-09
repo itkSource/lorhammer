@@ -8,12 +8,12 @@ import (
 )
 
 type TestReport struct {
-	StartDate          time.Time                      `json:"startDate"`
-	EndDate            time.Time                      `json:"endDate"`
-	Input              *TestSuite                     `json:"input"`
-	ChecksSuccess      []checker.PrometheusCheckOk    `json:"checksSuccess"`
-	ChecksError        []checker.PrometheusCheckError `json:"checksError"`
-	GrafanaSnapshotUrl string                         `json:"grafanaSnapshotUrl"`
+	StartDate          time.Time                `json:"startDate"`
+	EndDate            time.Time                `json:"endDate"`
+	Input              *TestSuite               `json:"input"`
+	ChecksSuccess      []checker.CheckerSuccess `json:"checksSuccess"`
+	ChecksError        []checker.CheckerError   `json:"checksError"`
+	GrafanaSnapshotUrl string                   `json:"grafanaSnapshotUrl"`
 }
 
 func WriteFile(testReport *TestReport, pathReportFile string) error {

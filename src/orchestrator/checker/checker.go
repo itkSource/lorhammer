@@ -1,49 +1,40 @@
 package checker
 
 import (
-	"lorhammer/src/orchestrator/prometheus"
+	"encoding/json"
+	"fmt"
+	"lorhammer/src/tools"
 )
 
-type PrometheusCheck struct {
-	Description string  `json:"description"`
-	Query       string  `json:"query"`
-	ResultMin   float64 `json:"resultMin"`
-	ResultMax   float64 `json:"resultMax"`
+type Type string
+
+type Model struct {
+	Type   Type            `json:"type"`
+	Config json.RawMessage `json:"config"`
 }
 
-type PrometheusCheckOk struct {
-	Query PrometheusCheck
-	Val   float64
+type CheckerSuccess interface {
+	Details() map[string]interface{}
 }
 
-type PrometheusCheckError struct {
-	Query  PrometheusCheck
-	Val    float64
-	Reason string
+type CheckerError interface {
+	Details() map[string]interface{}
 }
 
-func Check(prometheusApiClient prometheus.ApiClient, checks []PrometheusCheck) ([]PrometheusCheckOk, []PrometheusCheckError) {
-	success := make([]PrometheusCheckOk, 0)
-	errs := make([]PrometheusCheckError, 0)
-	for _, query := range checks {
-		if val, err := prometheusApiClient.ExecQuery(query.Query); err != nil {
-			errs = append(errs, PrometheusCheckError{
-				Query:  query,
-				Val:    val,
-				Reason: "Query to prometheus failed",
-			})
-		} else if val < query.ResultMin || val > query.ResultMax {
-			errs = append(errs, PrometheusCheckError{
-				Query:  query,
-				Val:    val,
-				Reason: "Result mismatch",
-			})
-		} else {
-			success = append(success, PrometheusCheckOk{
-				Query: query,
-				Val:   val,
-			})
-		}
+type Checker interface {
+	Check() ([]CheckerSuccess, []CheckerError)
+}
+
+var checkers = make(map[Type]func(consulClient tools.Consul, config json.RawMessage) (Checker, error))
+
+func init() {
+	checkers[NoneType] = newNone
+	checkers[PrometheusType] = newPrometheus
+}
+
+func Get(consulClient tools.Consul, checker Model) (Checker, error) {
+	if checkers[checker.Type] == nil {
+		return nil, fmt.Errorf("Unknown checker type %s", checker.Type)
 	}
-	return success, errs
+	return checkers[checker.Type](consulClient, checker.Config)
 }

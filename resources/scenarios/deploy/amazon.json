@@ -16,7 +16,9 @@
   "provisioning": {
     "type": "none"
   },
-  "prometheusCheck": [],
+  "check": {
+    "type": "none"
+  },
   "deploy": {
     "type": "amazon",
     "sleepAfterDeployTime": "20s",
