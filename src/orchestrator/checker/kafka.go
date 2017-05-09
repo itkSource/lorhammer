@@ -102,14 +102,14 @@ func (k *kafka) handleMessage(kafkaConsumer sarama.Consumer, pc sarama.Partition
 				_LOG_KAFKA.Warn(s)
 				if s == check.Text {
 					atLeastMatch = true
-					// k.success = append(k.success, kafkaSuccess{check: check})
+					k.success = append(k.success, kafkaSuccess{check: check})
 					_LOG_KAFKA.WithField("description", check.Description).Info("Success")
 					break
 				}
 			}
 			if !atLeastMatch {
 				_LOG_KAFKA.Error("Result mismatch")
-				// k.err = append(k.err, kafkaError{reason: "Result mismatch", value: string(message.Value)})
+				k.err = append(k.err, kafkaError{reason: "Result mismatch", value: string(message.Value)})
 			}
 		case <-k.poison:
 			quit = true
