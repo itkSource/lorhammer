@@ -8,7 +8,6 @@ import (
 	"lorhammer/src/orchestrator/provisioning"
 	"lorhammer/src/orchestrator/testType"
 	"lorhammer/src/tools"
-	"os"
 	"time"
 )
 
@@ -36,28 +35,26 @@ func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mq
 	time.Sleep(test.StopAllLorhammerTime)
 	if test.StopAllLorhammerTime > 0 {
 		command.StopScenario(mqttClient)
+	}
 
+	//wait until shutdown minus time we have already passed in stop (0 or negative value means no shutdown)
+	time.Sleep(test.ShutdownAllLorhammerTime - test.StopAllLorhammerTime)
+	success, errors := checkResults(check)
+
+	if test.StopAllLorhammerTime > 0 || test.ShutdownAllLorhammerTime > 0 {
 		if err := provisioning.DeProvision(test.Uuid); err != nil {
 			LOG.WithError(err).Error("Couldn't unprovision")
 			return nil, err
 		}
 	}
 
-	//wait until shutdown minus time we have already passed in stop (0 or negative value means no shutdown)
-	time.Sleep(test.ShutdownAllLorhammerTime - test.StopAllLorhammerTime)
-	success, errors := checkResults(check)
 	if test.ShutdownAllLorhammerTime > 0 {
 		command.ShutdownLorhammers(mqttClient)
-
-		if err := provisioning.DeProvision(test.Uuid); err != nil {
-			LOG.WithError(err).Error("Couldn't unprovision")
-			return nil, err
-		}
 
 		go func() {
 			//TODO add boolean in scenario to choose if we want kill also orchestrator (needed for ci)
 			time.Sleep(100 * time.Millisecond)
-			os.Exit(len(errors))
+			test.exiter(len(errors))
 		}()
 	}
 	endDate := time.Now()

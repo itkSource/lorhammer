@@ -8,6 +8,7 @@ import (
 	"lorhammer/src/orchestrator/deploy"
 	"lorhammer/src/orchestrator/provisioning"
 	"lorhammer/src/orchestrator/testType"
+	"os"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type TestSuite struct {
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
 	Deploy                   deploy.Model       `json:"deploy"`
+	exiter                   func(code int)
 }
 
 type jsonTestSuite struct {
@@ -64,6 +66,7 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 			Check:                    test.Check,
 			Provisioning:             test.Provisioning,
 			Deploy:                   test.Deploy,
+			exiter:                   os.Exit,
 		}
 	}
 	return res, nil
