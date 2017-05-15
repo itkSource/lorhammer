@@ -120,6 +120,7 @@ A scenario is an array of tests. A test is the description needed by the orchest
   },
   "stopAllLorhammerTime": "0",
   "shutdownAllLorhammerTime": "10m",
+  "sleepAtEndTime": "0",
   "init": {
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 10,
@@ -235,6 +236,12 @@ When this period is over, the  orchestrator stops all scenarios running on lorha
 Type : **string/duration**
 
 When this period is over, the orchestrator shuts down all lorhammer instances, 0 for all instances to be running for an undetermined period of time
+
+## sleepAtEndTime
+
+Type : **string/duration**
+
+After the current test (including time to stress, stop and shutdown), this duration will be used to sleep orchestrator. Useful to make a pause between tests.
 
 ## init 
 
