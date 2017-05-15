@@ -116,6 +116,19 @@ var testsLaunch = []testLaunch{
 		check:            `{"type": "prometheus", "config": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"}]}`,
 		deploy:           `{"type": "none"}`,
 	},
+	{
+		testValid:        false,
+		description:      "Fake checker should return error",
+		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
+		stopAll:          "0",
+		shutdownAll:      "0",
+		sleep:            "0",
+		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		provisioning:     `{"type": "none"}`,
+		needProvisioning: false,
+		check:            `{"type": "fake"}`,
+		deploy:           `{"type": "none"}`,
+	},
 }
 
 var templateLaunch = `[{"test": %s,"rampTime": "%s","repeatTime": "%s","stopAllLorhammerTime": "%s","shutdownAllLorhammerTime": "%s","sleepAtEndTime": "%s","init": %s,"provisioning": %s,"check": %s, "deploy": %s}]`
@@ -134,7 +147,7 @@ func TestLaunchTest(t *testing.T) {
 		if test.needProvisioning {
 			provisioning.Provision(tests[0].Uuid, tests[0].Provisioning, model.Register{})
 		}
-		report, err := LaunchTest(fakeConsul{}, &fakeMqtt{}, &tests[0], nil)
+		report, err := tests[0].LaunchTest(fakeConsul{}, &fakeMqtt{}, nil)
 		if ct.testValid && err != nil {
 			t.Fatal("valid test should not throw err")
 		} else if ct.testValid && report == nil {

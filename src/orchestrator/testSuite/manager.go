@@ -14,7 +14,7 @@ import (
 
 var LOG = logrus.WithField("logger", "orchestrator/testSuite/test")
 
-func LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, test *TestSuite, grafanaClient *tools.GrafanaClient) (*TestReport, error) {
+func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, grafanaClient tools.GrafanaClient) (*TestReport, error) {
 	check, err := checker.Get(consulClient, test.Check) //build checker here because no need to start test if checker is bad configured
 	if err != nil {
 		LOG.WithError(err).Error("Error to get checker")
