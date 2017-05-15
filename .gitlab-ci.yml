@@ -83,6 +83,19 @@ compile:all:
       - build
     expire_in: 1 week
 
+compile:docker:
+  stage: compile
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer docker/lorhammer/.
+    - docker push registry.gitlab.com/itk.fr/lorhammer/lorhammer
+  only:
+    - master@itk.fr/lorhammer
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+
 compile:tag:
   stage: compile
   script:
