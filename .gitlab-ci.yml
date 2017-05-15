@@ -1,7 +1,7 @@
 image: registry.gitlab.com/itk.fr/lorhammer/build
 
 before_script:
-    - ln -s /builds/itk.fr/lorhammer /go/src/lorhammer
+    - ln -s /builds/$CI_PROJECT_PATH /go/src/lorhammer
     - cd /go/src/lorhammer
     - sh install.sh
 
