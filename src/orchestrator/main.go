@@ -97,8 +97,7 @@ func main() {
 			} else if err := testSuite.WriteFile(testReport, *reportFile); err != nil {
 				LOG.WithError(err).Error("Can't report test")
 			}
-			// TODO add in scenario file
-			time.Sleep(1 * time.Minute)
+			time.Sleep(test.SleepAtEndTime)
 		}
 	}
 	if *startCli {
