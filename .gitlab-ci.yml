@@ -54,21 +54,21 @@ test:coverage:
 integration:oneShot:
   <<: *integration
   variables:
-    FROM_FILE: "./resources/scenarios/ci/ci-integration-oneShot.json"
+    FROM_FILE: "/resources/scenarios/ci/ci-integration-oneShot.json"
     DOCKER_HOST: "tcp://docker:2375"
     COMPOSE_HTTP_TIMEOUT: "200"
 
 integration:ramp:
   <<: *integration
   variables:
-    FROM_FILE: "./resources/scenarios/ci/ci-integration-ramp.json"
+    FROM_FILE: "/resources/scenarios/ci/ci-integration-ramp.json"
     DOCKER_HOST: "tcp://docker:2375"
     COMPOSE_HTTP_TIMEOUT: "200"
 
 integration:repeat:
   <<: *integration
   variables:
-    FROM_FILE: "./resources/scenarios/ci/ci-integration-repeat.json"
+    FROM_FILE: "/resources/scenarios/ci/ci-integration-repeat.json"
     DOCKER_HOST: "tcp://docker:2375"
     COMPOSE_HTTP_TIMEOUT: "200"
 
@@ -89,7 +89,7 @@ compile:docker:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer docker/lorhammer/.
+    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile .
     - docker push registry.gitlab.com/itk.fr/lorhammer/lorhammer
   only:
     - master@itk.fr/lorhammer
