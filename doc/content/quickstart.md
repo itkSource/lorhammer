@@ -241,7 +241,7 @@ When this period is over, the orchestrator shuts down all lorhammer instances, 0
 
 Type : **string/duration**
 
-After the current test (including time to stress, stop and shutdown), this duration will be used to sleep orchestrator. Useful to make a pause between tests.
+After the current test (including time to stress, stop and shutdown), this duration will be used to make the orchestrator sleep. Could be Useful to make a pause between tests.
 
 ## init 
 
