@@ -22,7 +22,7 @@ func (f fakeConsul) ServiceFirst(name string, prefix string) (string, error) {
 func (_ fakeConsul) DeRegister(string) error               { return nil }
 func (_ fakeConsul) AllServices() ([]ConsulService, error) { return nil, nil }
 
-func newGrafana(t *testing.T, bodyGet string, errorGet error, bodyPost string, errorPost error) *GrafanaClient {
+func newGrafana(t *testing.T, bodyGet string, errorGet error, bodyPost string, errorPost error) *grafanaClientImpl {
 	g, err := NewGrafana(fakeConsul{})
 	if err != nil {
 		t.Fatal("Good grafana config should not throw err")
@@ -30,16 +30,16 @@ func newGrafana(t *testing.T, bodyGet string, errorGet error, bodyPost string, e
 	if g == nil {
 		t.Fatal("Good grafana config should return grafana client")
 	}
-	if g.url != "grafanaUrl" {
+	if g.(*grafanaClientImpl).url != "grafanaUrl" {
 		t.Fatal("Grafana client should retain url")
 	}
-	g.httpGetter = func(url string) (resp *http.Response, err error) {
+	g.(*grafanaClientImpl).httpGetter = func(url string) (resp *http.Response, err error) {
 		return &http.Response{Body: ioutil.NopCloser(bytes.NewReader([]byte(bodyGet)))}, errorGet
 	}
-	g.httpPoster = func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
+	g.(*grafanaClientImpl).httpPoster = func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
 		return &http.Response{Body: ioutil.NopCloser(bytes.NewReader([]byte(bodyPost)))}, errorPost
 	}
-	return g
+	return g.(*grafanaClientImpl)
 }
 
 func TestNewGrafana(t *testing.T) {

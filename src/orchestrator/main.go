@@ -91,14 +91,13 @@ func main() {
 		}
 		for _, test := range tests {
 			currentTestSuite = test
-			testReport, err := testSuite.LaunchTest(consulClient, mqttClient, &test, grafanaClient)
+			testReport, err := test.LaunchTest(consulClient, mqttClient, grafanaClient)
 			if err != nil {
 				LOG.WithError(err).Error("Error during test")
 			} else if err := testSuite.WriteFile(testReport, *reportFile); err != nil {
 				LOG.WithError(err).Error("Can't report test")
 			}
-			// TODO add in scenario file
-			time.Sleep(1 * time.Minute)
+			time.Sleep(test.SleepAtEndTime)
 		}
 	}
 	if *startCli {

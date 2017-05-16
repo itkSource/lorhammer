@@ -1,11 +1,13 @@
 package testSuite
 
 import (
+	"errors"
 	"fmt"
 	"lorhammer/src/model"
 	"lorhammer/src/orchestrator/provisioning"
 	"lorhammer/src/tools"
 	"testing"
+	"time"
 )
 
 type testLaunch struct {
@@ -16,11 +18,13 @@ type testLaunch struct {
 	repeatTime       string
 	stopAll          string
 	shutdownAll      string
+	sleep            string
 	init             string
 	provisioning     string
 	needProvisioning bool
 	check            string
 	deploy           string
+	grafana          tools.GrafanaClient
 }
 
 var testsLaunch = []testLaunch{
@@ -30,11 +34,13 @@ var testsLaunch = []testLaunch{
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
 		shutdownAll:      "0",
+		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
+		grafana:          nil,
 	},
 	{
 		testValid:        false,
@@ -42,11 +48,13 @@ var testsLaunch = []testLaunch{
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
 		shutdownAll:      "0",
+		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "fake"}`,
+		grafana:          nil,
 	},
 	{
 		testValid:        false,
@@ -54,11 +62,13 @@ var testsLaunch = []testLaunch{
 		test:             `{"type": "fake", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
 		shutdownAll:      "0",
+		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
+		grafana:          nil,
 	},
 	{
 		testValid:        true,
@@ -66,11 +76,13 @@ var testsLaunch = []testLaunch{
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "1ms",
 		shutdownAll:      "0",
+		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
+		grafana:          nil,
 	},
 	{
 		testValid:        false,
@@ -78,11 +90,13 @@ var testsLaunch = []testLaunch{
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "1ms",
 		shutdownAll:      "0",
+		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
+		grafana:          nil,
 	},
 	{
 		testValid:        true,
@@ -90,11 +104,13 @@ var testsLaunch = []testLaunch{
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
 		shutdownAll:      "0",
+		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
 		check:            `{"type": "prometheus", "config": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb messages"}]}`,
 		deploy:           `{"type": "none"}`,
+		grafana:          nil,
 	},
 	{
 		testValid:        true,
@@ -102,20 +118,50 @@ var testsLaunch = []testLaunch{
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
 		shutdownAll:      "0",
+		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
 		check:            `{"type": "prometheus", "config": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"}]}`,
 		deploy:           `{"type": "none"}`,
+		grafana:          nil,
+	},
+	{
+		testValid:        false,
+		description:      "Fake checker should return error",
+		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
+		stopAll:          "0",
+		shutdownAll:      "0",
+		sleep:            "0",
+		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		provisioning:     `{"type": "none"}`,
+		needProvisioning: false,
+		check:            `{"type": "fake"}`,
+		deploy:           `{"type": "none"}`,
+		grafana:          nil,
+	},
+	{
+		testValid:        true,
+		description:      "Grafana error should not be reported",
+		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
+		stopAll:          "0",
+		shutdownAll:      "1ms",
+		sleep:            "0",
+		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		provisioning:     `{"type": "none"}`,
+		needProvisioning: true,
+		check:            `{"type": "none"}`,
+		deploy:           `{"type": "none"}`,
+		grafana:          fakeGrafana{err: errors.New("error grafana")},
 	},
 }
 
-var templateLaunch = `[{"test": %s,"rampTime": "%s","repeatTime": "%s","stopAllLorhammerTime": "%s","shutdownAllLorhammerTime": "%s","init": %s,"provisioning": %s,"check": %s, "deploy": %s}]`
+var templateLaunch = `[{"test": %s,"rampTime": "%s","repeatTime": "%s","stopAllLorhammerTime": "%s","shutdownAllLorhammerTime": "%s","sleepAtEndTime": "%s","init": %s,"provisioning": %s,"check": %s, "deploy": %s}]`
 
 func TestLaunchTest(t *testing.T) {
 	for _, test := range testsLaunch {
 		var ct = test
-		data := []byte(fmt.Sprintf(templateLaunch, ct.test, ct.rampTime, ct.repeatTime, ct.stopAll, ct.shutdownAll, ct.init, ct.provisioning, ct.check, ct.deploy))
+		data := []byte(fmt.Sprintf(templateLaunch, ct.test, ct.rampTime, ct.repeatTime, ct.stopAll, ct.shutdownAll, ct.sleep, ct.init, ct.provisioning, ct.check, ct.deploy))
 		tests, err := FromFile(data)
 		if err != nil {
 			t.Fatalf(`valid scenario should not return err %s for : "%s"`, err, ct.description)
@@ -126,15 +172,16 @@ func TestLaunchTest(t *testing.T) {
 		if test.needProvisioning {
 			provisioning.Provision(tests[0].Uuid, tests[0].Provisioning, model.Register{})
 		}
-		report, err := LaunchTest(fakeConsul{}, &fakeMqtt{}, &tests[0], nil)
+		tests[0].exiter = func(code int) {}
+		report, err := tests[0].LaunchTest(fakeConsul{}, &fakeMqtt{}, ct.grafana)
 		if ct.testValid && err != nil {
-			t.Fatal("valid test should not throw err")
+			t.Fatalf("valid test should not throw err %s", ct.description)
 		} else if ct.testValid && report == nil {
-			t.Fatal("valid test should return report")
+			t.Fatalf("valid test should return report %s", ct.description)
 		} else if !ct.testValid && err == nil {
-			t.Fatal("not valid test should throw err")
+			t.Fatalf("not valid test should throw err %s", ct.description)
 		} else if !ct.testValid && report != nil {
-			t.Fatal("not valid test should not return report")
+			t.Fatalf("not valid test should not return report %s", ct.description)
 		}
 
 	}
@@ -161,3 +208,11 @@ func (f fakeConsul) ServiceFirst(name string, prefix string) (string, error) {
 }
 func (_ fakeConsul) DeRegister(string) error                     { return nil }
 func (_ fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }
+
+type fakeGrafana struct {
+	err error
+}
+
+func (g fakeGrafana) MakeSnapshot(startTime time.Time, endTime time.Time) (string, error) {
+	return "", g.err
+}

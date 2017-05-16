@@ -21,7 +21,11 @@ const (
 
 var LOG_GRAFANA = logrus.WithField("logger", "tools/grafana")
 
-type GrafanaClient struct {
+type GrafanaClient interface {
+	MakeSnapshot(startTime time.Time, endTime time.Time) (string, error)
+}
+
+type grafanaClientImpl struct {
 	url        string
 	httpGetter func(url string) (resp *http.Response, err error)
 	httpPoster func(url string, contentType string, body io.Reader) (resp *http.Response, err error)
@@ -40,19 +44,19 @@ type snapshot struct {
 	Url       string `json:"url"`
 }
 
-func NewGrafana(consulClient Consul) (*GrafanaClient, error) {
+func NewGrafana(consulClient Consul) (GrafanaClient, error) {
 	address, err := consulClient.ServiceFirst(_GRAFANA_CONSUL_SERVICE, "http://")
 	if err != nil {
 		return nil, err
 	}
-	return &GrafanaClient{
+	return &grafanaClientImpl{
 		url:        address,
 		httpGetter: http.Get,
 		httpPoster: http.Post,
 	}, nil
 }
 
-func (grafana *GrafanaClient) MakeSnapshot(startTime time.Time, endTime time.Time) (string, error) {
+func (grafana *grafanaClientImpl) MakeSnapshot(startTime time.Time, endTime time.Time) (string, error) {
 	dashboard, err := grafana.getDashboard(_GRAFANA_DASHBOARD_NAME, startTime, endTime)
 	if err != nil {
 		return "", err
@@ -83,7 +87,7 @@ func (grafana *GrafanaClient) MakeSnapshot(startTime time.Time, endTime time.Tim
 	return urlSnapshot, nil
 }
 
-func (grafana *GrafanaClient) getDashboard(name string, startTime time.Time, endTime time.Time) (json.RawMessage, error) {
+func (grafana *grafanaClientImpl) getDashboard(name string, startTime time.Time, endTime time.Time) (json.RawMessage, error) {
 	res, err := grafana.httpGetter(grafana.url + _GRAFANA_URL_API_DASHBOARD + name)
 	if err != nil {
 		return nil, err

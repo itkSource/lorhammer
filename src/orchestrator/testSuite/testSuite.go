@@ -8,6 +8,7 @@ import (
 	"lorhammer/src/orchestrator/deploy"
 	"lorhammer/src/orchestrator/provisioning"
 	"lorhammer/src/orchestrator/testType"
+	"os"
 	"time"
 )
 
@@ -17,16 +18,19 @@ type TestSuite struct {
 	Test                     testType.Test      `json:"test"`
 	StopAllLorhammerTime     time.Duration      `json:"stopAllLorhammerTime"`
 	ShutdownAllLorhammerTime time.Duration      `json:"shutdownAllLorhammerTime"`
+	SleepAtEndTime           time.Duration      `json:"sleepAtEndTime"`
 	Init                     model.Init         `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
 	Deploy                   deploy.Model       `json:"deploy"`
+	exiter                   func(code int)
 }
 
 type jsonTestSuite struct {
 	Test                     testType.Test      `json:"test"`
 	StopAllLorhammerTime     string             `json:"stopAllLorhammerTime"`
 	ShutdownAllLorhammerTime string             `json:"shutdownAllLorhammerTime"`
+	SleepAtEndTime           string             `json:"sleepAtEndTime"`
 	Init                     model.Init         `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
@@ -48,15 +52,21 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 		if err != nil {
 			return nil, err
 		}
+		sleepAtEndTime, err := time.ParseDuration(test.SleepAtEndTime)
+		if err != nil {
+			return nil, err
+		}
 		res[i] = TestSuite{
 			Uuid:                     uuid.New().String(),
 			Test:                     test.Test,
 			StopAllLorhammerTime:     stopAllLorhammerTime,
 			ShutdownAllLorhammerTime: shutdownAllLorhammerTime,
-			Init:         test.Init,
-			Check:        test.Check,
-			Provisioning: test.Provisioning,
-			Deploy:       test.Deploy,
+			SleepAtEndTime:           sleepAtEndTime,
+			Init:                     test.Init,
+			Check:                    test.Check,
+			Provisioning:             test.Provisioning,
+			Deploy:                   test.Deploy,
+			exiter:                   os.Exit,
 		}
 	}
 	return res, nil

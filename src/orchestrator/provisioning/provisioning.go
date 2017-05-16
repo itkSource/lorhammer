@@ -46,8 +46,6 @@ func Provision(uuid string, provisioning Model, sensorsToRegister model.Register
 }
 
 func DeProvision(uuid string) error {
-	//TODO this function is called twice (at stopTime and shutdownTime), the second time the instance
-	//is not there anymore so the error is logged. need to be fixed
 	if instance, ok := instances.Pop(uuid); ok {
 		return instance.(provisioner).DeProvision()
 	}

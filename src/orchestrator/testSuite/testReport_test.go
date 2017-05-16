@@ -64,3 +64,25 @@ func TestMultipleEntry(t *testing.T) {
 		t.Fatal("Bad formatted report")
 	}
 }
+
+func TestNilData(t *testing.T) {
+	err := WriteFile(nil, "/")
+	if err == nil {
+		t.Fatal("Nil report should throw an error")
+	}
+}
+
+func TestNotAuthorizedFilepath(t *testing.T) {
+	err := WriteFile(&TestReport{
+		StartDate:          time.Now(),
+		EndDate:            time.Now().Add(1 * time.Minute),
+		Input:              nil,
+		ChecksSuccess:      nil,
+		ChecksError:        nil,
+		GrafanaSnapshotUrl: "",
+	}, "/")
+
+	if err == nil {
+		t.Fatal("/ filepath can't be written, WriteFile should return an error")
+	}
+}

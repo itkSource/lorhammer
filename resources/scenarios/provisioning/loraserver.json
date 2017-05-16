@@ -6,6 +6,7 @@
   },
   "stopAllLorhammerTime": "20s",
   "shutdownAllLorhammerTime": "21s",
+  "sleepAtEndTime": "0",
   "init": {
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 1,
