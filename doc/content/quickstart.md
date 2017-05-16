@@ -151,7 +151,7 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "checks": [
         {
           "description": "MY_DATA",
-          "remove": "\"time\":[^,]+,",
+          "remove": ["\"time\":[^,]+,","\"applicationID\":[^,]+,"],
           "text": "DATA"
         }
       ]
@@ -241,7 +241,7 @@ When this period is over, the orchestrator shuts down all lorhammer instances, 0
 
 Type : **string/duration**
 
-After the current test (including time to stress, stop and shutdown), this duration will be used to sleep orchestrator. Useful to make a pause between tests.
+After the current test (including time to stress, stop and shutdown), this duration will be used to make the orchestrator sleep. Could be Useful to make a pause between tests.
 
 ## init 
 
@@ -404,7 +404,7 @@ Type : **object/struct**
 * topic **string** : the kafka topic to listen
 * checks **array(object)** : A logic `or` will be executed on each checks described bellow
     * description **string** : the description logged if check fail
-    * remove **string** : A regexp to clean random data of the test (timestamp...)
+    * remove **array(string)** : An array of regexp to clean random/dynamic data produced by the test (timestamp...)
     * text **string** : The text to check
 
 ## deploy 
