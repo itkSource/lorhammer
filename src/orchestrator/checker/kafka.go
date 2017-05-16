@@ -50,7 +50,7 @@ type kafkaConfig struct {
 
 type kafkaCheck struct {
 	Description string `json:"description"`
-	Remove      string `json:"remove"`
+	Remove      []string `json:"remove"`
 	Text        string `json:"text"`
 }
 
@@ -97,8 +97,14 @@ func (k *kafka) handleMessage(kafkaConsumer sarama.Consumer, pc sarama.Partition
 		case message := <-pc.Messages():
 			atLeastMatch := false
 			for _, check := range k.config.Checks {
-				var re = regexp.MustCompile(check.Remove)
-				s := re.ReplaceAllString(string(message.Value), ``)
+
+				/**Here we strip the value to check from all the dynamically produced values (applicationID, devEUI...)
+				These values are specified in the remove field through the json scenario in the kafka check section **/
+				var s = string(message.Value)
+				for _, dynamicValueToRemove := range check.Remove {
+					var re = regexp.MustCompile(dynamicValueToRemove)
+					s = re.ReplaceAllLiteralString(s, ``)
+				}
 				_LOG_KAFKA.Warn(s)
 				if s == check.Text {
 					atLeastMatch = true
