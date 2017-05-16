@@ -1,5 +1,11 @@
-FROM debian:jessie
+FROM golang:1.8
 
-ADD build/ /
+ADD ./ $GOPATH/src/lorhammer/
 
-ENTRYPOINT ["/orchestrator"]
+WORKDIR $GOPATH/src/lorhammer/
+
+RUN sh install.sh
+RUN sh build.sh && \
+    ln -s $GOPATH/src/lorhammer/build/* /bin && \
+    cp -r $GOPATH/src/lorhammer/resources /bin
+
