@@ -34,6 +34,15 @@ test:coverage:
     script:
         - ./resources/scripts/cover.sh -terminal
 
+test:docker:
+  stage: test
+  services:
+    - docker:dind
+  script:
+    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile .
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+
 .integration: &integration
   stage: integration
   services:
@@ -89,7 +98,7 @@ compile:docker:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer docker/lorhammer/.
+    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile .
     - docker push registry.gitlab.com/itk.fr/lorhammer/lorhammer
   only:
     - master@itk.fr/lorhammer
