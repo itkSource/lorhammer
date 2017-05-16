@@ -182,10 +182,10 @@ func TestKafka_CheckBadNoMessage(t *testing.T) {
 	}
 }
 
-func TestKafka_RemoveDynamicValues(t *testing.T){
+func TestKafka_RemoveDynamicValues(t *testing.T) {
 	k, _ := newKafka(nil,
-				json.RawMessage(
-					[]byte(`{
+		json.RawMessage(
+			[]byte(`{
 							"address": ["127.0.0.1:9092"],
 							"topic": "test",
 							"checks": [{
@@ -241,8 +241,3 @@ func TestKafka_CheckSimpleRemovalOfDynamicValues(t *testing.T) {
 		t.Fatal("Good check should return 0 error")
 	}
 }
-
-
-
-
-

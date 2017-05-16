@@ -49,9 +49,9 @@ type kafkaConfig struct {
 }
 
 type kafkaCheck struct {
-	Description string `json:"description"`
+	Description string   `json:"description"`
 	Remove      []string `json:"remove"`
-	Text        string `json:"text"`
+	Text        string   `json:"text"`
 }
 
 func newKafka(_ tools.Consul, rawConfig json.RawMessage) (Checker, error) {
