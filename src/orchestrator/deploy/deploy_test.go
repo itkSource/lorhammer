@@ -94,9 +94,7 @@ func TestOther(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	hasBeenCalled := false
 	other := func(_ json.RawMessage, _ tools.Consul) (Deployer, error) {
-		hasBeenCalled = true
 		return otherDeploy{}, nil
 	}
 
@@ -115,9 +113,7 @@ func TestOtherErr(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	hasBeenCalled := false
 	other := func(_ json.RawMessage, _ tools.Consul) (Deployer, error) {
-		hasBeenCalled = true
 		return nil, errors.New("error creating func")
 	}
 
@@ -136,9 +132,7 @@ func TestOtherErrBefore(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	hasBeenCalled := false
 	other := func(_ json.RawMessage, _ tools.Consul) (Deployer, error) {
-		hasBeenCalled = true
 		return otherDeploy{errBefore: errors.New("before")}, nil
 	}
 
@@ -157,9 +151,7 @@ func TestOtherErrDeploy(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	hasBeenCalled := false
 	other := func(_ json.RawMessage, _ tools.Consul) (Deployer, error) {
-		hasBeenCalled = true
 		return otherDeploy{errDeploy: errors.New("deploy")}, nil
 	}
 
@@ -178,9 +170,7 @@ func TestOtherErrAfter(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	hasBeenCalled := false
 	other := func(_ json.RawMessage, _ tools.Consul) (Deployer, error) {
-		hasBeenCalled = true
 		return otherDeploy{errAfter: errors.New("after")}, nil
 	}
 
