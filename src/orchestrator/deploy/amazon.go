@@ -42,8 +42,7 @@ func NewAmazonFromJson(serialized json.RawMessage, consulClient tools.Consul) (D
 		return nil, err
 	}
 
-	ec2Client := ec2.New(s)
-	client.ec2Client = ec2Client
+	client.ec2Client = ec2.New(s)
 	if client.distantDeployer, err = newDistantImpl(client.DistantConfig); err != nil {
 		return nil, err
 	}
