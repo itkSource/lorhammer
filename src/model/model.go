@@ -1,11 +1,14 @@
 package model
 
-import "github.com/brocaar/lorawan"
+import (
+	"github.com/brocaar/lorawan"
+)
 
 type Gateway struct {
 	Nodes      []*Node
 	NsAddress  string
 	MacAddress lorawan.EUI64
+	RxpkDate   int64
 }
 
 type Node struct {

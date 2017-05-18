@@ -19,6 +19,7 @@ type Init struct {
 	Nwskey            string    `json:"nwskey"`
 	WithJoin          bool      `json:"withJoin"`
 	Payloads          []string  `json:"payloads"`
+	RxpkDate          int64     `json:"rxpkDate"`
 }
 
 type Register struct {

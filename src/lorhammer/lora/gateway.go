@@ -13,10 +13,13 @@ import (
 
 var LOG_GATEWAY = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/gateway"})
 
-func NewGateway(nbNode int, nsAddress string, appskey string, nwskey string, payloads []string) *model.Gateway {
+func NewGateway(nbNode int, nsAddress string, appskey string, nwskey string, payloads []string, rxpkDate int64) *model.Gateway {
 	gateway := &model.Gateway{
 		NsAddress:  nsAddress,
 		MacAddress: RandomEUI(),
+	}
+	if rxpkDate > 0 {
+		gateway.RxpkDate = rxpkDate
 	}
 	for i := 0; i < nbNode; i++ {
 		gateway.Nodes = append(gateway.Nodes, NewNode(nwskey, appskey, payloads))
@@ -121,7 +124,7 @@ func sendJoinRequestPackets(gateway *model.Gateway, Conn net.Conn) {
 	rxpk := make([]loraserver_structs.RXPK, 1)
 	for _, node := range gateway.Nodes {
 		if !node.JoinedNetwork {
-			rxpk[0] = NewRxpk(GetJoinRequestDataPayload(node))
+			rxpk[0] = NewRxpk(GetJoinRequestDataPayload(node),gateway)
 			packet, err := Packet{Rxpk: rxpk}.Prepare(gateway)
 			if err != nil {
 				LOG_GATEWAY.WithFields(logrus.Fields{
@@ -142,7 +145,7 @@ func sendJoinRequestPackets(gateway *model.Gateway, Conn net.Conn) {
 func sendPushPackets(gateway *model.Gateway, Conn net.Conn, fcnt uint32) {
 	rxpk := make([]loraserver_structs.RXPK, 1)
 	for _, node := range gateway.Nodes {
-		rxpk[0] = NewRxpk(GetPushDataPayload(node, fcnt))
+		rxpk[0] = NewRxpk(GetPushDataPayload(node, fcnt),gateway)
 		packet, err := Packet{Rxpk: rxpk}.Prepare(gateway)
 		if err != nil {
 			LOG_GATEWAY.WithFields(logrus.Fields{

@@ -15,6 +15,7 @@ type Scenario struct {
 	poison            chan bool
 	ScenarioSleepTime [2]time.Duration
 	GatewaySleepTime  [2]time.Duration
+	RxpkDate          uint64
 	WithJoin          bool
 	MessageFcnt       uint32
 	AppsKey           string
@@ -25,7 +26,7 @@ type Scenario struct {
 func NewScenario(init model.Init) (*Scenario, error) {
 	gateways := make([]*model.Gateway, init.NbGateway)
 	for i := 0; i < len(gateways); i++ {
-		gateways[i] = lora.NewGateway(tools.Random(init.NbNode[0], init.NbNode[1]), init.NsAddress, init.AppsKey, init.Nwskey, init.Payloads)
+		gateways[i] = lora.NewGateway(tools.Random(init.NbNode[0], init.NbNode[1]), init.NsAddress, init.AppsKey, init.Nwskey, init.Payloads,init.RxpkDate)
 	}
 	scenarioSleepTimeMin, err := time.ParseDuration(init.ScenarioSleepTime[0])
 	if err != nil {
