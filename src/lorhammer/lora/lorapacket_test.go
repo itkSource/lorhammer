@@ -5,6 +5,7 @@ import (
 	"github.com/brocaar/lora-gateway-bridge/gateway"
 	"lorhammer/src/model"
 	"testing"
+	"time"
 )
 
 func TestHandlePacket(t *testing.T) {
@@ -61,12 +62,13 @@ func TestHandlePacket(t *testing.T) {
 func TestPacket_Prepare(t *testing.T) {
 	rxpks := make([]gateway.RXPK, 1)
 	data := []byte{2, 165, 210, 1}
-	rxpk := NewRxpk(data)
-	rxpks[0] = rxpk
 	gw := &model.Gateway{
 		NsAddress:  "127.0.0.1",
 		MacAddress: RandomEUI(),
 	}
+	rxpk := NewRxpk(data, gw)
+	rxpks[0] = rxpk
+
 	packet, err := Packet{Rxpk: rxpks}.Prepare(gw)
 
 	if err != nil {
@@ -85,7 +87,18 @@ func TestPacket_Prepare(t *testing.T) {
 
 func TestNewRxpk(t *testing.T) {
 	data := []byte{2, 165, 210, 1}
-	rxpk := NewRxpk(data)
+	gw := &model.Gateway{
+		NsAddress:  "127.0.0.1",
+		MacAddress: RandomEUI(),
+		RxpkDate:   1488931200,
+	}
+
+	rxpk := NewRxpk(data, gw)
+
+	seconds := time.Time(rxpk.Time).UTC().Unix()
+	if seconds != 1488931200 {
+		t.Fatal("The time assigned to the rxpk should be the one present in the gateway object when set")
+	}
 
 	if int(rxpk.Size) != len(data) {
 		t.Fatalf("Size parameter should represent the length of the data sent, found  %d  expected %d", rxpk.Size, len(data))

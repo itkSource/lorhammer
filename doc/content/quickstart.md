@@ -299,7 +299,14 @@ This array holds the different payloads you want the nodes to send through all t
  
 Type : **boolean**
 
-This is used when provisioning is active. If 'true', all nodes will join the network with a join request. (TODO : For now, the JoinAccept message still need to be processed. )  
+This is used when provisioning is active. If 'true', all nodes will join the network with a join request. (TODO : For now, the JoinAccept message still need to be processed. )
+  
+### rxpkDate 
+ 
+Type : **long** epoch time in seconds
+
+This is used when for the dates sent with rxpk messages. It's useful when we want to have control over dates, especially when using a specific checker to validate a dates...   
+
 
 
 ## provisioning 
