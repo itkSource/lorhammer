@@ -124,7 +124,7 @@ func sendJoinRequestPackets(gateway *model.Gateway, Conn net.Conn) {
 	rxpk := make([]loraserver_structs.RXPK, 1)
 	for _, node := range gateway.Nodes {
 		if !node.JoinedNetwork {
-			rxpk[0] = NewRxpk(GetJoinRequestDataPayload(node),gateway)
+			rxpk[0] = NewRxpk(GetJoinRequestDataPayload(node), gateway)
 			packet, err := Packet{Rxpk: rxpk}.Prepare(gateway)
 			if err != nil {
 				LOG_GATEWAY.WithFields(logrus.Fields{
@@ -145,7 +145,7 @@ func sendJoinRequestPackets(gateway *model.Gateway, Conn net.Conn) {
 func sendPushPackets(gateway *model.Gateway, Conn net.Conn, fcnt uint32) {
 	rxpk := make([]loraserver_structs.RXPK, 1)
 	for _, node := range gateway.Nodes {
-		rxpk[0] = NewRxpk(GetPushDataPayload(node, fcnt),gateway)
+		rxpk[0] = NewRxpk(GetPushDataPayload(node, fcnt), gateway)
 		packet, err := Packet{Rxpk: rxpk}.Prepare(gateway)
 		if err != nil {
 			LOG_GATEWAY.WithFields(logrus.Fields{

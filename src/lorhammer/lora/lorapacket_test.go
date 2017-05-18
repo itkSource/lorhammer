@@ -66,7 +66,7 @@ func TestPacket_Prepare(t *testing.T) {
 		NsAddress:  "127.0.0.1",
 		MacAddress: RandomEUI(),
 	}
-	rxpk := NewRxpk(data,gw)
+	rxpk := NewRxpk(data, gw)
 	rxpks[0] = rxpk
 
 	packet, err := Packet{Rxpk: rxpks}.Prepare(gw)
@@ -90,10 +90,10 @@ func TestNewRxpk(t *testing.T) {
 	gw := &model.Gateway{
 		NsAddress:  "127.0.0.1",
 		MacAddress: RandomEUI(),
-		RxpkDate:1488931200,
+		RxpkDate:   1488931200,
 	}
 
-	rxpk := NewRxpk(data,gw)
+	rxpk := NewRxpk(data, gw)
 
 	seconds := time.Time(rxpk.Time).UTC().Unix()
 	if seconds != 1488931200 {
