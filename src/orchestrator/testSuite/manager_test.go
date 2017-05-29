@@ -17,6 +17,7 @@ type testLaunch struct {
 	rampTime         string
 	repeatTime       string
 	stopAll          string
+	beforeCheck      string
 	shutdownAll      string
 	sleep            string
 	init             string
@@ -33,6 +34,7 @@ var testsLaunch = []testLaunch{
 		description:      "Must run",
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
+		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
@@ -47,6 +49,7 @@ var testsLaunch = []testLaunch{
 		description:      "Fake deploy",
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
+		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
@@ -61,6 +64,7 @@ var testsLaunch = []testLaunch{
 		description:      "Fake testType",
 		test:             `{"type": "fake", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
+		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
@@ -75,6 +79,7 @@ var testsLaunch = []testLaunch{
 		description:      "Must run stopTime > 0",
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "1ms",
+		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
@@ -89,6 +94,7 @@ var testsLaunch = []testLaunch{
 		description:      "DeProvision without provision and run stopTime > 0",
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "1ms",
+		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
@@ -103,6 +109,7 @@ var testsLaunch = []testLaunch{
 		description:      "Prometheus check",
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
+		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
@@ -117,6 +124,7 @@ var testsLaunch = []testLaunch{
 		description:      "Prometheus check not in domain but not throw error because its written in file",
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
+		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
@@ -131,6 +139,7 @@ var testsLaunch = []testLaunch{
 		description:      "Fake checker should return error",
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
+		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
@@ -145,6 +154,7 @@ var testsLaunch = []testLaunch{
 		description:      "Grafana error should not be reported",
 		test:             `{"type": "oneShot", "rampTime": "0", "repeatTime": "0"}`,
 		stopAll:          "0",
+		beforeCheck:      "0",
 		shutdownAll:      "1ms",
 		sleep:            "0",
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
@@ -156,12 +166,12 @@ var testsLaunch = []testLaunch{
 	},
 }
 
-var templateLaunch = `[{"test": %s,"rampTime": "%s","repeatTime": "%s","stopAllLorhammerTime": "%s","shutdownAllLorhammerTime": "%s","sleepAtEndTime": "%s","init": %s,"provisioning": %s,"check": %s, "deploy": %s}]`
+var templateLaunch = `[{"test": %s,"rampTime": "%s","repeatTime": "%s","stopAllLorhammerTime": "%s","sleepBeforeCheckTime": "%s","shutdownAllLorhammerTime": "%s","sleepAtEndTime": "%s","init": %s,"provisioning": %s,"check": %s, "deploy": %s}]`
 
 func TestLaunchTest(t *testing.T) {
 	for _, test := range testsLaunch {
 		var ct = test
-		data := []byte(fmt.Sprintf(templateLaunch, ct.test, ct.rampTime, ct.repeatTime, ct.stopAll, ct.shutdownAll, ct.sleep, ct.init, ct.provisioning, ct.check, ct.deploy))
+		data := []byte(fmt.Sprintf(templateLaunch, ct.test, ct.rampTime, ct.repeatTime, ct.stopAll, ct.beforeCheck, ct.shutdownAll, ct.sleep, ct.init, ct.provisioning, ct.check, ct.deploy))
 		tests, err := FromFile(data)
 		if err != nil {
 			t.Fatalf(`valid scenario should not return err %s for : "%s"`, err, ct.description)

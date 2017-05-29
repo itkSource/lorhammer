@@ -5,6 +5,7 @@
     "repeatTime": "0"
   },
   "stopAllLorhammerTime": "3m",
+  "sleepBeforeCheckTime": "0",
   "shutdownAllLorhammerTime": "0",
   "sleepAtEndTime": "0",
   "init": {
