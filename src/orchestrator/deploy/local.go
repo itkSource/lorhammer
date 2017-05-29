@@ -15,6 +15,7 @@ type localImpl struct {
 	PathFile               string `json:"pathFile"`
 	NbInstanceToLaunch     int    `json:"nbInstanceToLaunch"`
 	CleanPreviousInstances bool   `json:"cleanPreviousInstances"`
+	LocalIp                string `json:"localIp"`
 
 	consulAddress string
 	cmdFabric     func(name string, arg ...string) *exec.Cmd
@@ -45,8 +46,12 @@ func (local *localImpl) Deploy() error {
 
 	for i := 0; i < local.NbInstanceToLaunch; i++ {
 		go func() {
-			_LOG_LOCAL.WithField("cmd", local.PathFile).WithField("args", "-consul "+local.consulAddress).WithField("nb", local.NbInstanceToLaunch).Info("Will exec cmd")
-			var cmd = local.cmdFabric(local.PathFile, "-consul", local.consulAddress)
+			args := []string{"-consul", local.consulAddress}
+			if local.LocalIp != "" {
+				args = append(args, "-local-ip", local.LocalIp)
+			}
+			_LOG_LOCAL.WithField("cmd", local.PathFile).WithField("args", args).WithField("nb", local.NbInstanceToLaunch).Info("Will exec cmd")
+			var cmd = local.cmdFabric(local.PathFile, args...)
 			if err := cmd.Start(); err != nil {
 				_LOG_LOCAL.WithError(err).Error("Local output error when launching")
 				chanErr <- err
