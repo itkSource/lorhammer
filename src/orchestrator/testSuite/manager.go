@@ -37,9 +37,12 @@ func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mq
 		command.StopScenario(mqttClient)
 	}
 
-	//wait until shutdown minus time we have already passed in stop (0 or negative value means no shutdown)
-	time.Sleep(test.ShutdownAllLorhammerTime - test.StopAllLorhammerTime)
+	//wait until check minus time we have already passed in stop
+	time.Sleep(test.SleepBeforeCheckTime - test.StopAllLorhammerTime)
 	success, errors := checkResults(check)
+
+	//wait until shutdown minus time we have already passed in stop and check (0 or negative value means no shutdown)
+	time.Sleep(test.ShutdownAllLorhammerTime - (test.StopAllLorhammerTime + test.SleepBeforeCheckTime))
 
 	if test.StopAllLorhammerTime > 0 || test.ShutdownAllLorhammerTime > 0 {
 		if err := provisioning.DeProvision(test.Uuid); err != nil {

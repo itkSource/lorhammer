@@ -17,6 +17,7 @@ type TestSuite struct {
 	Uuid                     string             `json:"uuid"`
 	Test                     testType.Test      `json:"test"`
 	StopAllLorhammerTime     time.Duration      `json:"stopAllLorhammerTime"`
+	SleepBeforeCheckTime     time.Duration      `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime time.Duration      `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           time.Duration      `json:"sleepAtEndTime"`
 	Init                     model.Init         `json:"init"`
@@ -29,6 +30,7 @@ type TestSuite struct {
 type jsonTestSuite struct {
 	Test                     testType.Test      `json:"test"`
 	StopAllLorhammerTime     string             `json:"stopAllLorhammerTime"`
+	SleepBeforeCheckTime     string             `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime string             `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           string             `json:"sleepAtEndTime"`
 	Init                     model.Init         `json:"init"`
@@ -48,6 +50,10 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 		if err != nil {
 			return nil, err
 		}
+		sleepBeforeCheckTime, err := time.ParseDuration(test.SleepBeforeCheckTime)
+		if err != nil {
+			return nil, err
+		}
 		shutdownAllLorhammerTime, err := time.ParseDuration(test.ShutdownAllLorhammerTime)
 		if err != nil {
 			return nil, err
@@ -60,6 +66,7 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 			Uuid:                     uuid.New().String(),
 			Test:                     test.Test,
 			StopAllLorhammerTime:     stopAllLorhammerTime,
+			SleepBeforeCheckTime:     sleepBeforeCheckTime,
 			ShutdownAllLorhammerTime: shutdownAllLorhammerTime,
 			SleepAtEndTime:           sleepAtEndTime,
 			Init:                     test.Init,

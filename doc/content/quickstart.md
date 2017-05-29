@@ -119,6 +119,7 @@ A scenario is an array of tests. A test is the description needed by the orchest
     "repeatTime": "0"
   },
   "stopAllLorhammerTime": "0",
+  "sleepBeforeCheckTime": "10s",
   "shutdownAllLorhammerTime": "10m",
   "sleepAtEndTime": "0",
   "init": {
@@ -230,6 +231,12 @@ If `testType` == `repeat` used to create init.nbGatewayPerLorhammer every time
 Type : **string/duration**
 
 When this period is over, the  orchestrator stops all scenarios running on lorhammers (note that the lorhammer instances are still running in this case), 0 if you want the scenarios to run continuously
+
+## sleepBeforeCheckTime
+
+Type : **string/duration**
+
+When this period is over, the  orchestrator will check if results are good defined in the check property.
 
 ## shutdownAllLorhammerTime 
 
