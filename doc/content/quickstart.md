@@ -163,7 +163,8 @@ A scenario is an array of tests. A test is the description needed by the orchest
     "config": {
       "pathFile": "./build/lorhammer",
       "cleanPreviousInstances": true,
-      "nbInstanceToLaunch": 1
+      "nbInstanceToLaunch": 1,
+      "localIp": "127.0.0.1"
     },
     "config": {
       "sshKeyPath": "",
@@ -431,7 +432,7 @@ Allows to deploy a lorhammer before launching the tests
 
 Type : **string/enum**
 
-Can be `none`, `distant` or `amazon`
+Can be `none`, `local`, `distant` or `amazon`
 
 * `none` no deployment is made
 * `local` runs a sub-process with lorhammer on the same consul that has the current orchestrator
