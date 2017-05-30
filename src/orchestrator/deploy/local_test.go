@@ -126,6 +126,27 @@ func TestLocalImpl_Deploy(t *testing.T) {
 	testCall(countChan, 3, t)
 }
 
+func TestLocalImpl_DeployWithLocalIp(t *testing.T) {
+	d, err := newLocalFromJson(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false, "localIp": "0.0.0.0"}`)
+	if err != nil {
+		t.Fatal("good local deployer json should not throw error")
+	}
+	countChan := make(chan bool)
+	defer close(countChan)
+	d.(*localImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
+		go func() {
+			if len(arg) == 4 && arg[3] == "0.0.0.0" {
+				countChan <- true
+			}
+		}()
+		return exec.Command("ls")
+	}
+	if err := d.Deploy(); err != nil {
+		t.Fatal("LocalDeploy Deploy() should not return error")
+	}
+	testCall(countChan, 3, t)
+}
+
 func TestLocalImpl_DeployErr(t *testing.T) {
 	d, err := newLocalFromJson(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false}`)
 	if err != nil {
