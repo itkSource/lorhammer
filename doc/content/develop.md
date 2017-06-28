@@ -36,7 +36,7 @@ The binaries of lorhammers are created in `./build` directory.
 
 ## First start
 
-Follow the [quickstart](quickstart) and be sure to have lorhammer, orchestrator and tools working.
+Follow the [quickstart](../quickstart) and be sure to have lorhammer, orchestrator and tools working.
 
 # Documentation
 
