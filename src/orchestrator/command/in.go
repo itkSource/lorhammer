@@ -24,6 +24,7 @@ func ApplyCmd(command model.CMD, mqtt tools.Mqtt, provision func(model.Register)
 		if err := provision(sensorsToRegister); err != nil {
 			return err
 		}
+		LOG.WithField("nbGateways", len(sensorsToRegister.Gateways)).Info("Provisioning done")
 
 		startMessage := model.Start{
 			ScenarioUUID: sensorsToRegister.ScenarioUUID,

@@ -85,7 +85,7 @@ func (mqtt *mqttImpl) HandleCmd(topics []string, handle func(cmd model.CMD)) err
 }
 
 func (mqtt *mqttImpl) publish(topic string, message []byte) error {
-	mqtt.client.Publish(topic, 1, false, message)
+	mqtt.client.Publish(topic, 0, false, message)
 	return nil
 }
 
@@ -94,6 +94,10 @@ func (mqtt *mqttImpl) publishFullCmd(topic string, cmd model.CMD) error {
 	if err != nil {
 		return err
 	}
+	_LOG_MQTT.WithFields(logrus.Fields{
+		"topic": topic,
+		"cmd":   cmd.CmdName,
+	}).Info("Send mqtt cmd")
 	return mqtt.publish(topic, message)
 }
 

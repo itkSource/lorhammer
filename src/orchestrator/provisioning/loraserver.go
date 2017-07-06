@@ -110,9 +110,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 				UseApplicationSettings: true,
 			}
 
-			LOG_LORASERVER.WithFields(logrus.Fields{
-				"name": asnode.Name,
-			}).Info("Registering sensor")
+			LOG_LORASERVER.WithField("name", asnode.Name).Info("Registering sensor")
 
 			if marshalledNode, err := json.Marshal(asnode); err != nil {
 				return err
@@ -146,6 +144,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 }
 
 func doRequest(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error) {
+	LOG_LORASERVER.WithField("url", url).Info("Will call")
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalledObject))
