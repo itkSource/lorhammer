@@ -5,8 +5,6 @@ go get -u -v github.com/prometheus/client_golang/prometheus
 go get -u -v github.com/jacobsa/crypto
 go get -u -v github.com/hashicorp/consul/api
 go get -u -v github.com/eclipse/paho.mqtt.golang
-#TODO FIXME https://github.com/eclipse/paho.mqtt.golang/issues/121
-cd $GOPATH/src/github.com/eclipse/paho.mqtt.golang && git checkout c37a0a2 && cd -
 go get -u -v github.com/google/uuid
 go get -u -v github.com/orcaman/concurrent-map
 go get -u -v golang.org/x/net/websocket
