@@ -3,14 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"lorhammer/src/lorhammer/command"
 	"lorhammer/src/lorhammer/scenario"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
 	"net/http"
 	"runtime"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var VERSION string    // set at build time
@@ -35,7 +36,7 @@ func main() {
 			"version":    VERSION,
 			"build time": DATE_BUILD,
 			"go version": runtime.Version(),
-		}).Warn("Welcome to the Lorhammer's Orchestrator")
+		}).Warn("Welcome to the Lorhammer")
 		return
 	}
 
