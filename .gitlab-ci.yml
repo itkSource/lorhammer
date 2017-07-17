@@ -116,6 +116,19 @@ compile:tag:
     paths:
       - build
 
+compile:docker-tag:
+  stage: compile
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile .
+    - docker push registry.gitlab.com/itk.fr/lorhammer/lorhammer:${CI_COMMIT_REF_NAME}
+  only:
+    - tags
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+
 pages:
   stage: doc
   script:
