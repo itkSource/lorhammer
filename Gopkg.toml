@@ -34,8 +34,8 @@
   name = "github.com/brocaar/lorawan"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/eclipse/paho.mqtt.golang"
-  version = "1.0.0"
 
 [[constraint]]
   name = "github.com/google/uuid"

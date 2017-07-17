@@ -68,10 +68,10 @@
   version = "v1.0.2"
 
 [[projects]]
+  branch = "master"
   name = "github.com/eclipse/paho.mqtt.golang"
   packages = [".","packets"]
-  revision = "45f9b18f4864c81d49c3ed01e5faec9eeb05de31"
-  version = "v1.0.0"
+  revision = "e9f694b2eba2cc7e1eeec8e488415d00587f508a"
 
 [[projects]]
   name = "github.com/go-ini/ini"
@@ -196,7 +196,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","websocket"]
+  packages = ["context","proxy","websocket"]
   revision = "b3756b4b77d7b13260a0a2ec658753cf48922eac"
 
 [[projects]]
@@ -208,6 +208,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a7352f5f029cdbfa21623fb6fb447de3c0fb5816373e84e4bdd8c9a21cb4636f"
+  inputs-digest = "5897ac412dbd8e2099dacdfdac0a9460676e4b42c7bd8bb4bb2958958de5e370"
   solver-name = "gps-cdcl"
   solver-version = 1
