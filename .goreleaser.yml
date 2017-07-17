@@ -1,0 +1,50 @@
+project_name: lorhammer
+builds:
+  - binary: lorhammer
+    main: ./src/lorhammer/main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+  - binary: orchestrator
+    main: ./src/orchestrator/main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+archive:
+  name_template: '{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+  replacements:
+    darwin: Mac
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+  format_overrides:
+    - goos: windows
+      format: zip
+fpm:
+  homepage:  http://lorhammer.itk.fr
+  description: Stress your lora network-server
+  maintainer: ITK <contact@itk.fr>
+  license: Apache-2.0
+  vendor: ITK
+  formats:
+    - deb
+    - rpm
+  dependencies:
+    - ssh
