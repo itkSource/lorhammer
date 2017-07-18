@@ -29,9 +29,9 @@ builds:
 archive:
   name_template: '{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:
-    darwin: Mac
-    linux: Linux
-    windows: Windows
+    darwin: mac
+    linux: linux
+    windows: windows
     386: i386
     amd64: x86_64
   format_overrides:

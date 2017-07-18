@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=`git describe --exact-match --tags HEAD`
+VERSION=`git describe --exact-match --tags HEAD 2> /dev/null`
 if [ -z "$VERSION" ]; then
     VERSION="0.0.0"
 fi
