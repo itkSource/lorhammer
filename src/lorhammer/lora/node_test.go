@@ -1,8 +1,10 @@
 package lora
 
 import (
-	"github.com/brocaar/lorawan"
+	"lorhammer/src/model"
 	"testing"
+
+	"github.com/brocaar/lorawan"
 )
 
 func TestGetDevAddrFromDevEUI(t *testing.T) {
@@ -20,14 +22,22 @@ func TestGetDevAddrFromDevEUI(t *testing.T) {
 }
 
 func TestNode_GetPushDataPayload(t *testing.T) {
+	// , "01B501002919000006018403131313121244"
 	node := NewNode("19842bd94743246b367c2e90942a1f73",
 		"19842bd94743246b367c2e90942a1f774",
-		[]string{"01B501002919000006018403131313121233", "01B501002919000006018403131313121244"})
+		[]model.Payload{
+			model.Payload{Value: "01B501002919000006018403131313121233"},
+			model.Payload{Value: "01B501002919000006018403131313121244"},
+		},
+	)
 
 	fcnt := uint32(1)
-	dataPayload := GetPushDataPayload(node, fcnt)
+	dataPayload, err := GetPushDataPayload(node, fcnt)
+	if err != nil {
+		t.Fatal("Couldn't get PushData payload")
+	}
 	phyPayload := lorawan.PHYPayload{}
-	err := phyPayload.UnmarshalBinary(dataPayload)
+	err = phyPayload.UnmarshalBinary(dataPayload)
 	if err != nil {
 		t.Fatal("Couldn't unmarshall PHYPayload Binary")
 	}
@@ -54,7 +64,10 @@ func TestNode_GetPushDataPayload(t *testing.T) {
 func TestNewJoinRequestPHYPayload(t *testing.T) {
 	node := NewNode("",
 		"",
-		[]string{"01B501002919000006018403131313121233", "01B501002919000006018403131313121244"})
+		[]model.Payload{
+			model.Payload{Value: "01B501002919000006018403131313121233"},
+			model.Payload{Value: "01B501002919000006018403131313121244"},
+		})
 
 	dataPayload := GetJoinRequestDataPayload(node)
 	jrPayload := lorawan.PHYPayload{}
