@@ -127,6 +127,7 @@ A scenario is an array of tests. A test is the description needed by the orchest
     "nbGatewayPerLorhammer": 10,
     "nbNodePerGateway": [50, 50],
     "scenarioSleepTime": ["10s", "10s"],
+    "receiveTimeoutTime": "1s",
     "gatewaySleepTime": ["100ms", "500ms"]
   },
   "provisioning": {
@@ -278,6 +279,12 @@ The minimum and maximum number of nodes to instantiate per gateway. A random num
 Type : **string/duration, string/duration**
 
 This represents the time interval between every data sent from all simulated gateways to the network server, an array value allow you to randomize (min, max)
+
+### receiveTimeoutTime
+
+Type : **string/duration**
+
+This represents the timeout period for Lora Server ack time. 
 
 ### gatewaySleepTime 
 

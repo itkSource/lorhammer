@@ -10,16 +10,17 @@ type CMD struct {
 }
 
 type Init struct {
-	NsAddress         string    `json:"nsAddress"`
-	NbGateway         int       `json:"nbGatewayPerLorhammer"`
-	NbNode            [2]int    `json:"nbNodePerGateway"`
-	ScenarioSleepTime [2]string `json:"scenarioSleepTime"`
-	GatewaySleepTime  [2]string `json:"gatewaySleepTime"`
-	AppsKey           string    `json:"appskey"`
-	Nwskey            string    `json:"nwskey"`
-	WithJoin          bool      `json:"withJoin"`
-	Payloads          []string  `json:"payloads"`
-	RxpkDate          int64     `json:"rxpkDate"`
+	NsAddress          string    `json:"nsAddress"`
+	NbGateway          int       `json:"nbGatewayPerLorhammer"`
+	NbNode             [2]int    `json:"nbNodePerGateway"`
+	ScenarioSleepTime  [2]string `json:"scenarioSleepTime"`
+	GatewaySleepTime   [2]string `json:"gatewaySleepTime"`
+	AppsKey            string    `json:"appskey"`
+	Nwskey             string    `json:"nwskey"`
+	WithJoin           bool      `json:"withJoin"`
+	Payloads           []string  `json:"payloads"`
+	RxpkDate           int64     `json:"rxpkDate"`
+	ReceiveTimeoutTime string    `json:"receiveTimeoutTime"`
 }
 
 type Register struct {
