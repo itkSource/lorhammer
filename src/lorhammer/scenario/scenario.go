@@ -1,14 +1,16 @@
 package scenario
 
 import (
-	"github.com/Sirupsen/logrus"
-	"github.com/google/uuid"
 	"lorhammer/src/lorhammer/lora"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
 	"time"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/google/uuid"
 )
 
+//Scenario struc define scenari with metadata
 type Scenario struct {
 	Uuid              string
 	Gateways          []*model.Gateway
@@ -20,9 +22,10 @@ type Scenario struct {
 	MessageFcnt       uint32
 	AppsKey           string
 	Nwskey            string
-	Payloads          []string
+	Payloads          []model.Payload
 }
 
+//NewScenario provide new Scenario with param defined in model.Init
 func NewScenario(init model.Init) (*Scenario, error) {
 	gateways := make([]*model.Gateway, init.NbGateway)
 	for i := 0; i < len(gateways); i++ {

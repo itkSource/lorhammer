@@ -12,12 +12,14 @@ type Gateway struct {
 }
 
 type Node struct {
-	DevAddr       lorawan.DevAddr
-	DevEUI        lorawan.EUI64
-	AppEUI        lorawan.EUI64
-	AppKey        lorawan.AES128Key
-	AppSKey       lorawan.AES128Key
-	NwSKey        lorawan.AES128Key
-	JoinedNetwork bool
-	Payload       string
+	DevAddr        lorawan.DevAddr
+	DevEUI         lorawan.EUI64
+	AppEUI         lorawan.EUI64
+	AppKey         lorawan.AES128Key
+	AppSKey        lorawan.AES128Key
+	NwSKey         lorawan.AES128Key
+	JoinedNetwork  bool
+	Payloads       []Payload
+	NextPayload    int
+	RandomPayloads bool
 }
