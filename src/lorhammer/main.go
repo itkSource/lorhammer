@@ -104,11 +104,12 @@ func main() {
 	if *nbGateway > 0 {
 		LOG.Warn("Launch manual scenario")
 		sc, err := scenario.NewScenario(model.Init{
-			NbGateway:         *nbGateway,
-			NbNode:            [2]int{*minNbNode, *maxNbNode},
-			NsAddress:         *nsAddress,
-			ScenarioSleepTime: [2]string{"10s", "10s"},
-			GatewaySleepTime:  [2]string{"100ms", "500ms"},
+			NbGateway:          *nbGateway,
+			NbNode:             [2]int{*minNbNode, *maxNbNode},
+			NsAddress:          *nsAddress,
+			ScenarioSleepTime:  [2]string{"10s", "10s"},
+			GatewaySleepTime:   [2]string{"100ms", "500ms"},
+			ReceiveTimeoutTime: "1s",
 		})
 		if err != nil {
 			LOG.WithError(err).Fatal("Can't create scenario with infos passed in flags")

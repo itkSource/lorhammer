@@ -13,11 +13,13 @@ import (
 
 var LOG_GATEWAY = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/gateway"})
 
-func NewGateway(nbNode int, nsAddress string, appskey string, nwskey string, payloads []string, rxpkDate int64) *model.Gateway {
+func NewGateway(nbNode int, nsAddress string, appskey string, nwskey string, payloads []string, rxpkDate int64, receiveTimeoutTime time.Duration) *model.Gateway {
 	gateway := &model.Gateway{
-		NsAddress:  nsAddress,
-		MacAddress: RandomEUI(),
+		NsAddress:          nsAddress,
+		MacAddress:         RandomEUI(),
+		ReceiveTimeoutTime: receiveTimeoutTime,
 	}
+
 	if rxpkDate > 0 {
 		gateway.RxpkDate = rxpkDate
 	}
@@ -237,7 +239,7 @@ func readLoraPackets(gateway *model.Gateway, poison chan bool, next chan bool, t
 		}
 	}()
 
-	<-time.After(1 * time.Second)
+	<-time.After(gateway.ReceiveTimeoutTime)
 	poison <- true
 	localPoison <- true
 	if len(gateway.Nodes)-nbMsg > 0 {

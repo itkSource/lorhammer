@@ -2,13 +2,15 @@ package model
 
 import (
 	"github.com/brocaar/lorawan"
+	"time"
 )
 
 type Gateway struct {
-	Nodes      []*Node
-	NsAddress  string
-	MacAddress lorawan.EUI64
-	RxpkDate   int64
+	Nodes              []*Node
+	NsAddress          string
+	MacAddress         lorawan.EUI64
+	RxpkDate           int64
+	ReceiveTimeoutTime time.Duration
 }
 
 type Node struct {

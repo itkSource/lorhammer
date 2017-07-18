@@ -9,23 +9,45 @@ import (
 
 var models = []model.Init{
 	{
-		NsAddress:         "127.0.0.1:0",
-		NbGateway:         1,
-		NbNode:            [2]int{1, 1},
-		ScenarioSleepTime: [2]string{"0", "0"},
-		GatewaySleepTime:  [2]string{"0", "0"},
+		NsAddress:          "127.0.0.1:0",
+		NbGateway:          1,
+		NbNode:             [2]int{1, 1},
+		ScenarioSleepTime:  [2]string{"0", "0"},
+		GatewaySleepTime:   [2]string{"0", "0"},
+		ReceiveTimeoutTime: "1s",
 	}, {
-		NsAddress:         "127.0.0.1:0",
-		NbGateway:         1,
-		NbNode:            [2]int{0, 0},
-		ScenarioSleepTime: [2]string{"0", "0"},
-		GatewaySleepTime:  [2]string{"0", "0"},
+		NsAddress:          "127.0.0.1:0",
+		NbGateway:          1,
+		NbNode:             [2]int{0, 0},
+		ScenarioSleepTime:  [2]string{"0", "0"},
+		GatewaySleepTime:   [2]string{"0", "0"},
+		ReceiveTimeoutTime: "1s",
 	}, {
-		NsAddress:         "127.0.0.1:0",
-		NbGateway:         1,
-		NbNode:            [2]int{0, 100},
-		ScenarioSleepTime: [2]string{"0", "0"},
-		GatewaySleepTime:  [2]string{"0", "0"},
+		NsAddress:          "127.0.0.1:0",
+		NbGateway:          1,
+		NbNode:             [2]int{0, 100},
+		ScenarioSleepTime:  [2]string{"0", "0"},
+		GatewaySleepTime:   [2]string{"0", "0"},
+		ReceiveTimeoutTime: "1s",
+	},
+}
+
+var wrongReceiveTimeModels = []model.Init{
+	{
+		NsAddress:          "127.0.0.1:0",
+		NbGateway:          1,
+		NbNode:             [2]int{1, 1},
+		ScenarioSleepTime:  [2]string{"0", "0"},
+		GatewaySleepTime:   [2]string{"0", "0"},
+		ReceiveTimeoutTime: "",
+	},
+	{
+		NsAddress:          "127.0.0.1:0",
+		NbGateway:          1,
+		NbNode:             [2]int{1, 1},
+		ScenarioSleepTime:  [2]string{"0", "0"},
+		GatewaySleepTime:   [2]string{"0", "0"},
+		ReceiveTimeoutTime: "toto",
 	},
 }
 
@@ -125,5 +147,22 @@ func TestCreation(t *testing.T) {
 
 		// sleep because of go routine
 		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+func TestWrongReceiveTimeCreation(t *testing.T) {
+	logrus.SetOutput(fakeWriter{}) // shut up logrus 🙊
+
+	for _, init := range wrongReceiveTimeModels {
+
+		sc, err := NewScenario(init)
+
+		if err == nil {
+			t.Fatal("Error expected on wrong receive timeout time")
+		}
+
+		if sc != nil {
+			t.Fatal("Nil scenario expected on wrong receive timeout time")
+		}
 	}
 }

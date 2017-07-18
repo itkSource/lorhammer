@@ -13,6 +13,7 @@
     "nbGatewayPerLorhammer": 10,
     "nbNodePerGateway": [50, 50],
     "scenarioSleepTime": ["10s", "10s"],
+    "receiveTimeoutTime": "1s",
     "gatewaySleepTime": ["100ms", "500ms"]
   },
   "provisioning": {
