@@ -12,7 +12,7 @@ import (
 
 var LOG_NODE = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/node"})
 
-func NewNode(nwsKeyStr string, appsKeyStr string, payloads []model.Payload) *model.Node {
+func NewNode(nwsKeyStr string, appsKeyStr string, payloads []model.Payload, randomPayloads bool) *model.Node {
 
 	devEui := RandomEUI()
 
@@ -27,13 +27,15 @@ func NewNode(nwsKeyStr string, appsKeyStr string, payloads []model.Payload) *mod
 	}
 
 	return &model.Node{
-		DevEUI:   devEui,
-		AppEUI:   RandomEUI(),
-		AppKey:   GetGenericAES128Key(),
-		DevAddr:  GetDevAddrFromDevEUI(devEui),
-		AppSKey:  appsKey,
-		NwSKey:   nwsKey,
-		Payloads: payloads,
+		DevEUI:         devEui,
+		AppEUI:         RandomEUI(),
+		AppKey:         GetGenericAES128Key(),
+		DevAddr:        GetDevAddrFromDevEUI(devEui),
+		AppSKey:        appsKey,
+		NwSKey:         nwsKey,
+		Payloads:       payloads,
+		NextPayload:    0,
+		RandomPayloads: randomPayloads,
 	}
 }
 

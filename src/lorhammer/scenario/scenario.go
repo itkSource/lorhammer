@@ -32,7 +32,15 @@ func NewScenario(init model.Init) (*Scenario, error) {
 		if parsedTime, err := time.ParseDuration(init.ReceiveTimeoutTime); err != nil {
 			return nil, err
 		} else {
-			gateways[i] = lora.NewGateway(tools.Random(init.NbNode[0], init.NbNode[1]), init.NsAddress, init.AppsKey, init.Nwskey, init.Payloads, init.RxpkDate, parsedTime)
+			gateways[i] = lora.NewGateway(
+				tools.Random(init.NbNode[0], init.NbNode[1]),
+				init.NsAddress,
+				init.AppsKey,
+				init.Nwskey,
+				init.Payloads,
+				init.RxpkDate,
+				parsedTime,
+				init.RandomPayloads)
 		}
 	}
 	scenarioSleepTimeMin, err := time.ParseDuration(init.ScenarioSleepTime[0])

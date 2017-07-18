@@ -14,7 +14,7 @@ import (
 
 var LOG_GATEWAY = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/gateway"})
 
-func NewGateway(nbNode int, nsAddress string, appskey string, nwskey string, payloads []model.Payload, rxpkDate int64, receiveTimeoutTime time.Duration) *model.Gateway {
+func NewGateway(nbNode int, nsAddress string, appskey string, nwskey string, payloads []model.Payload, rxpkDate int64, receiveTimeoutTime time.Duration, randomPayloads bool) *model.Gateway {
 	gateway := &model.Gateway{
 		NsAddress:          nsAddress,
 		MacAddress:         RandomEUI(),
@@ -25,7 +25,7 @@ func NewGateway(nbNode int, nsAddress string, appskey string, nwskey string, pay
 		gateway.RxpkDate = rxpkDate
 	}
 	for i := 0; i < nbNode; i++ {
-		gateway.Nodes = append(gateway.Nodes, NewNode(nwskey, appskey, payloads))
+		gateway.Nodes = append(gateway.Nodes, NewNode(nwskey, appskey, payloads, randomPayloads))
 	}
 
 	return gateway

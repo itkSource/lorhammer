@@ -29,6 +29,7 @@ func TestNode_GetPushDataPayload(t *testing.T) {
 			model.Payload{Value: "01B501002919000006018403131313121233"},
 			model.Payload{Value: "01B501002919000006018403131313121244"},
 		},
+		true,
 	)
 
 	fcnt := uint32(1)
@@ -67,7 +68,7 @@ func TestNewJoinRequestPHYPayload(t *testing.T) {
 		[]model.Payload{
 			model.Payload{Value: "01B501002919000006018403131313121233"},
 			model.Payload{Value: "01B501002919000006018403131313121244"},
-		})
+		}, true)
 
 	dataPayload := GetJoinRequestDataPayload(node)
 	jrPayload := lorawan.PHYPayload{}

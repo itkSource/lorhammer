@@ -21,6 +21,7 @@ type Init struct {
 	Payloads           []Payload `json:"payloads"`
 	RxpkDate           int64     `json:"rxpkDate"`
 	ReceiveTimeoutTime string    `json:"receiveTimeoutTime"`
+	RandomPayloads     bool      `json:"randomPayloads"`
 }
 
 // Payload struc define a payload with metadata attached
