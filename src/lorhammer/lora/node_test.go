@@ -16,7 +16,7 @@ func TestGetDevAddrFromDevEUI(t *testing.T) {
 	devAddr := GetDevAddrFromDevEUI(eui)
 
 	if devAddr.String() != "05060708" {
-		t.Fatalf("DevAddr string value must equal %d ", "05060708")
+		t.Fatalf("DevAddr string value must equal %s ", "05060708")
 	}
 
 }
