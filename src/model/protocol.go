@@ -18,9 +18,15 @@ type Init struct {
 	AppsKey            string    `json:"appskey"`
 	Nwskey             string    `json:"nwskey"`
 	WithJoin           bool      `json:"withJoin"`
-	Payloads           []string  `json:"payloads"`
+	Payloads           []Payload `json:"payloads"`
 	RxpkDate           int64     `json:"rxpkDate"`
 	ReceiveTimeoutTime string    `json:"receiveTimeoutTime"`
+}
+
+// Payload struc define a payload with metadata attached
+type Payload struct {
+	Value string `json:"value"`
+	Date  int64  `json:"date"`
 }
 
 type Register struct {
