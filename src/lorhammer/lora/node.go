@@ -92,7 +92,7 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 		if len(node.Payloads) == i {
 			LOG_NODE.WithFields(logrus.Fields{
 				"DevEui": node.DevEUI.String(),
-			}).Infof("all payloads sended. restart from beginning %d/%d", i, len(node.Payloads))
+			}).Infof("all payloads sended. restart from beginning (%d/%d)", i, len(node.Payloads))
 			node.NextPayload = 0
 			i = node.NextPayload
 		}

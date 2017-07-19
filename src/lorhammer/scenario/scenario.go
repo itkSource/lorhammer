@@ -34,13 +34,7 @@ func NewScenario(init model.Init) (*Scenario, error) {
 		} else {
 			gateways[i] = lora.NewGateway(
 				tools.Random(init.NbNode[0], init.NbNode[1]),
-				init.NsAddress,
-				init.AppsKey,
-				init.Nwskey,
-				init.Payloads,
-				init.RxpkDate,
-				parsedTime,
-				init.RandomPayloads)
+				init)
 		}
 	}
 	scenarioSleepTimeMin, err := time.ParseDuration(init.ScenarioSleepTime[0])
