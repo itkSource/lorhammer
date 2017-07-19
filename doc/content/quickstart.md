@@ -328,9 +328,15 @@ This parameter should be present when using an activation by personalization (se
 
 ### payloads 
 
-Type : **array(string)**
+Type : **array(model.Payload)**
 
 This array holds the different payloads you want the nodes to send through all their messages. Each node will randomly choose one of the payloads given in the array as the only payload he's going to be sending. The payloads here are hexadecimal string representations
+
+### RandomPayloads 
+
+Type : **boolean**
+
+If 'true', take randomly content from payload array. If 'false' take successivly content from payload array 
  
 ### withJoin 
  
