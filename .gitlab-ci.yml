@@ -40,7 +40,7 @@ test:docker:lorhammer:
     - docker:dind
   script:
     - ./resources/scripts/buildAllEnv.sh --snapshot
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile-lorhammer .
+    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile-lorhammer $(pwd)
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 
@@ -50,7 +50,7 @@ test:docker:orchestrator:
     - docker:dind
   script:
     - ./resources/scripts/buildAllEnv.sh --snapshot
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/orchestrator -f docker/lorhammer/Dockerfile-orchestrator .
+    - docker build -t registry.gitlab.com/itk.fr/lorhammer/orchestrator -f docker/lorhammer/Dockerfile-orchestrator $(pwd)
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 
