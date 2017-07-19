@@ -88,8 +88,13 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 		i = node.NextPayload
 		if len(node.Payloads) <= i-1 {
 			node.NextPayload = i + 1
-		} else if len(node.Payloads) == i {
-			return nil, errors.New("payload array completed")
+		}
+		if len(node.Payloads) == i {
+			LOG_NODE.WithFields(logrus.Fields{
+				"DevEui": node.DevEUI.String(),
+			}).Infof("all payloads sended. restart from beginning %d/%d", i, len(node.Payloads))
+			node.NextPayload = 0
+			i = node.NextPayload
 		}
 	}
 	frmPayloadByteArray, _ := hex.DecodeString(node.Payloads[i].Value)
