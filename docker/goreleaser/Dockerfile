@@ -8,8 +8,11 @@ RUN apk update --no-cache \
    && mkdir /tmp/goreleaser && tar xf /tmp/goreleaser.tar.gz -C /tmp/goreleaser \
    && gem install --no-ri --no-rdoc fpm
 
-ADD ./ /go/src/lorhammer/
+ADD ./.goreleaser.yml ./README.md ./LICENCE.md ./CHANGELOG.md ./CONTRIBUTING.md /go/src/lorhammer/
+ADD ./.git /go/src/lorhammer/.git
+ADD ./src /go/src/lorhammer/src
+ADD ./vendor /go/src/lorhammer/vendor
 
 WORKDIR /go/src/lorhammer/
 
-ENTRYPOINT ["/tmp/goreleaser/goreleaser", "--rm-dist", "--skip-publish"]
+ENTRYPOINT ["/tmp/goreleaser/goreleaser", "--skip-publish"]

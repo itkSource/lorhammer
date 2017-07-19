@@ -34,23 +34,13 @@ test:coverage:
     script:
         - ./resources/scripts/cover.sh -terminal
 
-test:docker:lorhammer:
+test:docker:
   stage: test
   services:
     - docker:dind
   script:
     - ./resources/scripts/buildAllEnv.sh --snapshot
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile-lorhammer $(pwd)
-  variables:
-    DOCKER_HOST: "tcp://docker:2375"
-
-test:docker:orchestrator:
-  stage: test
-  services:
-    - docker:dind
-  script:
-    - ./resources/scripts/buildAllEnv.sh --snapshot
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/orchestrator -f docker/lorhammer/Dockerfile-orchestrator $(pwd)
+    - ./docker/lorhammer/build.sh
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 
