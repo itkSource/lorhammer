@@ -40,7 +40,11 @@ test:docker:
     - docker:dind
   script:
     - ./resources/scripts/buildAllEnv.sh --snapshot
-    - ./docker/lorhammer/build.sh
+    - docker build -t "${CI_REGISTRY_IMAGE}/lorhammer:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-lorhammer .
+    - docker build -t "${CI_REGISTRY_IMAGE}/orchestrator:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-orchestrator .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push "${CI_REGISTRY_IMAGE}/lorhammer:${CI_PIPELINE_ID}"
+    - docker push "${CI_REGISTRY_IMAGE}/orchestrator:${CI_PIPELINE_ID}"
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 
@@ -99,9 +103,9 @@ compile:docker:lorhammer:
     - docker:dind
   script:
     - ./resources/scripts/buildAllEnv.sh --snapshot
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile-lorhammer .
-    - docker push registry.gitlab.com/itk.fr/lorhammer/lorhammer
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE/lorhammer -f docker/lorhammer/Dockerfile-lorhammer .
+    - docker push $CI_REGISTRY_IMAGE/lorhammer
   only:
     - master@itk.fr/lorhammer
   variables:
@@ -113,9 +117,9 @@ compile:docker:orchestrator:
     - docker:dind
   script:
     - ./resources/scripts/buildAllEnv.sh --snapshot
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/orchestrator -f docker/lorhammer/Dockerfile-orchestrator .
-    - docker push registry.gitlab.com/itk.fr/lorhammer/orchestrator
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE/orchestrator -f docker/lorhammer/Dockerfile-orchestrator .
+    - docker push $CI_REGISTRY_IMAGE/orchestrator
   only:
     - master@itk.fr/lorhammer
   variables:
@@ -137,9 +141,9 @@ compile:docker-tag:lorhammer:
     - docker:dind
   script:
     - ./resources/scripts/buildAllEnv.sh
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile-lorhammer .
-    - docker push registry.gitlab.com/itk.fr/lorhammer/lorhammer:${CI_COMMIT_REF_NAME}
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-lorhammer .
+    - docker push "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}"
   only:
     - tags
   variables:
@@ -151,9 +155,9 @@ compile:docker-tag:orchestrator:
     - docker:dind
   script:
     - ./resources/scripts/buildAllEnv.sh
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/orchestrator -f docker/lorhammer/Dockerfile-orchestrator .
-    - docker push registry.gitlab.com/itk.fr/lorhammer/orchestrator:${CI_COMMIT_REF_NAME}
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-orchestrator .
+    - docker push "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}"
   only:
     - tags
   variables:

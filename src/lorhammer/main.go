@@ -14,13 +14,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var VERSION string    // set at build time
-var DATE_BUILD string // set at build time
+var version string // set at build time
+var commit string  // set at build time
+var date string    // set at build time
 
 var LOG = logrus.WithField("logger", "lorhammer/main")
 
 func main() {
-	version := flag.Bool("version", false, "Show current version and build time")
+	showVersion := flag.Bool("version", false, "Show current version and build time")
 	localIP := flag.String("local-ip", "", "The address used by others tools to access lorhammer instance")
 	consulAddr := flag.String("consul", "", "The ip:port of consul")
 	nbGateway := flag.Int("nb-gateway", 0, "The number of gateway to launch")
@@ -31,10 +32,11 @@ func main() {
 	logDebug := flag.Bool("vvv", false, "log debugs")
 	flag.Parse()
 
-	if *version {
+	if *showVersion {
 		logrus.WithFields(logrus.Fields{
-			"version":    VERSION,
-			"build time": DATE_BUILD,
+			"version":    version,
+			"commit":     commit,
+			"build time": date,
 			"go version": runtime.Version(),
 		}).Warn("Welcome to the Lorhammer")
 		return
