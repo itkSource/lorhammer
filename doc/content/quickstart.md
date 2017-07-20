@@ -349,7 +349,7 @@ If 'true', take randomly content from payload array. If 'false' take successivly
  
 Type : **boolean**
 
-This is used when provisioning istitle: "Quickstart" menu: main: weight: 2 subnav: "true" active. If 'true', all nodes will join the network with a join request. (TODO : For now, the JoinAccept message still need to be processed. )
+This is used when provisioning is "true" active. If 'true', all nodes will join the network with a join request. (TODO : For now, the JoinAccept message still need to be processed. )
   
 ### rxpkDate 
  
