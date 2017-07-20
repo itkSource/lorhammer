@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"lorhammer/src/model"
 	"net/http"
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
 )
 
 var LOG_LORASERVER = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
@@ -20,8 +21,6 @@ const LoraserverType = Type("loraserver")
 type Loraserver struct {
 	ApiUrl              string `json:"apiUrl"`
 	Abp                 bool   `json:"abp"`
-	AppsKey             string `json:"appskey"`
-	Nwskey              string `json:"nwskey"`
 	Login               string `json:"login"`
 	Password            string `json:"password"`
 	AppId               string `json:"appId"`

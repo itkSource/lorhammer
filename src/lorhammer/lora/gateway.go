@@ -1,30 +1,32 @@
 package lora
 
 import (
-	"github.com/Sirupsen/logrus"
-	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
-	"github.com/brocaar/lorawan"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
 	"math"
 	"net"
 	"time"
+
+	"github.com/Sirupsen/logrus"
+	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
+	"github.com/brocaar/lorawan"
 )
 
 var LOG_GATEWAY = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/gateway"})
 
-func NewGateway(nbNode int, nsAddress string, appskey string, nwskey string, payloads []string, rxpkDate int64, receiveTimeoutTime time.Duration) *model.Gateway {
+func NewGateway(nbNode int, init model.Init) *model.Gateway {
+	parsedTime, _ := time.ParseDuration(init.ReceiveTimeoutTime)
 	gateway := &model.Gateway{
-		NsAddress:          nsAddress,
+		NsAddress:          init.NsAddress,
 		MacAddress:         RandomEUI(),
-		ReceiveTimeoutTime: receiveTimeoutTime,
+		ReceiveTimeoutTime: parsedTime,
 	}
 
-	if rxpkDate > 0 {
-		gateway.RxpkDate = rxpkDate
+	if init.RxpkDate > 0 {
+		gateway.RxpkDate = init.RxpkDate
 	}
 	for i := 0; i < nbNode; i++ {
-		gateway.Nodes = append(gateway.Nodes, NewNode(nwskey, appskey, payloads))
+		gateway.Nodes = append(gateway.Nodes, NewNode(init.Nwskey, init.AppsKey, init.Payloads, init.RandomPayloads))
 	}
 
 	return gateway
@@ -147,7 +149,14 @@ func sendJoinRequestPackets(gateway *model.Gateway, Conn net.Conn) {
 func sendPushPackets(gateway *model.Gateway, Conn net.Conn, fcnt uint32) {
 	rxpk := make([]loraserver_structs.RXPK, 1)
 	for _, node := range gateway.Nodes {
-		rxpk[0] = NewRxpk(GetPushDataPayload(node, fcnt), gateway)
+		buf, err := GetPushDataPayload(node, fcnt)
+		if err != nil {
+			LOG_GATEWAY.WithFields(logrus.Fields{
+				"ref": "lora/gateway:Start()",
+				"err": err,
+			}).Error("Can't get next lora packet to send")
+		}
+		rxpk[0] = NewRxpk(buf, gateway)
 		packet, err := Packet{Rxpk: rxpk}.Prepare(gateway)
 		if err != nil {
 			LOG_GATEWAY.WithFields(logrus.Fields{

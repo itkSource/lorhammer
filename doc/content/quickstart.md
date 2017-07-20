@@ -6,6 +6,28 @@ menu:
 subnav: "true"
 ---
 
+# Very Quickstart
+for details let's go to next section
+## build (optional)
+```shell
+./build.sh
+
+```
+## start mandatory tools
+
+```shell
+LORHAMMER_PROMETHEUS_IP="<local_network_ip>" LORHAMMER_MQTT_IP="<local_network_ip>" LORHAMMER_MQTT_PORT="1884" LORHAMMER_CONSUL_IP="<local_network_ip>" LORHAMMER_GRAFANA_IP="<local_network_ip>" ./resources/scripts/launchTools.sh
+```
+## start 1 lorhammer worker
+```shell
+lorhammer -consul 127.0.0.1:8500 -local-ip <local_network_ip>
+```
+
+## launch a scenario
+```shell
+orchestrator -consul 127.0.0.1:8500 -from-file "./resources/scenarios/simple.json"
+```
+
 # Quickstart
 
 This page describes how to run lorhammer from the simplest to more complex use case.
@@ -59,7 +81,7 @@ Alternatively you can override port variables (in case of double usage/installat
 Start :
 
 ```shell
-resources/scripts/launchTools.sh
+LORHAMMER_PROMETHEUS_IP="<local_network_ip>" LORHAMMER_MQTT_IP="<local_network_ip>" LORHAMMER_MQTT_PORT="1884" LORHAMMER_CONSUL_IP="<local_network_ip>" LORHAMMER_GRAFANA_IP="<local_network_ip>" ./resources/scripts/launchTools.sh
 ```
 
 Will launch :
@@ -78,7 +100,7 @@ Load default dashboard, you can find it here :  `resources/grafana/DashboardLora
 Go to the `Lora` dashboard, if all is ok then start a lorhammer 
 
 ```shell
-lorhammer -nb-gateway 10 -min-nb-node 5 -max-nb-node 5 -ns-address 127.0.0.1:1700 -consul 127.0.0.1:8500
+lorhammer -nb-gateway 10 -min-nb-node 5 -max-nb-node 5 -ns-address 127.0.0.1:1700 -consul 127.0.0.1:8500 -local-ip <local_network_ip>
 ```
 
 You will see :
@@ -92,9 +114,9 @@ One orchestrator can manage as much lorhammers as you want.
 To start some lorhammers, launch the binary as shown below:
 
 ```shell
-lorhammer -consul 127.0.0.1:8500
-lorhammer -consul 127.0.0.1:8500
-lorhammer -consul 127.0.0.1:8500
+lorhammer -consul 127.0.0.1:8500 -local-ip <local_network_ip>
+lorhammer -consul 127.0.0.1:8500 -local-ip <local_network_ip>
+lorhammer -consul 127.0.0.1:8500 -local-ip <local_network_ip>
 ```
 
 Start an orchestrator with a simple scenario :
@@ -128,12 +150,21 @@ A scenario is an array of tests. A test is the description needed by the orchest
     "nbNodePerGateway": [50, 50],
     "scenarioSleepTime": ["10s", "10s"],
     "receiveTimeoutTime": "1s",
-    "gatewaySleepTime": ["100ms", "500ms"]
+    "gatewaySleepTime": ["100ms", "500ms"],
+    "randomPayloads": false,
+    "payloads" : [
+      {"value": "01B501002919000006018403131313121233", "date": 1488931200},
+      {"value": "01B501002919000006018403131313121244", "date": 1488931201}
+    ]
   },
   "provisioning": {
     "type": "none | loraserver | semtechv4",
     "config": {
-      "apiUrl": "127.0.0.1:9999"
+      "apiUrl": "127.0.0.1:9999",
+      "abp": true,
+      "login": "admin",
+      "password": "admin",
+      "appId": ""
     },
     "config": {
       "nsAddress": "127.0.0.1:1701",
@@ -296,25 +327,33 @@ This represents the time interval between every data sent of each gateway to net
 
 Type : **optional(string)**
 
-This parameter should be present when using an activation by personalization (see: **isabp**) with the application server.
+This parameter should be present when using an activation by personalization (see: **abp**) with the application server.
 
 ### nwskey 
 
 Type : **optional(string)**
 
-This parameter should be present when using an activation by personalization (see: **isabp**) with the application server. This key is used to encrypt all push data payloads
+This parameter should be present when using an activation by personalization (see: **abp**) with the application server. This key is used to encrypt all push data payloads
 
 ### payloads 
 
-Type : **array(string)**
+Type : **array(model.Payload)**     
+> For more details read the [godoc](/godoc/#type-testsuite) 
+
 
 This array holds the different payloads you want the nodes to send through all their messages. Each node will randomly choose one of the payloads given in the array as the only payload he's going to be sending. The payloads here are hexadecimal string representations
+
+### randomPayloads 
+
+Type : **boolean**
+
+If 'true', take randomly content from payload array. If 'false' take successivly content from payload array 
  
 ### withJoin 
  
 Type : **boolean**
 
-This is used when provisioning is active. If 'true', all nodes will join the network with a join request. (TODO : For now, the JoinAccept message still need to be processed. )
+This is used when provisioning is "true" active. If 'true', all nodes will join the network with a join request. (TODO : For now, the JoinAccept message still need to be processed. )
   
 ### rxpkDate 
  
@@ -350,7 +389,7 @@ Type : **optional(string)**
  
 Api url for lorawanserver.
 
-#### isabp 
+#### abp 
 
 Type : **optional(boolean)**
  
@@ -369,6 +408,12 @@ Type : **optional(string)**
  
 The provided application server password.
 
+#### appId
+
+Type : **optional(string)**
+
+if empty create new app in loraserver or use define appId
+ 
 #### nsAddress 
 
 Type : **optional(string)**

@@ -1,14 +1,16 @@
 package scenario
 
 import (
-	"github.com/Sirupsen/logrus"
-	"github.com/google/uuid"
 	"lorhammer/src/lorhammer/lora"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
 	"time"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/google/uuid"
 )
 
+//Scenario struc define scenari with metadata
 type Scenario struct {
 	Uuid              string
 	Gateways          []*model.Gateway
@@ -20,17 +22,20 @@ type Scenario struct {
 	MessageFcnt       uint32
 	AppsKey           string
 	Nwskey            string
-	Payloads          []string
+	Payloads          []model.Payload
 }
 
+//NewScenario provide new Scenario with param defined in model.Init
 func NewScenario(init model.Init) (*Scenario, error) {
 	gateways := make([]*model.Gateway, init.NbGateway)
 	for i := 0; i < len(gateways); i++ {
-		if parsedTime, err := time.ParseDuration(init.ReceiveTimeoutTime); err != nil {
+		if _, err := time.ParseDuration(init.ReceiveTimeoutTime); err != nil {
 			return nil, err
-		} else {
-			gateways[i] = lora.NewGateway(tools.Random(init.NbNode[0], init.NbNode[1]), init.NsAddress, init.AppsKey, init.Nwskey, init.Payloads, init.RxpkDate, parsedTime)
 		}
+		gateways[i] = lora.NewGateway(
+			tools.Random(init.NbNode[0], init.NbNode[1]),
+			init)
+
 	}
 	scenarioSleepTimeMin, err := time.ParseDuration(init.ScenarioSleepTime[0])
 	if err != nil {

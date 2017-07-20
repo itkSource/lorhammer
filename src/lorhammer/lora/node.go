@@ -2,19 +2,17 @@ package lora
 
 import (
 	"encoding/hex"
-	"github.com/Sirupsen/logrus"
-	"github.com/brocaar/lorawan"
+	"errors"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/brocaar/lorawan"
 )
 
 var LOG_NODE = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/node"})
 
-func NewNode(nwsKeyStr string, appsKeyStr string, payloads []string) *model.Node {
-	payload := ""
-	if len(payloads) > 0 {
-		payload = payloads[tools.Random(0, len(payloads)-1)]
-	}
+func NewNode(nwsKeyStr string, appsKeyStr string, payloads []model.Payload, randomPayloads bool) *model.Node {
 
 	devEui := RandomEUI()
 
@@ -29,13 +27,15 @@ func NewNode(nwsKeyStr string, appsKeyStr string, payloads []string) *model.Node
 	}
 
 	return &model.Node{
-		DevEUI:  devEui,
-		AppEUI:  RandomEUI(),
-		AppKey:  GetGenericAES128Key(),
-		DevAddr: GetDevAddrFromDevEUI(devEui),
-		AppSKey: appsKey,
-		NwSKey:  nwsKey,
-		Payload: payload,
+		DevEUI:         devEui,
+		AppEUI:         RandomEUI(),
+		AppKey:         GetGenericAES128Key(),
+		DevAddr:        GetDevAddrFromDevEUI(devEui),
+		AppSKey:        appsKey,
+		NwSKey:         nwsKey,
+		Payloads:       payloads,
+		NextPayload:    0,
+		RandomPayloads: randomPayloads,
 	}
 }
 
@@ -70,18 +70,42 @@ func GetJoinRequestDataPayload(node *model.Node) []byte {
 	return b
 }
 
-func GetPushDataPayload(node *model.Node, fcnt uint32) []byte {
+// GetPushDataPayload return the nextbayte arraypush data
+func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 
 	fport := uint8(1)
 
-	if node.Payload == "" {
+	if len(node.Payloads) == 0 {
 
 		LOG_NODE.WithFields(logrus.Fields{
 			"DevEui": node.DevEUI.String(),
 		}).Warn("The payload sent for node is empty, please specify a correct payload on the json scenario file")
 	}
-
-	frmPayloadByteArray, _ := hex.DecodeString(node.Payload)
+	var frmPayloadByteArray []byte
+	if len(node.Payloads) == 0 {
+		LOG_NODE.WithFields(logrus.Fields{
+			"DevEui": node.DevEUI.String(),
+		}).Warn("empty payload array given. So it send \"LorHammer\"")
+		frmPayloadByteArray, _ = hex.DecodeString("LorHammer")
+	} else {
+		var i int
+		if node.RandomPayloads == true {
+			i = tools.Random(0, len(node.Payloads)-1)
+		} else {
+			i = node.NextPayload
+			if len(node.Payloads) >= i-1 {
+				node.NextPayload = i + 1
+			}
+			if len(node.Payloads) == i {
+				LOG_NODE.WithFields(logrus.Fields{
+					"DevEui": node.DevEUI.String(),
+				}).Infof("all payloads sended. restart from beginning (%d/%d)", i, len(node.Payloads))
+				node.NextPayload = 0
+				i = node.NextPayload
+			}
+		}
+		frmPayloadByteArray, _ = hex.DecodeString(node.Payloads[i].Value)
+	}
 
 	phyPayload := lorawan.PHYPayload{
 		MHDR: lorawan.MHDR{
@@ -115,10 +139,9 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) []byte {
 
 	b, err := phyPayload.MarshalBinary()
 	if err != nil {
-		LOG_NODE.Error("unable to marshal physical payload")
-		return []byte{}
+		return nil, errors.New("unable to marshal physical payload")
 	}
-	return b
+	return b, nil
 }
 
 func GetDevAddrFromDevEUI(devEUI lorawan.EUI64) lorawan.DevAddr {

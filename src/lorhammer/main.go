@@ -21,7 +21,7 @@ var LOG = logrus.WithField("logger", "lorhammer/main")
 
 func main() {
 	version := flag.Bool("version", false, "Show current version and build time")
-	localIp := flag.String("local-ip", "", "The address used by consul to access your metrics")
+	localIP := flag.String("local-ip", "", "The address used by others tools to access lorhammer instance")
 	consulAddr := flag.String("consul", "", "The ip:port of consul")
 	nbGateway := flag.Int("nb-gateway", 0, "The number of gateway to launch")
 	minNbNode := flag.Int("min-nb-node", 1, "The minimal number of node by gateway")
@@ -58,7 +58,7 @@ func main() {
 	}
 
 	// IP
-	ip, err := tools.DetectIp(*localIp)
+	ip, err := tools.DetectIp(*localIP)
 	if err != nil {
 		LOG.WithError(err).Error("Ip error")
 	} else {
