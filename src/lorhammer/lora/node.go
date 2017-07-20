@@ -93,7 +93,7 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 			i = tools.Random(0, len(node.Payloads)-1)
 		} else {
 			i = node.NextPayload
-			if len(node.Payloads) <= i-1 {
+			if len(node.Payloads) >= i-1 {
 				node.NextPayload = i + 1
 			}
 			if len(node.Payloads) == i {

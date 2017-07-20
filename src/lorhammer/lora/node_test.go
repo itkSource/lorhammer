@@ -62,6 +62,130 @@ func TestNode_GetPushDataPayload(t *testing.T) {
 
 }
 
+func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArray(t *testing.T) {
+	// , "01B501002919000006018403131313121244"
+	node := NewNode("19842bd94743246b367c2e90942a1f73",
+		"19842bd94743246b367c2e90942a1f774",
+		[]model.Payload{
+			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931200},
+			model.Payload{Value: "01B501002919000006018403131313121244", Date: 1488931201},
+			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931202},
+		},
+		false,
+	)
+	for index := 0; index < 3; index++ {
+		fcnt := uint32(1)
+		dataPayload, err := GetPushDataPayload(node, fcnt)
+		if err != nil {
+			t.Fatal("Couldn't get PushData payload")
+		}
+		phyPayload := lorawan.PHYPayload{}
+		err = phyPayload.UnmarshalBinary(dataPayload)
+		if err != nil {
+			t.Fatal("Couldn't unmarshall PHYPayload Binary")
+		}
+
+		if phyPayload.MHDR.MType != lorawan.MType(lorawan.ConfirmedDataUp) {
+			t.Fatal("Push data messages should always be of type ConfirmedDataType")
+		}
+
+		if phyPayload.MHDR.Major != lorawan.LoRaWANR1 {
+			t.Fatal("Push data messages should always be of protocol LoraWan")
+		}
+
+		if len(phyPayload.MIC) != 4 {
+			t.Fatal("An exactly 4 bytes MIC should be sent with the message")
+		}
+
+		_, ok := phyPayload.MACPayload.(*lorawan.MACPayload)
+		if !ok {
+			t.Fatal("the MacPayload should be of Type MACPayload ")
+		}
+	}
+
+}
+
+func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArrayAndReload(t *testing.T) {
+	// , "01B501002919000006018403131313121244"
+	node := NewNode("19842bd94743246b367c2e90942a1f73",
+		"19842bd94743246b367c2e90942a1f774",
+		[]model.Payload{
+			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931200},
+			model.Payload{Value: "01B501002919000006018403131313121244", Date: 1488931201},
+			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931202},
+		},
+		false,
+	)
+	for index := 0; index < 5; index++ {
+		fcnt := uint32(1)
+		dataPayload, err := GetPushDataPayload(node, fcnt)
+		if err != nil {
+			t.Fatal("Couldn't get PushData payload")
+		}
+		phyPayload := lorawan.PHYPayload{}
+		err = phyPayload.UnmarshalBinary(dataPayload)
+		if err != nil {
+			t.Fatal("Couldn't unmarshall PHYPayload Binary")
+		}
+
+		if phyPayload.MHDR.MType != lorawan.MType(lorawan.ConfirmedDataUp) {
+			t.Fatal("Push data messages should always be of type ConfirmedDataType")
+		}
+
+		if phyPayload.MHDR.Major != lorawan.LoRaWANR1 {
+			t.Fatal("Push data messages should always be of protocol LoraWan")
+		}
+
+		if len(phyPayload.MIC) != 4 {
+			t.Fatal("An exactly 4 bytes MIC should be sent with the message")
+		}
+
+		_, ok := phyPayload.MACPayload.(*lorawan.MACPayload)
+		if !ok {
+			t.Fatal("the MacPayload should be of Type MACPayload ")
+		}
+	}
+
+}
+
+func TestNode_GetPushDataPayloadWithEmptyPayloadArray(t *testing.T) {
+	// , "01B501002919000006018403131313121244"
+	node := NewNode("19842bd94743246b367c2e90942a1f73",
+		"19842bd94743246b367c2e90942a1f774",
+		[]model.Payload{},
+		true,
+	)
+
+	fcnt := uint32(1)
+	dataPayload, err := GetPushDataPayload(node, fcnt)
+	if err != nil {
+		t.Fatal("Couldn't get PushData payload")
+	}
+	phyPayload := lorawan.PHYPayload{}
+	err = phyPayload.UnmarshalBinary(dataPayload)
+	if err != nil {
+		t.Fatal("Couldn't unmarshall PHYPayload Binary")
+	}
+
+	if phyPayload.MHDR.MType != lorawan.MType(lorawan.ConfirmedDataUp) {
+		t.Fatal("Push data messages should always be of type ConfirmedDataType")
+	}
+
+	if phyPayload.MHDR.Major != lorawan.LoRaWANR1 {
+		t.Fatal("Push data messages should always be of protocol LoraWan")
+	}
+
+	if len(phyPayload.MIC) != 4 {
+		t.Fatal("An exactly 4 bytes MIC should be sent with the message")
+	}
+
+	_, ok := phyPayload.MACPayload.(*lorawan.MACPayload)
+	if !ok {
+		t.Fatal("the MacPayload should be of Type MACPayload ")
+	}
+
+}
+
 func TestNewJoinRequestPHYPayload(t *testing.T) {
 	node := NewNode("",
 		"",
