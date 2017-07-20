@@ -29,13 +29,13 @@ type Scenario struct {
 func NewScenario(init model.Init) (*Scenario, error) {
 	gateways := make([]*model.Gateway, init.NbGateway)
 	for i := 0; i < len(gateways); i++ {
-		if parsedTime, err := time.ParseDuration(init.ReceiveTimeoutTime); err != nil {
+		if _, err := time.ParseDuration(init.ReceiveTimeoutTime); err != nil {
 			return nil, err
-		} else {
-			gateways[i] = lora.NewGateway(
-				tools.Random(init.NbNode[0], init.NbNode[1]),
-				init)
 		}
+		gateways[i] = lora.NewGateway(
+			tools.Random(init.NbNode[0], init.NbNode[1]),
+			init)
+
 	}
 	scenarioSleepTimeMin, err := time.ParseDuration(init.ScenarioSleepTime[0])
 	if err != nil {

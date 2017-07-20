@@ -81,23 +81,31 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 			"DevEui": node.DevEUI.String(),
 		}).Warn("The payload sent for node is empty, please specify a correct payload on the json scenario file")
 	}
-	var i int
-	if node.RandomPayloads == true {
-		i = tools.Random(0, len(node.Payloads)-1)
+	var frmPayloadByteArray []byte
+	if len(node.Payloads) == 0 {
+		LOG_NODE.WithFields(logrus.Fields{
+			"DevEui": node.DevEUI.String(),
+		}).Warn("empty payload array given. So it send \"LorHammer\"")
+		frmPayloadByteArray, _ = hex.DecodeString("LorHammer")
 	} else {
-		i = node.NextPayload
-		if len(node.Payloads) <= i-1 {
-			node.NextPayload = i + 1
-		}
-		if len(node.Payloads) == i {
-			LOG_NODE.WithFields(logrus.Fields{
-				"DevEui": node.DevEUI.String(),
-			}).Infof("all payloads sended. restart from beginning (%d/%d)", i, len(node.Payloads))
-			node.NextPayload = 0
+		var i int
+		if node.RandomPayloads == true {
+			i = tools.Random(0, len(node.Payloads)-1)
+		} else {
 			i = node.NextPayload
+			if len(node.Payloads) <= i-1 {
+				node.NextPayload = i + 1
+			}
+			if len(node.Payloads) == i {
+				LOG_NODE.WithFields(logrus.Fields{
+					"DevEui": node.DevEUI.String(),
+				}).Infof("all payloads sended. restart from beginning (%d/%d)", i, len(node.Payloads))
+				node.NextPayload = 0
+				i = node.NextPayload
+			}
 		}
+		frmPayloadByteArray, _ = hex.DecodeString(node.Payloads[i].Value)
 	}
-	frmPayloadByteArray, _ := hex.DecodeString(node.Payloads[i].Value)
 
 	phyPayload := lorawan.PHYPayload{
 		MHDR: lorawan.MHDR{
