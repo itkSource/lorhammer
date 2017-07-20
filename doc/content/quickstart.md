@@ -151,7 +151,11 @@ A scenario is an array of tests. A test is the description needed by the orchest
     "scenarioSleepTime": ["10s", "10s"],
     "receiveTimeoutTime": "1s",
     "gatewaySleepTime": ["100ms", "500ms"],
-    "randomPayloads": true
+    "randomPayloads": false,
+    "payloads" : [
+      {"value": "01B501002919000006018403131313121233", "date": 1488931200},
+      {"value": "01B501002919000006018403131313121244", "date": 1488931201}
+    ]
   },
   "provisioning": {
     "type": "none | loraserver | semtechv4",
