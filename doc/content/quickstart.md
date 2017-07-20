@@ -150,12 +150,17 @@ A scenario is an array of tests. A test is the description needed by the orchest
     "nbNodePerGateway": [50, 50],
     "scenarioSleepTime": ["10s", "10s"],
     "receiveTimeoutTime": "1s",
-    "gatewaySleepTime": ["100ms", "500ms"]
+    "gatewaySleepTime": ["100ms", "500ms"],
+    "randomPayloads": true
   },
   "provisioning": {
     "type": "none | loraserver | semtechv4",
     "config": {
-      "apiUrl": "127.0.0.1:9999"
+      "apiUrl": "127.0.0.1:9999",
+      "abp": true,
+      "login": "admin",
+      "password": "admin",
+      "appId": ""
     },
     "config": {
       "nsAddress": "127.0.0.1:1701",
@@ -318,21 +323,23 @@ This represents the time interval between every data sent of each gateway to net
 
 Type : **optional(string)**
 
-This parameter should be present when using an activation by personalization (see: **isabp**) with the application server.
+This parameter should be present when using an activation by personalization (see: **abp**) with the application server.
 
 ### nwskey 
 
 Type : **optional(string)**
 
-This parameter should be present when using an activation by personalization (see: **isabp**) with the application server. This key is used to encrypt all push data payloads
+This parameter should be present when using an activation by personalization (see: **abp**) with the application server. This key is used to encrypt all push data payloads
 
 ### payloads 
 
-Type : **array(model.Payload)**
+Type : **array(model.Payload)**     
+> For more details read the [godoc](/godoc/#type-testsuite) 
+
 
 This array holds the different payloads you want the nodes to send through all their messages. Each node will randomly choose one of the payloads given in the array as the only payload he's going to be sending. The payloads here are hexadecimal string representations
 
-### RandomPayloads 
+### randomPayloads 
 
 Type : **boolean**
 
@@ -342,7 +349,7 @@ If 'true', take randomly content from payload array. If 'false' take successivly
  
 Type : **boolean**
 
-This is used when provisioning is active. If 'true', all nodes will join the network with a join request. (TODO : For now, the JoinAccept message still need to be processed. )
+This is used when provisioning istitle: "Quickstart" menu: main: weight: 2 subnav: "true" active. If 'true', all nodes will join the network with a join request. (TODO : For now, the JoinAccept message still need to be processed. )
   
 ### rxpkDate 
  
@@ -378,7 +385,7 @@ Type : **optional(string)**
  
 Api url for lorawanserver.
 
-#### isabp 
+#### abp 
 
 Type : **optional(boolean)**
  
@@ -397,6 +404,12 @@ Type : **optional(string)**
  
 The provided application server password.
 
+#### appId
+
+Type : **optional(string)**
+
+if empty create new app in loraserver or use define appId
+ 
 #### nsAddress 
 
 Type : **optional(string)**

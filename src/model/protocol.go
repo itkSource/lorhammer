@@ -24,7 +24,8 @@ type Init struct {
 	RandomPayloads     bool      `json:"randomPayloads"`
 }
 
-// Payload struc define a payload with metadata attached
+// Payload struc define a payload with timestamp date attached
+// { "value": "a string", "date": <timestamp>}
 type Payload struct {
 	Value string `json:"value"`
 	Date  int64  `json:"date"`
