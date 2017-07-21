@@ -1,6 +1,8 @@
 # Changelog
 
-## [UNREALEASED] Version 0.2.0
+## [UNRELEASED] Version 0.3.0
+
+## 2017-10-21 Version 0.2.0
 
 > Scenario file format has changed, please update it before use new lorhammer version! 
 
