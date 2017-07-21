@@ -7,23 +7,30 @@ subnav: "true"
 ---
 
 # Very Quickstart
-for details let's go to next section
+
+For details let's go to next section.
+
 ## build (optional)
+
 ```shell
 ./build.sh
 
 ```
+
 ## start mandatory tools
 
 ```shell
-LORHAMMER_PROMETHEUS_IP="<local_network_ip>" LORHAMMER_MQTT_IP="<local_network_ip>" LORHAMMER_MQTT_PORT="1884" LORHAMMER_CONSUL_IP="<local_network_ip>" LORHAMMER_GRAFANA_IP="<local_network_ip>" ./resources/scripts/launchTools.sh
+LORHAMMER_PROMETHEUS_IP="ADVERTISED_HOST" LORHAMMER_MQTT_IP="ADVERTISED_HOST" LORHAMMER_MQTT_PORT="1884" LORHAMMER_CONSUL_IP="ADVERTISED_HOST" LORHAMMER_GRAFANA_IP="ADVERTISED_HOST" ./resources/scripts/launchTools.sh
 ```
+
 ## start 1 lorhammer worker
+
 ```shell
-lorhammer -consul 127.0.0.1:8500 -local-ip <local_network_ip>
+lorhammer -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
 ```
 
 ## launch a scenario
+
 ```shell
 orchestrator -consul 127.0.0.1:8500 -from-file "./resources/scenarios/simple.json"
 ```
@@ -81,7 +88,7 @@ Alternatively you can override port variables (in case of double usage/installat
 Start :
 
 ```shell
-LORHAMMER_PROMETHEUS_IP="<local_network_ip>" LORHAMMER_MQTT_IP="<local_network_ip>" LORHAMMER_MQTT_PORT="1884" LORHAMMER_CONSUL_IP="<local_network_ip>" LORHAMMER_GRAFANA_IP="<local_network_ip>" ./resources/scripts/launchTools.sh
+LORHAMMER_PROMETHEUS_IP="ADVERTISED_HOST" LORHAMMER_MQTT_IP="ADVERTISED_HOST" LORHAMMER_MQTT_PORT="1884" LORHAMMER_CONSUL_IP="ADVERTISED_HOST" LORHAMMER_GRAFANA_IP="ADVERTISED_HOST" ./resources/scripts/launchTools.sh
 ```
 
 Will launch :
@@ -100,7 +107,7 @@ Load default dashboard, you can find it here :  `resources/grafana/DashboardLora
 Go to the `Lora` dashboard, if all is ok then start a lorhammer 
 
 ```shell
-lorhammer -nb-gateway 10 -min-nb-node 5 -max-nb-node 5 -ns-address 127.0.0.1:1700 -consul 127.0.0.1:8500 -local-ip <local_network_ip>
+lorhammer -nb-gateway 10 -min-nb-node 5 -max-nb-node 5 -ns-address 127.0.0.1:1700 -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
 ```
 
 You will see :
@@ -114,9 +121,9 @@ One orchestrator can manage as much lorhammers as you want.
 To start some lorhammers, launch the binary as shown below:
 
 ```shell
-lorhammer -consul 127.0.0.1:8500 -local-ip <local_network_ip>
-lorhammer -consul 127.0.0.1:8500 -local-ip <local_network_ip>
-lorhammer -consul 127.0.0.1:8500 -local-ip <local_network_ip>
+lorhammer -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
+lorhammer -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
+lorhammer -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
 ```
 
 Start an orchestrator with a simple scenario :
