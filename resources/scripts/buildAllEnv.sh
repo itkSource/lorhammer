@@ -4,8 +4,35 @@ set -o errexit
 set -o pipefail
 
 readonly BASEDIR=$(dirname $(readlink -f $0))
-CI_JOB_ID=$(printenv CI_JOB_ID)
 
-docker build -t "lorhammer_goreleaser_$CI_JOB_ID" -f ${BASEDIR}/../../docker/goreleaser/Dockerfile ${BASEDIR}/../..
+usage () {
+    cat << EOF
 
-docker run --rm -v ${BASEDIR}/../../dist:/go/src/lorhammer/dist "lorhammer_goreleaser_$CI_JOB_ID" $@
+Description: Build lorhammer binaries.
+
+Usage: resources/scripts/buildAllEnv.sh [COMMAND]
+
+Commands:
+
+-light  		    Only compile linux amd64 version.
+-h | -help			Display this help.
+
+EOF
+
+}
+
+if [[ -z $1 ]]; then
+    echo "Error : command empty"
+    usage
+    exit 1
+fi
+
+if [[ "$1" == "-help" || "$1" == "-h" ]]; then
+    usage
+    exit 0
+fi
+
+if [[ "$1" == "-light" ]]; then
+    docker run --rm -v ${BASEDIR}/../..:/go/src/lorhammer registry.gitlab.com/itk.fr/lorhammer/goreleaser --config docker/goreleaser/goreleaser-light.yml "${@:2}"; else
+    docker run --rm -v ${BASEDIR}/../..:/go/src/lorhammer registry.gitlab.com/itk.fr/lorhammer/goreleaser --config docker/goreleaser/goreleaser-full.yml "${@:2}"
+fi
