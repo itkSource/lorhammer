@@ -90,6 +90,8 @@ integration:repeat:
 
 compile:all:
   stage: compile
+  services:
+    - docker:dind
   script:
     - ./install.sh
     - ./resources/scripts/buildAllEnv.sh --snapshot
@@ -99,6 +101,8 @@ compile:all:
     paths:
       - dist
     expire_in: 1 week
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
 
 compile:docker:lorhammer:
   stage: compile
