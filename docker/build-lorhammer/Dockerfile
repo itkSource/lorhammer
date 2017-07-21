@@ -32,3 +32,8 @@ RUN set -x \
 ##
 RUN curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 RUN chmod +x /usr/local/bin/docker-compose
+
+##
+# Pygment for doc
+##
+RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py && pip install Pygments
