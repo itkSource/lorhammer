@@ -15,6 +15,7 @@ Usage: resources/scripts/buildAllEnv.sh [COMMAND]
 Commands:
 
 -light  		    Only compile linux amd64 version.
+-full  		        Compile linux, window and mac for 386, amd64 and arm.
 -h | -help			Display this help.
 
 EOF
