@@ -24,7 +24,7 @@ var instances = cmap.New()
 
 func init() {
 	provisioners[NoneType] = NewNone
-	provisioners[LoraserverType] = NewLoraserver
+	provisioners[loraserverType] = newLoraserver
 	provisioners[SemtechV4Type] = NewSemtechV4
 }
 

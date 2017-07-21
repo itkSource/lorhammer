@@ -14,11 +14,11 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-var LOG_LORASERVER = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
+var log_loraserver = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
 
-const LoraserverType = Type("loraserver")
+const loraserverType = Type("loraserver")
 
-type Loraserver struct {
+type loraserver struct {
 	ApiUrl              string `json:"apiUrl"`
 	Abp                 bool   `json:"abp"`
 	Login               string `json:"login"`
@@ -28,8 +28,8 @@ type Loraserver struct {
 	JwtToKen            string
 }
 
-func NewLoraserver(rawConfig json.RawMessage) (provisioner, error) {
-	config := &Loraserver{
+func newLoraserver(rawConfig json.RawMessage) (provisioner, error) {
+	config := &loraserver{
 		cleanedProvisioning: false,
 	}
 	if err := json.Unmarshal(rawConfig, config); err != nil {
@@ -39,9 +39,9 @@ func NewLoraserver(rawConfig json.RawMessage) (provisioner, error) {
 	return config, nil
 }
 
-func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error {
+func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error {
 
-	loginReq := LoginRequest{
+	loginReq := loginRequest{
 		Login:    loraserver.Login,
 		Password: loraserver.Password,
 	}
@@ -55,7 +55,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 	if err != nil {
 		return err
 	}
-	var loginResp = new(LoginResponse)
+	var loginResp = new(loginResponse)
 	err = json.Unmarshal(responseBody, &loginResp)
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 
 	if loraserver.AppId == "" {
 		//TODO : create organization before the app for the test to be totally stateless
-		asApp := AsApp{
+		asApp := asApp{
 			Name:           "stress-app",
 			Description:    "stress-app",
 			Rx1DROffset:    0,
@@ -76,7 +76,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 			OrganizationId: "1",
 		}
 
-		LOG_LORASERVER.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
+		log_loraserver.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
 
 		marshalledApp, err := json.Marshal(asApp)
 		if err != nil {
@@ -87,7 +87,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 		if err != nil {
 			return err
 		}
-		var creationResponse = new(CreationResponse)
+		var creationResponse = new(creationResponse)
 		err = json.Unmarshal(responseBody, &creationResponse)
 		if err != nil {
 			return err
@@ -99,7 +99,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 	for _, gateway := range sensorsToRegister.Gateways {
 
 		for _, sensor := range gateway.Nodes {
-			asnode := AsNode{
+			asnode := asNode{
 				DevEUI:        sensor.DevEUI.String(),
 				AppEUI:        sensor.AppEUI.String(),
 				AppKey:        sensor.AppKey.String(),
@@ -109,7 +109,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 				UseApplicationSettings: true,
 			}
 
-			LOG_LORASERVER.WithField("name", asnode.Name).Info("Registering sensor")
+			log_loraserver.WithField("name", asnode.Name).Info("Registering sensor")
 
 			if marshalledNode, err := json.Marshal(asnode); err != nil {
 				return err
@@ -120,7 +120,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 			}
 
 			if loraserver.Abp {
-				activation := NodeActivation{
+				activation := nodeActivation{
 					DevAddr:  sensor.DevAddr.String(),
 					AppSKey:  sensor.AppSKey.String(),
 					NwkSKey:  sensor.NwSKey.String(),
@@ -130,7 +130,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 				}
 				marshalledActivation, err := json.Marshal(activation)
 				if err != nil {
-					LOG_LORASERVER.Panic(err)
+					log_loraserver.Panic(err)
 
 				}
 				doRequest(loraserver.ApiUrl+"/api/nodes/"+asnode.DevEUI+"/activation", "POST", marshalledActivation, loraserver.JwtToKen)
@@ -143,7 +143,7 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 }
 
 func doRequest(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error) {
-	LOG_LORASERVER.WithField("url", url).Info("Will call")
+	log_loraserver.WithField("url", url).Info("Will call")
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalledObject))
@@ -166,10 +166,10 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		LOG_LORASERVER.WithField("url", url).Info("Call succeded")
+		log_loraserver.WithField("url", url).Info("Call succeded")
 
 	default:
-		LOG_LORASERVER.WithFields(logrus.Fields{
+		log_loraserver.WithFields(logrus.Fields{
 			"respStatus":   resp.StatusCode,
 			"responseBody": string(body),
 			"url":          url,
@@ -180,7 +180,7 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 	return body, nil
 }
 
-func (loraserver *Loraserver) DeProvision() error {
+func (loraserver *loraserver) DeProvision() error {
 	if !loraserver.cleanedProvisioning {
 		if loraserver.ApiUrl != "" && loraserver.AppId != "" {
 			if _, err := doRequest(loraserver.ApiUrl+"/api/applications/"+loraserver.AppId, "DELETE", nil, loraserver.JwtToKen); err != nil {
@@ -194,7 +194,7 @@ func (loraserver *Loraserver) DeProvision() error {
 	return nil
 }
 
-type AsNode struct {
+type asNode struct {
 	DevEUI                 string `json:"devEUI"`
 	AppEUI                 string `json:"appEUI"`
 	AppKey                 string `json:"appKey"`
@@ -206,7 +206,7 @@ type AsNode struct {
 	UseApplicationSettings bool   `json:"useApplicationSettings"`
 }
 
-type NodeActivation struct {
+type nodeActivation struct {
 	AppSKey  string `json:"appSKey"`
 	DevAddr  string `json:"devAddr"`
 	DevEUI   string `json:"devEUI"`
@@ -215,7 +215,7 @@ type NodeActivation struct {
 	NwkSKey  string `json:"nwkSKey"`
 }
 
-type AsApp struct {
+type asApp struct {
 	Name           string `json:"name"`
 	Description    string `json:"description"`
 	IsABP          bool   `json:"isABP"`
@@ -227,21 +227,21 @@ type AsApp struct {
 	OrganizationId string `json:"organizationID"`
 }
 
-type RequestHeader struct {
+type requestHeader struct {
 	Alg string `json:"alg"`
 	Typ string `json:"typ"`
 }
 
 // Claims defines the struct containing the token claims.
-type LoginResponse struct {
+type loginResponse struct {
 	Jwt string `json:"jwt"`
 }
 
-type LoginRequest struct {
+type loginRequest struct {
 	Login    string `json:"username"`
 	Password string `json:"password"`
 }
 
-type CreationResponse struct {
+type creationResponse struct {
 	Id string `json:"id"`
 }
