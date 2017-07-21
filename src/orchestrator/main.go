@@ -14,23 +14,25 @@ import (
 	"time"
 )
 
-var VERSION string    // set at build time
-var DATE_BUILD string // set at build time
+var version string // set at build time
+var commit string  // set at build time
+var date string    // set at build time
 
 var LOG = logrus.WithField("logger", "orchestrator/orchestrator")
 
 func main() {
-	version := flag.Bool("version", false, "Show current version and build time")
+	showVersion := flag.Bool("version", false, "Show current version and build time")
 	consulAddr := flag.String("consul", "", "The ip:port of consul")
 	scenarioFromFile := flag.String("from-file", "", "A file containing a scenario to launch")
 	reportFile := flag.String("report-file", "./report.json", "A file to fill reports tests in json")
 	startCli := flag.Bool("cli", false, "Enter in cli mode and access to menu (stop/kill all lorhammers...)")
 	flag.Parse()
 
-	if *version {
+	if *showVersion {
 		logrus.WithFields(logrus.Fields{
-			"version":    VERSION,
-			"build time": DATE_BUILD,
+			"version":    version,
+			"commit":     commit,
+			"build time": date,
 			"go version": runtime.Version(),
 		}).Warn("Welcome to the Lorhammer's Orchestrator")
 		return

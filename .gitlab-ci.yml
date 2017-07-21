@@ -3,7 +3,6 @@ image: registry.gitlab.com/itk.fr/lorhammer/build
 before_script:
     - ln -s /builds/$CI_PROJECT_PATH /go/src/lorhammer
     - cd /go/src/lorhammer
-    - sh install.sh
 
 stages:
     - lint
@@ -26,12 +25,14 @@ lint:vet:
 test:unit:
     stage: test
     script:
+        - ./install.sh
         - go test -race $(go list ./src/...)
 
 test:coverage:
     stage: test
     coverage: /total[^\d]+(\d+.\d+\%)/
     script:
+        - ./install.sh
         - ./resources/scripts/cover.sh -terminal
 
 test:docker:
@@ -39,7 +40,13 @@ test:docker:
   services:
     - docker:dind
   script:
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile .
+    - ./install.sh
+    - ./resources/scripts/buildAllEnv.sh -light --snapshot
+    - docker build -t "${CI_REGISTRY_IMAGE}/lorhammer:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-lorhammer .
+    - docker build -t "${CI_REGISTRY_IMAGE}/orchestrator:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-orchestrator .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push "${CI_REGISTRY_IMAGE}/lorhammer:${CI_PIPELINE_ID}"
+    - docker push "${CI_REGISTRY_IMAGE}/orchestrator:${CI_PIPELINE_ID}"
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 
@@ -51,13 +58,12 @@ test:docker:
     - LORHAMMER_PROMETHEUS_IP="prometheus" LORHAMMER_MQTT_IP="mqtt" LORHAMMER_CONSUL_IP="consul" LORHAMMER_GRAFANA_IP="grafana" ./resources/scripts/launchTools.sh
     - sleep 10
     - echo "Start 1 lorhammer"
-    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_BUILD_ID} up -d lorhammer
+    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_JOB_ID} up -d lorhammer
     - sleep 30
     - echo "Start orchestrator to launch scenario and check all is ok"
-    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_BUILD_ID} run orchestrator
-    - echo "All is ok clean docker deamon"
+    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_JOB_ID} run orchestrator
   after_script:
-    - docker-compose -p ${CI_BUILD_ID} down --remove-orphans
+    - docker-compose -p ${CI_JOB_ID} down --remove-orphans
   tags:
     - docker
 
@@ -85,22 +91,40 @@ integration:repeat:
 compile:all:
   stage: compile
   script:
-    - sh ./resources/scripts/buildAllEnv.sh
+    - ./install.sh
+    - ./resources/scripts/buildAllEnv.sh --snapshot
   only:
     - master@itk.fr/lorhammer
   artifacts:
     paths:
-      - build
+      - dist
     expire_in: 1 week
 
-compile:docker:
+compile:docker:lorhammer:
   stage: compile
   services:
     - docker:dind
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile .
-    - docker push registry.gitlab.com/itk.fr/lorhammer/lorhammer
+    - ./install.sh
+    - ./resources/scripts/buildAllEnv.sh -light --snapshot
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE/lorhammer -f docker/lorhammer/Dockerfile-lorhammer .
+    - docker push $CI_REGISTRY_IMAGE/lorhammer
+  only:
+    - master@itk.fr/lorhammer
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+
+compile:docker:orchestrator:
+  stage: compile
+  services:
+    - docker:dind
+  script:
+    - ./install.sh
+    - ./resources/scripts/buildAllEnv.sh -light --snapshot
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE/orchestrator -f docker/lorhammer/Dockerfile-orchestrator .
+    - docker push $CI_REGISTRY_IMAGE/orchestrator
   only:
     - master@itk.fr/lorhammer
   variables:
@@ -109,21 +133,39 @@ compile:docker:
 compile:tag:
   stage: compile
   script:
-    - sh ./resources/scripts/buildAllEnv.sh
+    - ./install.sh
+    - ./resources/scripts/buildAllEnv.sh
   only:
     - tags
   artifacts:
     paths:
-      - build
+      - dist
 
-compile:docker-tag:
+compile:docker-tag:lorhammer:
   stage: compile
   services:
     - docker:dind
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - docker build -t registry.gitlab.com/itk.fr/lorhammer/lorhammer -f docker/lorhammer/Dockerfile .
-    - docker push registry.gitlab.com/itk.fr/lorhammer/lorhammer:${CI_COMMIT_REF_NAME}
+    - ./install.sh
+    - ./resources/scripts/buildAllEnv.sh
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-lorhammer .
+    - docker push "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}"
+  only:
+    - tags
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+
+compile:docker-tag:orchestrator:
+  stage: compile
+  services:
+    - docker:dind
+  script:
+    - ./install.sh
+    - ./resources/scripts/buildAllEnv.sh
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-orchestrator .
+    - docker push "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}"
   only:
     - tags
   variables:

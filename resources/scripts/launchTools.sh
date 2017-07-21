@@ -24,8 +24,8 @@ if [ -z "$LORHAMMER_GRAFANA_IP" ]; then
 fi
 
 ARGS=()
-if [ ! -z "$CI_BUILD_ID" ]; then
-    ARGS+=( '-f' 'docker-compose.yml' '-f' 'docker-compose.integration.yml' '-p' "${CI_BUILD_ID}" )
+if [ ! -z "$CI_JOB_ID" ]; then
+    ARGS+=( '-f' 'docker-compose.yml' '-f' 'docker-compose.integration.yml' '-p' "${CI_JOB_ID}" )
 fi
 
 echo "Start launchTools.sh with LORHAMMER_MQTT_IP=${LORHAMMER_MQTT_IP} LORHAMMER_PROMETHEUS_IP=${LORHAMMER_PROMETHEUS_IP} LORHAMMER_CONSUL_IP=${LORHAMMER_CONSUL_IP} LORHAMMER_GRAFANA_IP=${LORHAMMER_GRAFANA_IP}"

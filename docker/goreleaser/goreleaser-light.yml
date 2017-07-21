@@ -1,0 +1,23 @@
+project_name: lorhammer
+builds:
+  - binary: lorhammer
+    main: ./src/lorhammer/main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+  - binary: orchestrator
+    main: ./src/orchestrator/main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+archive:
+  name_template: '{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+  replacements:
+    linux: linux
+    amd64: x86_64

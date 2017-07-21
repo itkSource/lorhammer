@@ -9,3 +9,4 @@ doc/public_min
 public
 resources/scenarios/simple-ranch.json
 vendor
+dist
