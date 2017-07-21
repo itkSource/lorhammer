@@ -136,6 +136,8 @@ compile:docker:orchestrator:
 
 compile:tag:
   stage: compile
+  services:
+    - docker:dind
   script:
     - ./install.sh
     - ./resources/scripts/buildAllEnv.sh
@@ -144,6 +146,8 @@ compile:tag:
   artifacts:
     paths:
       - dist
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
 
 compile:docker-tag:lorhammer:
   stage: compile
