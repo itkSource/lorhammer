@@ -261,8 +261,5 @@ func readLoraPackets(gateway *model.Gateway, poison chan bool, next chan bool, t
 }
 
 func RandomEUI() lorawan.EUI64 {
-	return lorawan.EUI64{
-		tools.RandomBytes(1)[0], tools.RandomBytes(1)[0], tools.RandomBytes(1)[0], tools.RandomBytes(1)[0],
-		tools.RandomBytes(1)[0], tools.RandomBytes(1)[0], tools.RandomBytes(1)[0], tools.RandomBytes(1)[0],
-	}
+	return tools.Random8Bytes()
 }

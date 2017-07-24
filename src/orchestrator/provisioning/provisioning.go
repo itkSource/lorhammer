@@ -30,7 +30,13 @@ func init() {
 
 func Provision(uuid string, provisioning Model, sensorsToRegister model.Register) error {
 	if pro := provisioners[provisioning.Type]; pro != nil {
-		if instance, err := pro(provisioning.Config); err != nil {
+		if instance, ok := instances.Get(uuid); ok {
+			if err := instance.(provisioner).Provision(sensorsToRegister); err != nil {
+				return err
+			} else {
+				return nil
+			}
+		} else if instance, err := pro(provisioning.Config); err != nil {
 			return err
 		} else {
 			instances.Set(uuid, instance)

@@ -50,7 +50,7 @@ func (local *localImpl) Deploy() error {
 			if local.LocalIp != "" {
 				args = append(args, "-local-ip", local.LocalIp)
 			}
-			_LOG_LOCAL.WithField("cmd", local.PathFile).WithField("args", args).WithField("nb", local.NbInstanceToLaunch).Info("Will exec cmd")
+			_LOG_LOCAL.WithField("cmd", local.PathFile).WithField("args", args).WithField("nb", local.NbInstanceToLaunch).Debug("Will exec cmd")
 			var cmd = local.cmdFabric(local.PathFile, args...)
 			if err := cmd.Start(); err != nil {
 				_LOG_LOCAL.WithError(err).Error("Local output error when launching")
