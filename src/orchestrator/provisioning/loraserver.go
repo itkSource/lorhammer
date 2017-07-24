@@ -6,12 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"lorhammer/src/model"
 	"net/http"
-	"strconv"
-
-	"github.com/Sirupsen/logrus"
 )
 
 var log_loraserver = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
@@ -95,48 +93,51 @@ func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error 
 		loraserver.AppId = creationResponse.Id
 	}
 
-	idNode := 0
 	for _, gateway := range sensorsToRegister.Gateways {
 
 		for _, sensor := range gateway.Nodes {
-			asnode := asNode{
-				DevEUI:        sensor.DevEUI.String(),
-				AppEUI:        sensor.AppEUI.String(),
-				AppKey:        sensor.AppKey.String(),
-				ApplicationID: loraserver.AppId,
-				Description:   "stresstool node",
-				Name:          "STRESSNODE_" + sensor.DevEUI.String() + "_" + strconv.Itoa(idNode),
-				UseApplicationSettings: true,
-			}
 
-			log_loraserver.WithField("name", asnode.Name).Info("Registering sensor")
-
-			if marshalledNode, err := json.Marshal(asnode); err != nil {
-				return err
-			} else {
-				if _, err := doRequest(loraserver.ApiUrl+"/api/nodes", "POST", marshalledNode, loraserver.JwtToKen); err != nil {
-					return err
+			go func(gateway model.Gateway, sensor *model.Node) {
+				asnode := asNode{
+					DevEUI:        sensor.DevEUI.String(),
+					AppEUI:        sensor.AppEUI.String(),
+					AppKey:        sensor.AppKey.String(),
+					ApplicationID: loraserver.AppId,
+					Description:   "stresstool node",
+					Name:          "STRESSNODE_" + sensor.DevEUI.String(),
+					UseApplicationSettings: true,
 				}
-			}
 
-			if loraserver.Abp {
-				activation := nodeActivation{
-					DevAddr:  sensor.DevAddr.String(),
-					AppSKey:  sensor.AppSKey.String(),
-					NwkSKey:  sensor.NwSKey.String(),
-					FCntUp:   0,
-					FCntDown: 0,
-					DevEUI:   asnode.DevEUI,
+				log_loraserver.WithField("name", asnode.Name).Info("Registering sensor")
+
+				if marshalledNode, err := json.Marshal(asnode); err != nil {
+					log_loraserver.WithField("asnode", asnode).Error("Can't marshall asnode")
+					return
+				} else {
+					if _, err := doRequest(loraserver.ApiUrl+"/api/nodes", "POST", marshalledNode, loraserver.JwtToKen); err != nil {
+						log_loraserver.WithField("marshalledNode", marshalledNode).Error("Can't provision node")
+						return
+					}
 				}
-				marshalledActivation, err := json.Marshal(activation)
-				if err != nil {
-					log_loraserver.Panic(err)
 
+				if loraserver.Abp {
+					activation := nodeActivation{
+						DevAddr:  sensor.DevAddr.String(),
+						AppSKey:  sensor.AppSKey.String(),
+						NwkSKey:  sensor.NwSKey.String(),
+						FCntUp:   0,
+						FCntDown: 0,
+						DevEUI:   asnode.DevEUI,
+					}
+					marshalledActivation, err := json.Marshal(activation)
+					if err != nil {
+						log_loraserver.Panic(err)
+
+					}
+					doRequest(loraserver.ApiUrl+"/api/nodes/"+asnode.DevEUI+"/activation", "POST", marshalledActivation, loraserver.JwtToKen)
 				}
-				doRequest(loraserver.ApiUrl+"/api/nodes/"+asnode.DevEUI+"/activation", "POST", marshalledActivation, loraserver.JwtToKen)
-			}
 
-			idNode++
+			}(gateway, sensor)
 		}
 	}
 	return nil
