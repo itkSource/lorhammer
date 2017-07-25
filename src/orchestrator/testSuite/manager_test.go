@@ -182,7 +182,6 @@ func TestLaunchTest(t *testing.T) {
 		if test.needProvisioning {
 			provisioning.Provision(tests[0].Uuid, tests[0].Provisioning, model.Register{})
 		}
-		tests[0].exiter = func(code int) {}
 		report, err := tests[0].LaunchTest(fakeConsul{}, &fakeMqtt{}, ct.grafana)
 		if ct.testValid && err != nil {
 			t.Fatalf("valid test should not throw err %s", ct.description)
