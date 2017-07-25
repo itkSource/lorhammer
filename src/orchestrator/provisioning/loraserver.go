@@ -2,6 +2,7 @@ package provisioning
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -9,6 +10,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"lorhammer/src/model"
+	"net"
 	"net/http"
 	"time"
 )
@@ -210,7 +212,17 @@ func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, 
 
 func doRequest(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error) {
 	log_loraserver.WithField("url", url).Debug("Will call")
-	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}, Timeout: 5 * time.Second}
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Dial: (&net.Dialer{
+				Timeout: 5 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout: 5 * time.Second,
+		},
+		Timeout: 5 * time.Second,
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalledObject))
 	if err != nil {
@@ -222,6 +234,7 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Close = true
+	req.WithContext(ctx)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
