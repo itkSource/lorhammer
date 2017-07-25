@@ -70,5 +70,8 @@ func foundIp() (string, error) {
 	if len(ips) > 1 {
 		return "", errors.New("Multiple ip found please set one")
 	}
+	if len(ips) == 0 {
+		return "", errors.New("No ip found please set one")
+	}
 	return ips[0], nil
 }
