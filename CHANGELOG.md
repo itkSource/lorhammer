@@ -1,10 +1,11 @@
 # Changelog
 
-## [UNRELEASED] Version 0.3.0
+## Version 0.3.0 - [UNRELEASED]
 
 * **ORCHESTRATOR** fix bug : if a scenario fail, but next scenario success, orchestrator exit(>0) now [issues/25](https://gitlab.com/itk.fr/lorhammer/issues/25)
+* **PROVISIONER** Goroutine over node creation to speed process in [loraserver](https://www.loraserver.io/) provisioner [issues/17](https://gitlab.com/itk.fr/lorhammer/issues/17)
 
-## 2017-10-21 Version 0.2.0
+## Version 0.2.0 - 2017-10-21 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.0)
 
 > Scenario file format has changed, please update it before use new lorhammer version! 
 
@@ -18,11 +19,11 @@
 * **SCENARIO** Specify rxpk date to send [issue/22](https://gitlab.com/itk.fr/lorhammer/issues/22)
 * **CHECKER** Kafka checker allow to check only sub-part of a message [issue/21](https://gitlab.com/itk.fr/lorhammer/issues/21)
 * **SCENARIO** SleepTime between scenario is configurable [issue/2](https://gitlab.com/itk.fr/lorhammer/issues/2)
-* **PROVISIONER** Use existing application to provision loraserver [issue/18](https://gitlab.com/itk.fr/lorhammer/issues/18)
+* **PROVISIONER** Use existing application to provision [loraserver](https://www.loraserver.io/) [issue/18](https://gitlab.com/itk.fr/lorhammer/issues/18)
 * **CHECKER** Checker kafka : listen kafka queue and check message [issue/14](https://gitlab.com/itk.fr/lorhammer/issues/14)
 * **CHECKER** Abstract checker concept [issue/15](https://gitlab.com/itk.fr/lorhammer/issues/15)
 
-## 2017-05-03 Version 0.1.0
+## Version 0.1.0 - 2017-05-03 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.1.0)
 
 First version, lorhammer is intensively develop. **We do not care about api change.** Use lorhammer with caution.
 
