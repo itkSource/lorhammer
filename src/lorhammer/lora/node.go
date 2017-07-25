@@ -50,7 +50,7 @@ func GetJoinRequestDataPayload(node *model.Node) []byte {
 		MACPayload: &lorawan.JoinRequestPayload{
 			AppEUI:   node.AppEUI,
 			DevEUI:   node.DevEUI,
-			DevNonce: [2]byte{tools.RandomBytes(1)[0], tools.RandomBytes(1)[0]},
+			DevNonce: tools.Random2Bytes(),
 		},
 	}
 

@@ -171,7 +171,8 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "abp": true,
       "login": "admin",
       "password": "admin",
-      "appId": ""
+      "appId": "",
+      "nbProvisionerParallel": 10
     },
     "config": {
       "nsAddress": "127.0.0.1:1701",
@@ -419,8 +420,14 @@ The provided application server password.
 
 Type : **optional(string)**
 
-if empty create new app in loraserver or use define appId
- 
+if empty create new app in loraserver or use define appId.
+
+#### nbProvisionerParallel
+
+Type : **int**
+
+Number of parallel request will access loraserver to provision.
+
 #### nsAddress 
 
 Type : **optional(string)**

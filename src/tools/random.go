@@ -46,3 +46,23 @@ func RandomBytes(nb int) []byte {
 func RandomDuration(min, max time.Duration) time.Duration {
 	return time.Duration(Random64(min.Nanoseconds(), max.Nanoseconds()))
 }
+
+func Random2Bytes() [2]byte {
+	return [2]byte{RandomBytes(1)[0], RandomBytes(1)[0]}
+}
+
+func Random4Bytes() [4]byte {
+	return [4]byte{RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0]}
+}
+
+func Random8Bytes() [8]byte {
+	return [8]byte{RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0],
+		RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0]}
+}
+
+func Random16Bytes() [16]byte {
+	return [16]byte{RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0],
+		RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0],
+		RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0],
+		RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0]}
+}

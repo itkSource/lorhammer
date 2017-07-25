@@ -2,35 +2,38 @@ package provisioning
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"lorhammer/src/model"
+	"net"
 	"net/http"
-	"strconv"
-
-	"github.com/Sirupsen/logrus"
+	"time"
 )
 
-var LOG_LORASERVER = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
+var log_loraserver = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
 
-const LoraserverType = Type("loraserver")
+const loraserverType = Type("loraserver")
 
-type Loraserver struct {
-	ApiUrl              string `json:"apiUrl"`
-	Abp                 bool   `json:"abp"`
-	Login               string `json:"login"`
-	Password            string `json:"password"`
-	AppId               string `json:"appId"`
-	cleanedProvisioning bool
-	JwtToKen            string
+type loraserver struct {
+	ApiUrl                string `json:"apiUrl"`
+	Abp                   bool   `json:"abp"`
+	Login                 string `json:"login"`
+	Password              string `json:"password"`
+	AppId                 string `json:"appId"`
+	NbProvisionerParallel int    `json:"nbProvisionerParallel"`
+
+	doRequest func(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error)
+	jwtToKen  string
 }
 
-func NewLoraserver(rawConfig json.RawMessage) (provisioner, error) {
-	config := &Loraserver{
-		cleanedProvisioning: false,
+func newLoraserver(rawConfig json.RawMessage) (provisioner, error) {
+	config := &loraserver{
+		doRequest: doRequest,
 	}
 	if err := json.Unmarshal(rawConfig, config); err != nil {
 		return nil, err
@@ -39,32 +42,34 @@ func NewLoraserver(rawConfig json.RawMessage) (provisioner, error) {
 	return config, nil
 }
 
-func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error {
+func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error {
 
-	loginReq := LoginRequest{
-		Login:    loraserver.Login,
-		Password: loraserver.Password,
-	}
+	if loraserver.jwtToKen == "" {
+		loginReq := loginRequest{
+			Login:    loraserver.Login,
+			Password: loraserver.Password,
+		}
 
-	marshalledLogin, err := json.Marshal(loginReq)
-	if err != nil {
-		return err
-	}
+		marshalledLogin, err := json.Marshal(loginReq)
+		if err != nil {
+			return err
+		}
 
-	responseBody, err := doRequest(loraserver.ApiUrl+"/api/internal/login", "POST", marshalledLogin, "")
-	if err != nil {
-		return err
+		responseBody, err := loraserver.doRequest(loraserver.ApiUrl+"/api/internal/login", "POST", marshalledLogin, "")
+		if err != nil {
+			return err
+		}
+		var loginResp = new(loginResponse)
+		err = json.Unmarshal(responseBody, &loginResp)
+		if err != nil {
+			return err
+		}
+		loraserver.jwtToKen = loginResp.Jwt
 	}
-	var loginResp = new(LoginResponse)
-	err = json.Unmarshal(responseBody, &loginResp)
-	if err != nil {
-		return err
-	}
-	loraserver.JwtToKen = loginResp.Jwt
 
 	if loraserver.AppId == "" {
 		//TODO : create organization before the app for the test to be totally stateless
-		asApp := AsApp{
+		asApp := asApp{
 			Name:           "stress-app",
 			Description:    "stress-app",
 			Rx1DROffset:    0,
@@ -76,18 +81,18 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 			OrganizationId: "1",
 		}
 
-		LOG_LORASERVER.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
+		log_loraserver.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
 
 		marshalledApp, err := json.Marshal(asApp)
 		if err != nil {
 			return err
 		}
 
-		responseBody, err = doRequest(loraserver.ApiUrl+"/api/applications", "POST", marshalledApp, loraserver.JwtToKen)
+		responseBody, err := loraserver.doRequest(loraserver.ApiUrl+"/api/applications", "POST", marshalledApp, loraserver.jwtToKen)
 		if err != nil {
 			return err
 		}
-		var creationResponse = new(CreationResponse)
+		var creationResponse = new(creationResponse)
 		err = json.Unmarshal(responseBody, &creationResponse)
 		if err != nil {
 			return err
@@ -95,56 +100,129 @@ func (loraserver *Loraserver) Provision(sensorsToRegister model.Register) error 
 		loraserver.AppId = creationResponse.Id
 	}
 
-	idNode := 0
+	nbNodeToProvision := 0
 	for _, gateway := range sensorsToRegister.Gateways {
-
-		for _, sensor := range gateway.Nodes {
-			asnode := AsNode{
-				DevEUI:        sensor.DevEUI.String(),
-				AppEUI:        sensor.AppEUI.String(),
-				AppKey:        sensor.AppKey.String(),
-				ApplicationID: loraserver.AppId,
-				Description:   "stresstool node",
-				Name:          "STRESSNODE_" + sensor.DevEUI.String() + "_" + strconv.Itoa(idNode),
-				UseApplicationSettings: true,
-			}
-
-			LOG_LORASERVER.WithField("name", asnode.Name).Info("Registering sensor")
-
-			if marshalledNode, err := json.Marshal(asnode); err != nil {
-				return err
-			} else {
-				if _, err := doRequest(loraserver.ApiUrl+"/api/nodes", "POST", marshalledNode, loraserver.JwtToKen); err != nil {
-					return err
-				}
-			}
-
-			if loraserver.Abp {
-				activation := NodeActivation{
-					DevAddr:  sensor.DevAddr.String(),
-					AppSKey:  sensor.AppSKey.String(),
-					NwkSKey:  sensor.NwSKey.String(),
-					FCntUp:   0,
-					FCntDown: 0,
-					DevEUI:   asnode.DevEUI,
-				}
-				marshalledActivation, err := json.Marshal(activation)
-				if err != nil {
-					LOG_LORASERVER.Panic(err)
-
-				}
-				doRequest(loraserver.ApiUrl+"/api/nodes/"+asnode.DevEUI+"/activation", "POST", marshalledActivation, loraserver.JwtToKen)
-			}
-
-			idNode++
+		for range gateway.Nodes {
+			nbNodeToProvision++
 		}
 	}
+
+	sensorChan := make(chan *model.Node, nbNodeToProvision)
+	defer close(sensorChan)
+	poison := make(chan bool, loraserver.NbProvisionerParallel)
+	defer close(poison)
+	errorChan := make(chan error)
+	defer close(errorChan)
+	sensorFinishChan := make(chan *model.Node)
+	defer close(sensorFinishChan)
+
+	for i := 0; i < loraserver.NbProvisionerParallel; i++ {
+		go loraserver.provisionSensorAsync(sensorChan, poison, errorChan, sensorFinishChan)
+	}
+
+	go func() {
+		for _, gateway := range sensorsToRegister.Gateways {
+			gateway := gateway
+			for _, sensor := range gateway.Nodes {
+				sensor := sensor
+				sensorChan <- sensor
+			}
+		}
+	}()
+
+	for i := 0; i < nbNodeToProvision; i++ {
+		select {
+		case err := <-errorChan:
+			log_loraserver.WithError(err).Error("Node not provisioned")
+		case sensor := <-sensorFinishChan:
+			log_loraserver.WithField("node", sensor).Debug("Node provisioned")
+		}
+	}
+
+	for i := 0; i < loraserver.NbProvisionerParallel; i++ {
+		poison <- true
+	}
+
 	return nil
 }
 
+func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, poison chan bool, errorChan chan error, sensorFinishChan chan *model.Node) {
+	exit := false
+	for {
+		select {
+		case sensor := <-sensorChan:
+			if sensor != nil { // Why i received nil sometimes !?
+				asnode := asNode{
+					DevEUI:        sensor.DevEUI.String(),
+					AppEUI:        sensor.AppEUI.String(),
+					AppKey:        sensor.AppKey.String(),
+					ApplicationID: loraserver.AppId,
+					Description:   "stresstool node",
+					Name:          "STRESSNODE_" + sensor.DevEUI.String(),
+					UseApplicationSettings: true,
+				}
+
+				log_loraserver.WithField("name", asnode.Name).Debug("Registering sensor")
+
+				if marshalledNode, err := json.Marshal(asnode); err != nil {
+					log_loraserver.WithField("asnode", asnode).WithError(err).Error("Can't marshall asnode")
+					errorChan <- err
+					break
+				} else {
+					if _, err := loraserver.doRequest(loraserver.ApiUrl+"/api/nodes", "POST", marshalledNode, loraserver.jwtToKen); err != nil {
+						log_loraserver.WithField("marshalledNode", string(marshalledNode)).WithError(err).Error("Can't provision node")
+						errorChan <- err
+						break
+					}
+				}
+
+				if loraserver.Abp {
+					activation := nodeActivation{
+						DevAddr:  sensor.DevAddr.String(),
+						AppSKey:  sensor.AppSKey.String(),
+						NwkSKey:  sensor.NwSKey.String(),
+						FCntUp:   0,
+						FCntDown: 0,
+						DevEUI:   asnode.DevEUI,
+					}
+					if marshalledActivation, err := json.Marshal(activation); err != nil {
+						log_loraserver.WithError(err).Error("Can't marshal abp node")
+						errorChan <- err
+						break
+					} else {
+						url := loraserver.ApiUrl + "/api/nodes/" + asnode.DevEUI + "/activation"
+						if _, errRequest := loraserver.doRequest(url, "POST", marshalledActivation, loraserver.jwtToKen); errRequest != nil {
+							log_loraserver.WithError(errRequest).Error("Can't activate abp node")
+							errorChan <- errRequest
+							break
+						}
+					}
+				}
+				sensorFinishChan <- sensor
+			}
+		case <-poison:
+			exit = true
+		}
+		if exit {
+			break
+		}
+	}
+
+}
+
 func doRequest(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error) {
-	LOG_LORASERVER.WithField("url", url).Info("Will call")
-	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
+	log_loraserver.WithField("url", url).Debug("Will call")
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Dial: (&net.Dialer{
+				Timeout: 5 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout: 5 * time.Second,
+		},
+		Timeout: 5 * time.Second,
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalledObject))
 	if err != nil {
@@ -155,6 +233,8 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 		req.Header.Set("Grpc-Metadata-Authorization", jwtToken)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Close = true
+	req.WithContext(ctx)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -166,10 +246,10 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		LOG_LORASERVER.WithField("url", url).Info("Call succeded")
+		log_loraserver.WithField("url", url).Debug("Call succeded")
 
 	default:
-		LOG_LORASERVER.WithFields(logrus.Fields{
+		log_loraserver.WithFields(logrus.Fields{
 			"respStatus":   resp.StatusCode,
 			"responseBody": string(body),
 			"url":          url,
@@ -180,21 +260,18 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 	return body, nil
 }
 
-func (loraserver *Loraserver) DeProvision() error {
-	if !loraserver.cleanedProvisioning {
-		if loraserver.ApiUrl != "" && loraserver.AppId != "" {
-			if _, err := doRequest(loraserver.ApiUrl+"/api/applications/"+loraserver.AppId, "DELETE", nil, loraserver.JwtToKen); err != nil {
-				return err
-			}
-			loraserver.cleanedProvisioning = true
-		} else {
-			return fmt.Errorf("ApiUrl (%s) and appId (%s) can not be empty", loraserver.ApiUrl, loraserver.AppId)
+func (loraserver *loraserver) DeProvision() error {
+	if loraserver.ApiUrl != "" && loraserver.AppId != "" {
+		if _, err := loraserver.doRequest(loraserver.ApiUrl+"/api/applications/"+loraserver.AppId, "DELETE", nil, loraserver.jwtToKen); err != nil {
+			return err
 		}
+	} else {
+		return fmt.Errorf("ApiUrl (%s) and appId (%s) can not be empty", loraserver.ApiUrl, loraserver.AppId)
 	}
 	return nil
 }
 
-type AsNode struct {
+type asNode struct {
 	DevEUI                 string `json:"devEUI"`
 	AppEUI                 string `json:"appEUI"`
 	AppKey                 string `json:"appKey"`
@@ -206,7 +283,7 @@ type AsNode struct {
 	UseApplicationSettings bool   `json:"useApplicationSettings"`
 }
 
-type NodeActivation struct {
+type nodeActivation struct {
 	AppSKey  string `json:"appSKey"`
 	DevAddr  string `json:"devAddr"`
 	DevEUI   string `json:"devEUI"`
@@ -215,7 +292,7 @@ type NodeActivation struct {
 	NwkSKey  string `json:"nwkSKey"`
 }
 
-type AsApp struct {
+type asApp struct {
 	Name           string `json:"name"`
 	Description    string `json:"description"`
 	IsABP          bool   `json:"isABP"`
@@ -227,21 +304,21 @@ type AsApp struct {
 	OrganizationId string `json:"organizationID"`
 }
 
-type RequestHeader struct {
+type requestHeader struct {
 	Alg string `json:"alg"`
 	Typ string `json:"typ"`
 }
 
 // Claims defines the struct containing the token claims.
-type LoginResponse struct {
+type loginResponse struct {
 	Jwt string `json:"jwt"`
 }
 
-type LoginRequest struct {
+type loginRequest struct {
 	Login    string `json:"username"`
 	Password string `json:"password"`
 }
 
-type CreationResponse struct {
+type creationResponse struct {
 	Id string `json:"id"`
 }
