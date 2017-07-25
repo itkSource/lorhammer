@@ -5,11 +5,13 @@ import (
 	"github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"lorhammer/src/model"
+	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/cli"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/provisioning"
 	"lorhammer/src/orchestrator/testSuite"
 	"lorhammer/src/tools"
+	"os"
 	"runtime"
 	"time"
 )
@@ -91,6 +93,7 @@ func main() {
 		if err != nil {
 			LOG.WithError(err).WithField("file", *scenarioFromFile).Panic("Error while parsing test suite file")
 		}
+		checkErrors := make([]checker.CheckerError, 0)
 		for _, test := range tests {
 			currentTestSuite = test
 			testReport, err := test.LaunchTest(consulClient, mqttClient, grafanaClient)
@@ -98,9 +101,12 @@ func main() {
 				LOG.WithError(err).Error("Error during test")
 			} else if err := testSuite.WriteFile(testReport, *reportFile); err != nil {
 				LOG.WithError(err).Error("Can't report test")
+			} else {
+				checkErrors = append(checkErrors, testReport.ChecksError...)
 			}
 			time.Sleep(test.SleepAtEndTime)
 		}
+		os.Exit(len(checkErrors))
 	}
 	if *startCli {
 		cli.Start(mqttClient, consulClient)

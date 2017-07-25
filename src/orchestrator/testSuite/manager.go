@@ -53,12 +53,6 @@ func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mq
 
 	if test.ShutdownAllLorhammerTime > 0 {
 		command.ShutdownLorhammers(mqttClient)
-
-		go func() {
-			//TODO add boolean in scenario to choose if we want kill also orchestrator (needed for ci)
-			time.Sleep(100 * time.Millisecond)
-			test.exiter(len(errors))
-		}()
 	}
 	endDate := time.Now()
 	var snapshotUrl = ""
