@@ -2,6 +2,8 @@
 
 ## [UNRELEASED] Version 0.3.0
 
+* **ORCHESTRATOR** fix bug : if a scenario fail, but next scenario success, orchestrator exit(>0) now [issues/25](https://gitlab.com/itk.fr/lorhammer/issues/25)
+
 ## 2017-10-21 Version 0.2.0
 
 > Scenario file format has changed, please update it before use new lorhammer version! 
