@@ -206,3 +206,39 @@ func TestKafka_CheckSimpleRemovalOfDynamicValues(t *testing.T) {
 		t.Fatal("Good check should return 0 error")
 	}
 }
+
+func TestKafka_MultiplePartitions(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("When the consumer and the partition are closed, try to send another message must panic")
+		}
+	}()
+	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":["\"applicationID\":[^,]+,","\"applicationName\":[^,]+\""],"text":"{\"devEUI\":\"3c0a1f3811e5c56b\",}"}]}`)))
+	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
+		mock := mocks.NewConsumer(t, nil)
+		metadata := make(map[string][]int32)
+		metadata["test"] = []int32{0, 1, 2, 3, 4}
+		mock.SetTopicMetadata(metadata)
+		for i := 0; i < 5; i++ {
+			consumerMock := mock.ExpectConsumePartition("test", int32(i), sarama.OffsetNewest)
+			consumerMock.YieldMessage(&sarama.ConsumerMessage{Value: []byte(`{"devEUI":"3c0a1f3811e5c56b","applicationID":"19","applicationName":"kafka"}`)})
+		}
+		return mock, nil
+	}
+	k.Start()
+	time.Sleep(10 * time.Millisecond)
+	success, err := k.Check()
+	for i := 0; i < 5; i++ {
+		consumerMock := k.(*kafka).kafkaConsumer.(*mocks.Consumer).ExpectConsumePartition("test", int32(i), sarama.OffsetNewest)
+		consumerMock.YieldMessage(&sarama.ConsumerMessage{Value: []byte(`{"devEUI":"3c0a1f3811e5c56b","applicationID":"19","applicationName":"kafka"}`)})
+	}
+	if len(success) != 5 {
+		t.Fatal("Good check should return 5 success")
+	}
+	if success[0].Details()["success"] != "1" {
+		t.Fatal("Succes should report description of check")
+	}
+	if len(err) != 0 {
+		t.Fatal("Good check should return 0 error")
+	}
+}
