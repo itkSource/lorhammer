@@ -9,7 +9,6 @@ builds:
       - darwin
       - windows
     goarch:
-      - 386
       - amd64
       - arm
       - arm64
@@ -22,7 +21,6 @@ builds:
       - darwin
       - windows
     goarch:
-      - 386
       - amd64
       - arm
       - arm64
@@ -32,7 +30,6 @@ archive:
     darwin: mac
     linux: linux
     windows: windows
-    386: i386
     amd64: x86_64
   format_overrides:
     - goos: windows
