@@ -34,6 +34,8 @@ if [[ "$1" == "-help" || "$1" == "-h" ]]; then
 fi
 
 if [[ "$1" == "-light" ]]; then
-    docker run --rm -v ${BASEDIR}/../..:/go/src/lorhammer registry.gitlab.com/itk.fr/lorhammer/goreleaser --config docker/goreleaser/goreleaser-light.yml "${@:2}"; else
+    docker run --rm -v ${BASEDIR}/../..:/go/src/lorhammer registry.gitlab.com/itk.fr/lorhammer/goreleaser --config docker/goreleaser/goreleaser-light.yml "${@:2}";
+    else
     docker run --rm -v ${BASEDIR}/../..:/go/src/lorhammer registry.gitlab.com/itk.fr/lorhammer/goreleaser --config docker/goreleaser/goreleaser-full.yml "${@:2}"
+    find ${BASEDIR}/../../dist -maxdepth 1 -mindepth 1 -type d -exec rm -rf '{}' \;
 fi
