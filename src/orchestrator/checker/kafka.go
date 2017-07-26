@@ -10,14 +10,15 @@ import (
 
 const KafkaType = Type("kafka")
 
-var _LOG_KAFKA = logrus.WithField("logger", "orchestrator/checker/kafka")
+var logKafka = logrus.WithField("logger", "orchestrator/checker/kafka")
 
 type kafka struct {
-	config      kafkaConfig
-	newConsumer func(addrs []string, config *sarama.Config) (sarama.Consumer, error)
-	success     []CheckerSuccess
-	err         []CheckerError
-	poison      chan bool
+	config        kafkaConfig
+	newConsumer   func(addrs []string, config *sarama.Config) (sarama.Consumer, error)
+	kafkaConsumer sarama.Consumer
+	success       []CheckerSuccess
+	err           []CheckerError
+	poison        chan bool
 }
 
 type kafkaSuccess struct {
@@ -67,30 +68,30 @@ func newKafka(_ tools.Consul, rawConfig json.RawMessage) (Checker, error) {
 }
 
 func (k *kafka) Start() error {
-	kafkaConsumer, err := k.newConsumer(k.config.Address, nil)
-	if err != nil {
-		_LOG_KAFKA.WithError(err).Error("Kafka new consumer")
+	if kafkaConsumer, err := k.newConsumer(k.config.Address, nil); err != nil {
+		logKafka.WithError(err).Error("Kafka new consumer")
 		return err
+	} else {
+		k.kafkaConsumer = kafkaConsumer
 	}
-
-	partitionList, err := kafkaConsumer.Partitions(k.config.Topic)
+	partitionList, err := k.kafkaConsumer.Partitions(k.config.Topic)
 	if err != nil {
-		_LOG_KAFKA.WithError(err).Error("Kafka partitions")
+		logKafka.WithError(err).Error("Kafka partitions")
 		return err
 	}
 
 	for partition := range partitionList {
-		pc, err := kafkaConsumer.ConsumePartition(k.config.Topic, int32(partition), sarama.OffsetNewest)
+		pc, err := k.kafkaConsumer.ConsumePartition(k.config.Topic, int32(partition), sarama.OffsetNewest)
 		if err != nil {
-			_LOG_KAFKA.WithError(err).Error("Kafka consume partition")
+			logKafka.WithError(err).Error("Kafka consume partition")
 			return err
 		}
-		go k.handleMessage(kafkaConsumer, pc)
+		go k.handleMessage(pc)
 	}
 	return nil
 }
 
-func (k *kafka) handleMessage(kafkaConsumer sarama.Consumer, pc sarama.PartitionConsumer) {
+func (k *kafka) handleMessage(pc sarama.PartitionConsumer) {
 	quit := false
 	for {
 		select {
@@ -105,16 +106,16 @@ func (k *kafka) handleMessage(kafkaConsumer sarama.Consumer, pc sarama.Partition
 					var re = regexp.MustCompile(dynamicValueToRemove)
 					s = re.ReplaceAllLiteralString(s, ``)
 				}
-				_LOG_KAFKA.Warn(s)
+				logKafka.Warn(s)
 				if s == check.Text {
 					atLeastMatch = true
 					k.success = append(k.success, kafkaSuccess{check: check})
-					_LOG_KAFKA.WithField("description", check.Description).Info("Success")
+					logKafka.WithField("description", check.Description).Info("Success")
 					break
 				}
 			}
 			if !atLeastMatch {
-				_LOG_KAFKA.Error("Result mismatch")
+				logKafka.Error("Result mismatch")
 				k.err = append(k.err, kafkaError{reason: "Result mismatch", value: string(message.Value)})
 			}
 		case <-k.poison:
@@ -125,14 +126,22 @@ func (k *kafka) handleMessage(kafkaConsumer sarama.Consumer, pc sarama.Partition
 		}
 	}
 	pc.Close()
-	kafkaConsumer.Close()
 }
 
 func (k *kafka) Check() ([]CheckerSuccess, []CheckerError) {
-	k.poison <- true
-	close(k.poison)
+	partitionList, err := k.kafkaConsumer.Partitions(k.config.Topic)
+	if err != nil {
+		logKafka.WithError(err).Error("Kafka partitions")
+		return k.success, k.err
+	}
+
+	for range partitionList {
+		k.poison <- true
+	}
+	defer close(k.poison)
+	k.kafkaConsumer.Close()
 	if len(k.err) == 0 && len(k.success) == 0 {
-		_LOG_KAFKA.Error("No message received from kafka")
+		logKafka.Error("No message received from kafka")
 		k.err = append(k.err, kafkaError{reason: "No message received from kafka", value: ""})
 	}
 	return k.success, k.err

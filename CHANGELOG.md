@@ -2,6 +2,8 @@
 
 ## Version 0.3.0 - [UNRELEASED]
 
+* **ORCHESTRATOR** fix bug : kafka receive message after closing kafka connexion [issues/42](https://gitlab.com/itk.fr/lorhammer/issues/42)
+* **LORHAMMER** fix bug : if no ip found lorhammer crash with index out of range [issues/43](https://gitlab.com/itk.fr/lorhammer/issues/43)
 * **ORCHESTRATOR** fix bug : if a scenario fail, but next scenario success, orchestrator exit(>0) now [issues/25](https://gitlab.com/itk.fr/lorhammer/issues/25)
 * **PROVISIONER** Goroutine over node creation to speed process in [loraserver](https://www.loraserver.io/) provisioner [issues/17](https://gitlab.com/itk.fr/lorhammer/issues/17)
 
