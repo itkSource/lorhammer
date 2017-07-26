@@ -2,6 +2,7 @@
 
 ## Version 0.3.0 - [UNRELEASED]
 
+* **CI** clean artifact released by deleting useless i386 arch and directories containing binaries already present in tar.gz [issues/41](https://gitlab.com/itk.fr/lorhammer/issues/41)
 * **ORCHESTRATOR** fix bug : kafka receive message after closing kafka connexion [issues/42](https://gitlab.com/itk.fr/lorhammer/issues/42)
 * **LORHAMMER** fix bug : if no ip found lorhammer crash with index out of range [issues/43](https://gitlab.com/itk.fr/lorhammer/issues/43)
 * **ORCHESTRATOR** fix bug : if a scenario fail, but next scenario success, orchestrator exit(>0) now [issues/25](https://gitlab.com/itk.fr/lorhammer/issues/25)
