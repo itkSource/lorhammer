@@ -17,14 +17,7 @@
     "gatewaySleepTime": ["100ms", "500ms"]
   },
   "provisioning": {
-    "type": "none",
-    "config": {
-      "apiUrl": "https://127.0.0.1:9999",
-      "nsAddress": "127.0.0.1:1701",
-      "asAddress": "127.0.0.1:4000",
-      "csAddress": "127.0.0.1:5000",
-      "ncAddress": "127.0.0.1:6000"
-    }
+    "type": "none"
   },
   "check": {
     "type": "none"
