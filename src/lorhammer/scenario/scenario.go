@@ -31,6 +31,8 @@ func NewScenario(init model.Init) (*Scenario, error) {
 	for i := 0; i < len(gateways); i++ {
 		if _, err := time.ParseDuration(init.ReceiveTimeoutTime); err != nil {
 			return nil, err
+		} else {
+			gateways[i] = lora.NewGateway(tools.Random(init.NbNode[0], init.NbNode[1]), init)
 		}
 		gateways[i] = lora.NewGateway(
 			tools.Random(init.NbNode[0], init.NbNode[1]),

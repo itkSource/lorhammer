@@ -108,9 +108,11 @@ We can imagine make `pic` test with creation and deletion of gateways over the t
 
 A provisioner permit to register sensors and gateways to a network-server. Like that the network-server can accept messages from sensors and gateways.
 
-Today we have 3 kind of provisioner : none to not provision, loraserver to provision a [loraserver](https://docs.loraserver.io) network server and semtechv4 to provision a [semtech](http://iot.semtech.com/) v4 network server.
+Today we have 4 kind of provisioner : none to not provision, loraserver to provision a [loraserver](https://docs.loraserver.io) network server, semtechv4 to provision a [semtech](http://iot.semtech.com/) v4 network server and a generic HTTP provisioner.
  
 The semtechv4 provisioner is a work in progress, any help to do it will be useful. Please add comments in [issues/13](https://gitlab.com/itk.fr/lorhammer/issues/13) if you want to contribute on it.
+
+The HTTP provisioner send an http post to the *creationApiUrl*, its body is the [model godoc](/godoc/#model) in JSON format.
  
 A provisioner must have a fabric function which take config json.RawMessage in parameters and return an implementation of `Provisioner` interface :
 
@@ -148,6 +150,7 @@ func init() {
 	provisioners[NoneType] = NewNone
 	provisioners[LoraserverType] = NewLoraserver
 	provisioners[SemtechV4Type] = NewSemtechV4
+	provisioners[HttpType] = NewHttpProvisioner
 }
 ```
 

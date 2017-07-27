@@ -165,7 +165,7 @@ A scenario is an array of tests. A test is the description needed by the orchest
     ]
   },
   "provisioning": {
-    "type": "none | loraserver | semtechv4",
+    "type": "none | loraserver | semtechv4 | http",
     "config": {
       "apiUrl": "127.0.0.1:9999",
       "abp": true,
@@ -179,6 +179,10 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "asAddress": "127.0.0.1:4000",
       "csAddress": "127.0.0.1:5000",
       "ncAddress": "127.0.0.1:6000"
+    },
+    "config": {
+      "creationApiUrl": "http://127.0.0.1:1080",
+      "deletionApiUrl": "http://127.0.0.1:1080"
     }
   },
   "check": {
@@ -369,6 +373,12 @@ Type : **long** epoch time in seconds
 
 This is used when for the dates sent with rxpk messages. It's useful when we want to have control over dates, especially when using a specific checker to validate a dates...   
 
+### Description 
+ 
+Type : **optional(string)**
+
+Description sended with node provisioning   
+
 
 
 ## provisioning 
@@ -379,11 +389,12 @@ Describes the provisioning of your sensors on the network-server system
 
 ### type 
 
-Type : **string/enum** : Can be `none`, `loraserver` or `semtechv4`
+Type : **string/enum** : Can be `none`, `loraserver`, `semtechv4` or `http`
 
 * `none` no provisioning is required
 * `loraserver` call the api of [loraserver application server](https://docs.loraserver.io/loraserver/application-server/) and add sensors
 * `semtechv4` send tcp order to add gateways and sensors
+* `http` send HTTP post, have a look at [model godoc](/godoc/#model) for body JSON format
 
 ### config
 
@@ -450,7 +461,19 @@ ip:port to reach semtechv4 customer-server
 
 Type : **optional(string)**
 
-ip:port to contact semtechv4 netwrok-controller
+ip:port to contact semtechv4 network-controller
+
+#### creationApiUrl 
+
+Type : **optional(string)**
+
+API URL to call by HTTP provisioner for creation
+
+#### deletionApiUrl 
+
+Type : **optional(string)**
+
+API URL to call by HTTP provisioner for deletion
 
 ## check 
 
