@@ -155,7 +155,7 @@ compile:docker-tag:lorhammer:
     - docker:dind
   script:
     - ./install.sh
-    - ./resources/scripts/buildAllEnv.sh -full
+    - ./resources/scripts/buildAllEnv.sh -light
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-lorhammer .
     - docker push "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}"
@@ -170,7 +170,7 @@ compile:docker-tag:orchestrator:
     - docker:dind
   script:
     - ./install.sh
-    - ./resources/scripts/buildAllEnv.sh -full
+    - ./resources/scripts/buildAllEnv.sh -light
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-orchestrator .
     - docker push "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}"

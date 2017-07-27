@@ -2,6 +2,10 @@
 
 ## Version 0.3.0 - [UNRELEASED]
 
+## Version 0.2.2 - 2017-10-27 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.2)
+
+* **CI** repair docker creation on tag
+
 ## Version 0.2.1 - 2017-10-27 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.1)
 
 * **CI** clean artifact released by deleting useless i386 arch and directories containing binaries already present in tar.gz [issues/41](https://gitlab.com/itk.fr/lorhammer/issues/41)
