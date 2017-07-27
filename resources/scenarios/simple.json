@@ -27,7 +27,8 @@
       "abp": true,
       "login": "admin",
       "password": "admin",
-      "appId": ""
+      "appId": "",
+      "nbProvisionerParallel": 10
     }
   },
   "check": {
