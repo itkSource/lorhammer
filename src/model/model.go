@@ -24,4 +24,5 @@ type Node struct {
 	Payloads       []Payload
 	NextPayload    int
 	RandomPayloads bool
+	Description    string
 }

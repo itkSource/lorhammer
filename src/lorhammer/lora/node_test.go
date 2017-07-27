@@ -25,6 +25,7 @@ func TestNode_GetPushDataPayload(t *testing.T) {
 	// , "01B501002919000006018403131313121244"
 	node := NewNode("19842bd94743246b367c2e90942a1f73",
 		"19842bd94743246b367c2e90942a1f774",
+		"",
 		[]model.Payload{
 			model.Payload{Value: "01B501002919000006018403131313121233"},
 			model.Payload{Value: "01B501002919000006018403131313121244"},
@@ -66,6 +67,7 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArray(t *testing.T) 
 	// , "01B501002919000006018403131313121244"
 	node := NewNode("19842bd94743246b367c2e90942a1f73",
 		"19842bd94743246b367c2e90942a1f774",
+		"",
 		[]model.Payload{
 			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931200},
 			model.Payload{Value: "01B501002919000006018403131313121244", Date: 1488931201},
@@ -109,6 +111,7 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArrayAndReload(t *te
 	// , "01B501002919000006018403131313121244"
 	node := NewNode("19842bd94743246b367c2e90942a1f73",
 		"19842bd94743246b367c2e90942a1f774",
+		"",
 		[]model.Payload{
 			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931200},
 			model.Payload{Value: "01B501002919000006018403131313121244", Date: 1488931201},
@@ -152,6 +155,7 @@ func TestNode_GetPushDataPayloadWithEmptyPayloadArray(t *testing.T) {
 	// , "01B501002919000006018403131313121244"
 	node := NewNode("19842bd94743246b367c2e90942a1f73",
 		"19842bd94743246b367c2e90942a1f774",
+		"",
 		[]model.Payload{},
 		true,
 	)
@@ -188,6 +192,7 @@ func TestNode_GetPushDataPayloadWithEmptyPayloadArray(t *testing.T) {
 
 func TestNewJoinRequestPHYPayload(t *testing.T) {
 	node := NewNode("",
+		"",
 		"",
 		[]model.Payload{
 			model.Payload{Value: "01B501002919000006018403131313121233"},

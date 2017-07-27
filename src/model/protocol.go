@@ -21,6 +21,7 @@ type Init struct {
 	Payloads           []Payload `json:"payloads"`
 	RxpkDate           int64     `json:"rxpkDate"`
 	ReceiveTimeoutTime string    `json:"receiveTimeoutTime"`
+	Description        string    `json:"description"`
 	RandomPayloads     bool      `json:"randomPayloads"`
 }
 

@@ -26,6 +26,7 @@ func init() {
 	provisioners[NoneType] = NewNone
 	provisioners[loraserverType] = newLoraserver
 	provisioners[SemtechV4Type] = NewSemtechV4
+	provisioners[HttpType] = NewHttpProvisioner
 }
 
 func Provision(uuid string, provisioning Model, sensorsToRegister model.Register) error {

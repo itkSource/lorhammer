@@ -26,7 +26,7 @@ func NewGateway(nbNode int, init model.Init) *model.Gateway {
 		gateway.RxpkDate = init.RxpkDate
 	}
 	for i := 0; i < nbNode; i++ {
-		gateway.Nodes = append(gateway.Nodes, NewNode(init.Nwskey, init.AppsKey, init.Payloads, init.RandomPayloads))
+		gateway.Nodes = append(gateway.Nodes, NewNode(init.Nwskey, init.AppsKey, init.Description, init.Payloads, init.RandomPayloads))
 	}
 
 	return gateway
