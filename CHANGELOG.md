@@ -2,6 +2,8 @@
 
 ## Version 0.3.0 - [UNRELEASED]
 
+## Version 0.2.1 - 2017-10-27 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.1)
+
 * **CI** clean artifact released by deleting useless i386 arch and directories containing binaries already present in tar.gz [issues/41](https://gitlab.com/itk.fr/lorhammer/issues/41)
 * **ORCHESTRATOR** fix bug : kafka receive message after closing kafka connexion [issues/42](https://gitlab.com/itk.fr/lorhammer/issues/42)
 * **LORHAMMER** fix bug : if no ip found lorhammer crash with index out of range [issues/43](https://gitlab.com/itk.fr/lorhammer/issues/43)
