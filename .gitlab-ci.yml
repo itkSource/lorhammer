@@ -25,14 +25,14 @@ lint:vet:
 test:unit:
     stage: test
     script:
-        - ./install.sh
+        - make dep
         - go test -race $(go list ./src/...)
 
 test:coverage:
     stage: test
     coverage: /total[^\d]+(\d+.\d+\%)/
     script:
-        - ./install.sh
+        - make dep
         - ./resources/scripts/cover.sh -terminal
 
 test:docker:
@@ -40,7 +40,7 @@ test:docker:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make dep
     - ./resources/scripts/buildAllEnv.sh -light --snapshot
     - docker build -t "${CI_REGISTRY_IMAGE}/lorhammer:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-lorhammer .
     - docker build -t "${CI_REGISTRY_IMAGE}/orchestrator:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-orchestrator .
@@ -93,7 +93,7 @@ compile:all:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make dep
     - ./resources/scripts/buildAllEnv.sh -full --snapshot
   only:
     - master@itk.fr/lorhammer
@@ -109,7 +109,7 @@ compile:docker:lorhammer:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make dep
     - ./resources/scripts/buildAllEnv.sh -light --snapshot
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY_IMAGE/lorhammer -f docker/lorhammer/Dockerfile-lorhammer .
@@ -124,7 +124,7 @@ compile:docker:orchestrator:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make dep
     - ./resources/scripts/buildAllEnv.sh -light --snapshot
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY_IMAGE/orchestrator -f docker/lorhammer/Dockerfile-orchestrator .
@@ -139,7 +139,7 @@ compile:tag:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make dep
     - ./resources/scripts/buildAllEnv.sh -full
   only:
     - tags
@@ -154,7 +154,7 @@ compile:docker-tag:lorhammer:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make dep
     - ./resources/scripts/buildAllEnv.sh -light
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-lorhammer .
@@ -169,7 +169,7 @@ compile:docker-tag:orchestrator:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make dep
     - ./resources/scripts/buildAllEnv.sh -light
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-orchestrator .
