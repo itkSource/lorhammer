@@ -16,6 +16,6 @@ dep:
 
 test: dep
 	@echo "let's doing some tests"
-	@go test ./src/...
+	@go test -race ./src/...
 
 .PHONY: test dep build
