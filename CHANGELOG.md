@@ -1,6 +1,7 @@
 # Changelog
 
 ## Version 0.3.0 - [UNRELEASED]
+* **CI** partially use make to build
 
 * **GO** update to golang 1.9 and use sync.map instead of concurrent-map [issues/47](https://gitlab.com/itk.fr/lorhammer/issues/47)
 * **PROVISIONER** Add HTTP generic provisioner with a POST to add sensors and POST to delete them [issues/38](https://gitlab.com/itk.fr/lorhammer/issues/38)
