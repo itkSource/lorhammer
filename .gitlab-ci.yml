@@ -20,7 +20,7 @@ lint:gofmt:
 lint:vet:
     stage: lint
     script:
-        - go tool vet -composites=false -shadow=true src/**/*.go
+        - make lint
 
 test:unit:
     stage: test
