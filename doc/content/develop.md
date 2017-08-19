@@ -16,6 +16,7 @@ This page describes the development environment installation of lorhammer and gi
 
 * [Go](https://golang.org/doc/install) >= 1.8
 * [Docker](https://docs.docker.com/engine/installation/) & [Docker-compose](https://docs.docker.com/compose/install/).
+* [make command](http://www.tutorialspoint.com/unix_commands/make.htm)
 
 ## Steps
 
@@ -23,13 +24,13 @@ This page describes the development environment installation of lorhammer and gi
 cd $GOPATH/src
 git clone git@gitlab.com:itk.fr/lorhammer.git
 cd lorhammer
-sh install.sh
+make dep
 ```
 
 ## Compilation
 
 ```shell
-sh build.sh
+make build
 ```
 
 The binaries of lorhammers are created in `./build` directory.
