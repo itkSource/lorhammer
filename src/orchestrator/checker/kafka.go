@@ -6,6 +6,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"lorhammer/src/tools"
 	"regexp"
+	"sync"
 )
 
 const KafkaType = Type("kafka")
@@ -17,7 +18,9 @@ type kafka struct {
 	newConsumer   func(addrs []string, config *sarama.Config) (sarama.Consumer, error)
 	kafkaConsumer sarama.Consumer
 	success       []CheckerSuccess
+	muSuccess     sync.Mutex
 	err           []CheckerError
+	muErr         sync.Mutex
 	poison        chan bool
 }
 
@@ -98,7 +101,6 @@ func (k *kafka) handleMessage(pc sarama.PartitionConsumer) {
 		case message := <-pc.Messages():
 			atLeastMatch := false
 			for _, check := range k.config.Checks {
-
 				/**Here we strip the value to check from all the dynamically produced values (applicationID, devEUI...)
 				These values are specified in the remove field through the json scenario in the kafka check section **/
 				var s = string(message.Value)
@@ -109,14 +111,18 @@ func (k *kafka) handleMessage(pc sarama.PartitionConsumer) {
 				logKafka.Warn(s)
 				if s == check.Text {
 					atLeastMatch = true
+					k.muSuccess.Lock()
 					k.success = append(k.success, kafkaSuccess{check: check})
+					k.muSuccess.Unlock()
 					logKafka.WithField("description", check.Description).Info("Success")
 					break
 				}
 			}
 			if !atLeastMatch {
 				logKafka.Error("Result mismatch")
+				k.muErr.Lock()
 				k.err = append(k.err, kafkaError{reason: "Result mismatch", value: string(message.Value)})
+				k.muErr.Unlock()
 			}
 		case <-k.poison:
 			quit = true
@@ -140,6 +146,10 @@ func (k *kafka) Check() ([]CheckerSuccess, []CheckerError) {
 	}
 	defer close(k.poison)
 	k.kafkaConsumer.Close()
+	k.muSuccess.Lock()
+	defer k.muSuccess.Unlock()
+	k.muErr.Lock()
+	defer k.muErr.Unlock()
 	if len(k.err) == 0 && len(k.success) == 0 {
 		logKafka.Error("No message received from kafka")
 		k.err = append(k.err, kafkaError{reason: "No message received from kafka", value: ""})
