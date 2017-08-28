@@ -2,6 +2,8 @@
 
 ## Version 0.3.0 - [UNRELEASED]
 
+* **GO** update to golang 1.9 and use sync.map instead of concurrent-map [issues/47](https://gitlab.com/itk.fr/lorhammer/issues/47)
+
 ## Version 0.2.2 - 2017-10-27 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.2)
 
 * **CI** repair docker creation on tag
