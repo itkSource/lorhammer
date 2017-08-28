@@ -1,4 +1,4 @@
-FROM golang:1.8-alpine
+FROM golang:1.9-alpine
 
 # Used to build lorhammer project with goreleaser
 # Push a new version :

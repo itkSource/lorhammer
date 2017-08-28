@@ -1,4 +1,4 @@
-FROM golang:1.8
+FROM golang:1.9
 
 # Used to build lorhammer project, from golang and add docker-compose (docker is a service in gitlab-ci.yml)
 # Push a new version :
@@ -7,33 +7,41 @@ FROM golang:1.8
 # > docker push registry.gitlab.com/itk.fr/lorhammer/build
 
 ##
-# Versions
-##
-ENV DOCKER_VERSION 1.12.1
-ENV DOCKER_COMPOSE_VERSION 1.12.0
-
-##
 # Docker
 ##
-ENV DOCKER_BUCKET get.docker.com
-ENV DOCKER_SHA256 05ceec7fd937e1416e5dce12b0b6e1c655907d349d52574319a1e875077ccb79
-
 RUN set -x \
-	&& curl -fSL "https://${DOCKER_BUCKET}/builds/Linux/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
-	&& echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
-	&& tar -xzvf docker.tgz \
-	&& mv docker/* /usr/local/bin/ \
-	&& rmdir docker \
-	&& rm docker.tgz \
+    && echo 'Acquire::http::Pipeline-Depth "0";' > /etc/apt/apt.conf.d/http-pipeline \
+	&& curl -fsSL get.docker.com -o get-docker.sh \
+	&& sh get-docker.sh \
 	&& docker -v
 
 ##
 # Docker compose
 ##
-RUN curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-RUN chmod +x /usr/local/bin/docker-compose
+ENV DOCKER_COMPOSE_VERSION 1.15.0
+RUN curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose \
+    && docker-compose -v
 
 ##
-# Pygment for doc
+# Doc pygments
 ##
-RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py && pip install Pygments
+RUN wget https://bootstrap.pypa.io/get-pip.py \
+	&& python get-pip.py \
+	&& pip install Pygments
+
+##
+# Doc hugo
+##
+RUN curl -L "https://github.com/gohugoio/hugo/releases/download/v0.26/hugo_0.26_Linux-64bit.tar.gz" -o /tmp/hugo.tar.gz \
+	&& mkdir /tmp/hugo && tar xf /tmp/hugo.tar.gz -C /tmp/hugo \
+	&& mv /tmp/hugo/hugo /usr/local/bin/hugo \
+    && rm /tmp/hugo.tar.gz && rm -rf /tmp/hugo \
+    && chmod +x /usr/local/bin/hugo \
+	&& hugo version
+
+##
+# Doc others
+##
+RUN go get github.com/robertkrimen/godocdown/godocdown \
+	&& go get github.com/tdewolff/minify/cmd/minify

@@ -3,15 +3,15 @@ package command
 import (
 	"encoding/json"
 	"github.com/Sirupsen/logrus"
-	"github.com/orcaman/concurrent-map"
 	"lorhammer/src/lorhammer/scenario"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
 	"os"
+	"sync"
 )
 
 var LOG = logrus.WithField("logger", "lorhammer/command/in")
-var scenarios = cmap.New()
+var scenarios = sync.Map{}
 
 func ApplyCmd(command model.CMD, mqtt tools.Mqtt, hostname string, prometheus tools.Prometheus) {
 	var err error
@@ -66,7 +66,7 @@ func applyInitCmd(command model.CMD, mqtt tools.Mqtt, hostname string) error {
 	if err != nil {
 		return err
 	} else {
-		scenarios.Set(sc.Uuid, sc)
+		scenarios.Store(sc.Uuid, sc)
 		LOG.WithField("toTopic", tools.MQTT_ORCHESTRATOR_TOPIC).Info("Sent registration command to orchestrator")
 	}
 
@@ -78,7 +78,7 @@ func applyStartCmd(command model.CMD, prometheus tools.Prometheus) {
 	if err := json.Unmarshal(command.Payload, &startMessage); err != nil {
 		LOG.WithError(err).Error("Can't unmarshal init command")
 	} else {
-		if sc, isPresent := scenarios.Get(startMessage.ScenarioUUID); isPresent {
+		if sc, isPresent := scenarios.Load(startMessage.ScenarioUUID); isPresent {
 			LOG.Warn("Start scenario")
 			sc.(*scenario.Scenario).Join(prometheus)
 			sc.(*scenario.Scenario).Cron(prometheus)
@@ -90,10 +90,11 @@ func applyStartCmd(command model.CMD, prometheus tools.Prometheus) {
 
 func applyStopCmd(prometheus tools.Prometheus) {
 	LOG.Warn("Stop scenarios")
-	for t := range scenarios.IterBuffered() {
-		t.Val.(*scenario.Scenario).Stop(prometheus)
-		scenarios.Remove(t.Key)
-	}
+	scenarios.Range(func(key interface{}, value interface{}) bool {
+		value.(*scenario.Scenario).Stop(prometheus)
+		return true
+	})
+	scenarios = sync.Map{}
 }
 
 func applyShutdownCmd() {
