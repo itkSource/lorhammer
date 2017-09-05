@@ -6,8 +6,7 @@ installDepthAndLaunch() {
     if hash hugo 2>/dev/null; then
         echo "hugo found no need to install"
     else
-        go get github.com/kardianos/govendor
-        govendor get github.com/spf13/hugo
+        go get -u -v github.com/gohugoio/hugo
     fi
 
     if hash godocdown 2>/dev/null; then

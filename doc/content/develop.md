@@ -24,13 +24,7 @@ This page describes the development environment installation of lorhammer and gi
 cd $GOPATH/src
 git clone git@gitlab.com:itk.fr/lorhammer.git
 cd lorhammer
-make dep
-```
-
-## Compilation
-
-```shell
-make build
+make
 ```
 
 The binaries of lorhammers are created in `./build` directory.
