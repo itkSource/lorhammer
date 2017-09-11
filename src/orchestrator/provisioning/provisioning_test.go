@@ -64,13 +64,13 @@ func TestGoRoutineSafe(t *testing.T) {
 		t.Log(err)
 		t.Fatal("Type none should not return an error")
 	}
-	firstInstance, _ := instances.Get("4")
+	firstInstance, _ := instances.Load("4")
 	//reuse same instance to provision again
 	if err := Provision("4", m, model.Register{}); err != nil {
 		t.Log(err)
 		t.Fatal("Type none should not return an error")
 	}
-	if secondInstance, _ := instances.Get("4"); firstInstance != secondInstance {
+	if secondInstance, _ := instances.Load("4"); firstInstance != secondInstance {
 		t.Fatal("Provision should reuse same instance before deProvisioning")
 	}
 
@@ -106,7 +106,7 @@ func TestCleanAfterDeProvision(t *testing.T) {
 		t.Fatal("Type none should not return an error")
 	}
 
-	if _, ok := instances.Get("5"); ok {
+	if _, ok := instances.Load("5"); ok {
 		t.Fatal("After DeProvision instances should be cleaned")
 	}
 }

@@ -3,8 +3,8 @@ package provisioning
 import (
 	"encoding/json"
 	"errors"
-	"github.com/orcaman/concurrent-map"
 	"lorhammer/src/model"
+	"sync"
 )
 
 type Type string
@@ -20,7 +20,7 @@ type provisioner interface {
 }
 
 var provisioners = make(map[Type]func(config json.RawMessage) (provisioner, error))
-var instances = cmap.New()
+var instances = sync.Map{}
 
 func init() {
 	provisioners[NoneType] = NewNone
@@ -31,7 +31,7 @@ func init() {
 
 func Provision(uuid string, provisioning Model, sensorsToRegister model.Register) error {
 	if pro := provisioners[provisioning.Type]; pro != nil {
-		if instance, ok := instances.Get(uuid); ok {
+		if instance, ok := instances.Load(uuid); ok {
 			if err := instance.(provisioner).Provision(sensorsToRegister); err != nil {
 				return err
 			} else {
@@ -40,7 +40,7 @@ func Provision(uuid string, provisioning Model, sensorsToRegister model.Register
 		} else if instance, err := pro(provisioning.Config); err != nil {
 			return err
 		} else {
-			instances.Set(uuid, instance)
+			instances.Store(uuid, instance)
 			if err := instance.Provision(sensorsToRegister); err != nil {
 				return err
 			} else {
@@ -53,7 +53,8 @@ func Provision(uuid string, provisioning Model, sensorsToRegister model.Register
 }
 
 func DeProvision(uuid string) error {
-	if instance, ok := instances.Pop(uuid); ok {
+	if instance, ok := instances.Load(uuid); ok {
+		instances.Delete(uuid)
 		return instance.(provisioner).DeProvision()
 	}
 	return errors.New("You must Provision before DeProvision")
