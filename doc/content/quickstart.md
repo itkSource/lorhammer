@@ -100,7 +100,7 @@ Will launch :
 
 [![lorhammer-schema](/images/Tools-schema.png)](/images/Tools-schema.png)
 
-When all the tools are launched, open a web browser on [127.0.0.1:3000](127.0.0.1:3000). By default login is `admin` and password is `pass`. 
+When all the tools are launched, open a web browser on [127.0.0.1:3000](http://127.0.0.1:3000/). By default login is `admin` and password is `pass`. 
 Add a data source with name `prometheus`, type `Prometheus`, url `lorhammer_prometheus_1:9090` and let other params with their default values.
 Load default dashboard, you can find it here :  `resources/grafana/DashboardLora.json`.
 
