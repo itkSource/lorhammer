@@ -11,13 +11,7 @@ stages:
     - compile
     - doc
 
-lint:gofmt:
-    stage: lint
-    script:
-        - diff -u <(echo -n) <(gofmt -d ./src)
-        - if [ $? -eq 0 ]; then echo "code formatted"; else echo "run > gofmt -w -d ./src" && exit 1; fi
-
-lint:vet:
+lint:
     stage: lint
     script:
         - make lint
