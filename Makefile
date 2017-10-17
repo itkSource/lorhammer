@@ -19,6 +19,7 @@ $(DEP):
 vendor: $(DEP)
 	dep ensure
 
+
 ####################
 ## LINT
 #####
@@ -61,6 +62,7 @@ doc:
 .PHONY: doc-dev
 doc-dev:
 	./resources/scripts/makeDoc.sh -dev
+
 
 ####################
 ## CLEAN
