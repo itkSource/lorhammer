@@ -2,15 +2,16 @@ package command
 
 import (
 	"encoding/json"
-	"github.com/Sirupsen/logrus"
 	"lorhammer/src/lorhammer/scenario"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
 	"os"
 	"sync"
+
+	"github.com/Sirupsen/logrus"
 )
 
-var LOG = logrus.WithField("logger", "lorhammer/command/in")
+var logger = logrus.WithField("logger", "lorhammer/command/in")
 var scenarios = sync.Map{}
 
 func ApplyCmd(command model.CMD, mqtt tools.Mqtt, hostname string, prometheus tools.Prometheus) {
@@ -26,10 +27,10 @@ func ApplyCmd(command model.CMD, mqtt tools.Mqtt, hostname string, prometheus to
 		applyStopCmd(prometheus)
 		applyShutdownCmd()
 	default:
-		LOG.WithField("cmd", command.CmdName).Error("Unknown command")
+		logger.WithField("cmd", command.CmdName).Error("Unknown command")
 	}
 	if err != nil {
-		LOG.WithError(err).WithField("cmd", command).Error("Apply cmd fail")
+		logger.WithError(err).WithField("cmd", command).Error("Apply cmd fail")
 	}
 }
 
@@ -39,7 +40,7 @@ func applyInitCmd(command model.CMD, mqtt tools.Mqtt, hostname string) error {
 		return err
 	}
 
-	LOG.WithFields(logrus.Fields{
+	logger.WithFields(logrus.Fields{
 		"nbGateway": initMessage.NbGateway,
 		"nbMinNode": initMessage.NbNode[0],
 		"nbMaxNode": initMessage.NbNode[1],
@@ -59,15 +60,15 @@ func applyInitCmd(command model.CMD, mqtt tools.Mqtt, hostname string) error {
 	registerCmd := model.Register{
 		CallBackTopic: tools.MQTT_START_TOPIC + "/" + hostname,
 		Gateways:      gateways,
-		ScenarioUUID:  sc.Uuid,
+		ScenarioUUID:  sc.UUID,
 	}
 
 	err = mqtt.PublishSubCmd(tools.MQTT_ORCHESTRATOR_TOPIC, model.REGISTER, registerCmd)
 	if err != nil {
 		return err
 	} else {
-		scenarios.Store(sc.Uuid, sc)
-		LOG.WithField("toTopic", tools.MQTT_ORCHESTRATOR_TOPIC).Info("Sent registration command to orchestrator")
+		scenarios.Store(sc.UUID, sc)
+		logger.WithField("toTopic", tools.MQTT_ORCHESTRATOR_TOPIC).Info("Sent registration command to orchestrator")
 	}
 
 	return nil
@@ -76,10 +77,10 @@ func applyInitCmd(command model.CMD, mqtt tools.Mqtt, hostname string) error {
 func applyStartCmd(command model.CMD, prometheus tools.Prometheus) {
 	var startMessage model.Start
 	if err := json.Unmarshal(command.Payload, &startMessage); err != nil {
-		LOG.WithError(err).Error("Can't unmarshal init command")
+		logger.WithError(err).Error("Can't unmarshal init command")
 	} else {
 		if sc, isPresent := scenarios.Load(startMessage.ScenarioUUID); isPresent {
-			LOG.Warn("Start scenario")
+			logger.Warn("Start scenario")
 			sc.(*scenario.Scenario).Join(prometheus)
 			ctx := sc.(*scenario.Scenario).Cron(prometheus)
 			go func() {
@@ -89,7 +90,7 @@ func applyStartCmd(command model.CMD, prometheus tools.Prometheus) {
 				stopScenario(sc.(*scenario.Scenario), prometheus)
 			}()
 		} else {
-			LOG.WithField("uuid", startMessage.ScenarioUUID).Error("Can't find scenario")
+			logger.WithField("uuid", startMessage.ScenarioUUID).Error("Can't find scenario")
 		}
 	}
 }
@@ -101,7 +102,7 @@ func stopScenario(scenario *scenario.Scenario, prometheus tools.Prometheus) {
 }
 
 func applyStopCmd(prometheus tools.Prometheus) {
-	LOG.Warn("Stop scenarios")
+	logger.Warn("Stop scenarios")
 	scenarios.Range(func(key interface{}, value interface{}) bool {
 		stopScenario(value.(*scenario.Scenario), prometheus)
 		return true
@@ -109,10 +110,10 @@ func applyStopCmd(prometheus tools.Prometheus) {
 }
 
 func applyShutdownCmd() {
-	LOG.Warn("Shutdown")
+	logger.Warn("Shutdown")
 	p, err := os.FindProcess(os.Getpid())
 	if err != nil {
-		LOG.WithError(err).Error("Can't get current process")
+		logger.WithError(err).Error("Can't get current process")
 	}
 	p.Signal(os.Interrupt) // will DeRegister consul
 }

@@ -1,10 +1,11 @@
 package scenario
 
 import (
-	"github.com/Sirupsen/logrus"
 	"lorhammer/src/model"
 	"testing"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 var models = []model.Init{
@@ -101,7 +102,7 @@ func TestCreation(t *testing.T) {
 			t.Fatal("Facitlity method nbGateways must return same nb gateways as init")
 		}
 
-		var nbNode int = 0
+		var nbNode int
 		for _, gateway := range sc.Gateways {
 			nbNode = nbNode + len(gateway.Nodes)
 			if len(gateway.Nodes) < init.NbNode[0] || len(gateway.Nodes) > init.NbNode[1] {
@@ -122,7 +123,7 @@ func TestCreation(t *testing.T) {
 		promNbNodes := <-nbNodesChan
 
 		if promNbGateways != init.NbGateway {
-			t.Fatalf("Scenario send %d nb gateway to prometheus instead of %d", fakeProm.nbGateway, init.NbGateway)
+			t.Fatalf("Scenario send %d nb gateway to prometheus instead of %d", promNbGateways, init.NbGateway)
 		}
 
 		if promNbNodes < init.NbNode[0] || promNbNodes > init.NbNode[1] {
@@ -138,11 +139,11 @@ func TestCreation(t *testing.T) {
 		time.Sleep(1 * time.Millisecond)
 
 		if promNbGateways != 0 {
-			t.Fatalf("Scenario have %d nb gateway instead of 0", fakeProm.nbGateway)
+			t.Fatalf("Scenario have %d nb gateway instead of 0", promNbGateways)
 		}
 
 		if promNbNodes != 0 {
-			t.Fatalf("Scenario have %d nb nodes instead of 0", fakeProm.nbNodes)
+			t.Fatalf("Scenario have %d nb nodes instead of 0", promNbNodes)
 		}
 
 		// sleep because of go routine

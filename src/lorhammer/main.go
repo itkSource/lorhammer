@@ -18,7 +18,7 @@ var version string // set at build time
 var commit string  // set at build time
 var date string    // set at build time
 
-var LOG = logrus.WithField("logger", "lorhammer/main")
+var logger = logrus.WithField("logger", "lorhammer/main")
 
 func main() {
 	showVersion := flag.Bool("version", false, "Show current version and build time")
@@ -54,25 +54,25 @@ func main() {
 	// PORT
 	httpPort, err := tools.FreeTcpPort()
 	if err != nil {
-		LOG.WithError(err).Error("Free tcp port error")
+		logger.WithError(err).Error("Free tcp port error")
 	} else {
-		LOG.WithField("port", httpPort).Info("Tcp port reserved")
+		logger.WithField("port", httpPort).Info("Tcp port reserved")
 	}
 
 	// IP
 	ip, err := tools.DetectIp(*localIP)
 	if err != nil {
-		LOG.WithError(err).Error("Ip error")
+		logger.WithError(err).Error("Ip error")
 	} else {
-		LOG.WithField("ip", ip).Info("Ip discovered")
+		logger.WithField("ip", ip).Info("Ip discovered")
 	}
 
 	// HOSTNAME
 	hostname, err := tools.Hostname(ip, httpPort)
 	if err != nil {
-		LOG.WithError(err).Error("Hostname error")
+		logger.WithError(err).Error("Hostname error")
 	} else {
-		LOG.WithField("hostname", hostname).Info("Unique hostname generated")
+		logger.WithField("hostname", hostname).Info("Unique hostname generated")
 	}
 
 	// PROMETHEUS
@@ -80,22 +80,22 @@ func main() {
 
 	// CONSUL/MQTT
 	if *consulAddr == "" && *nbGateway <= 0 {
-		LOG.Error("You need to specify at least -consul with ip:port")
+		logger.Error("You need to specify at least -consul with ip:port")
 		return
 	}
 	consulClient, err := tools.NewConsul(*consulAddr)
 	if err != nil {
-		LOG.WithError(err).Warn("Consul not found, lorhammer is in standalone mode")
+		logger.WithError(err).Warn("Consul not found, lorhammer is in standalone mode")
 	} else {
 		if err := consulClient.Register(ip, hostname, httpPort); err != nil {
-			LOG.WithError(err).Warn("Consul register error, lorhammer is in standalone mode")
+			logger.WithError(err).Warn("Consul register error, lorhammer is in standalone mode")
 		} else {
 			mqttClient, err := tools.NewMqtt(hostname, consulClient)
 			if err != nil {
-				LOG.WithError(err).Warn("Mqtt not found, lorhammer is in standalone mode")
+				logger.WithError(err).Warn("Mqtt not found, lorhammer is in standalone mode")
 			} else {
 				if err := mqttClient.Connect(); err != nil {
-					LOG.WithError(err).Warn("Can't connect to mqtt, lorhammer is in standalone mode")
+					logger.WithError(err).Warn("Can't connect to mqtt, lorhammer is in standalone mode")
 				}
 				listenMqtt(mqttClient, []string{tools.MQTT_INIT_TOPIC, tools.MQTT_START_TOPIC + "/" + hostname}, hostname, prometheus)
 			}
@@ -104,7 +104,7 @@ func main() {
 
 	// SCENARIO
 	if *nbGateway > 0 {
-		LOG.Warn("Launch manual scenario")
+		logger.Warn("Launch manual scenario")
 		sc, err := scenario.NewScenario(model.Init{
 			NbGateway:          *nbGateway,
 			NbNode:             [2]int{*minNbNode, *maxNbNode},
@@ -114,7 +114,7 @@ func main() {
 			ReceiveTimeoutTime: "1s",
 		})
 		if err != nil {
-			LOG.WithError(err).Fatal("Can't create scenario with infos passed in flags")
+			logger.WithError(err).Fatal("Can't create scenario with infos passed in flags")
 		}
 		ctx := sc.Cron(prometheus)
 		go func() {
@@ -129,19 +129,19 @@ func main() {
 			command.ApplyCmd(cmd, nil, hostname, prometheus)
 		}()
 	} else {
-		LOG.Warn("No gateway, orchestrator will start scenarii")
+		logger.Warn("No gateway, orchestrator will start scenarii")
 	}
 
 	// HTTP PART
 	http.Handle("/metrics", promhttp.Handler())
-	LOG.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil))
+	logger.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil))
 }
 
 func listenMqtt(mqttClient tools.Mqtt, topics []string, hostname string, prometheus tools.Prometheus) {
 	if err := mqttClient.HandleCmd(topics, func(cmd model.CMD) {
 		command.ApplyCmd(cmd, mqttClient, hostname, prometheus)
 	}); err != nil {
-		LOG.WithError(err).WithField("topics", topics).Error("Error while subscribing")
+		logger.WithError(err).WithField("topics", topics).Error("Error while subscribing")
 	} else {
 		logrus.WithField("topics", topics).Info("Listen mqtt")
 	}

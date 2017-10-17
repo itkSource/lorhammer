@@ -10,11 +10,11 @@ import (
 	"github.com/brocaar/lorawan"
 )
 
-var LOG_NODE = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/node"})
+var loggerNode = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/node"})
 
-func NewNode(nwsKeyStr string, appsKeyStr string, description string, payloads []model.Payload, randomPayloads bool) *model.Node {
+func newNode(nwsKeyStr string, appsKeyStr string, description string, payloads []model.Payload, randomPayloads bool) *model.Node {
 
-	devEui := RandomEUI()
+	devEui := tools.Random8Bytes()
 
 	nwsKey := lorawan.AES128Key{}
 	if nwsKeyStr != "" {
@@ -28,9 +28,9 @@ func NewNode(nwsKeyStr string, appsKeyStr string, description string, payloads [
 
 	return &model.Node{
 		DevEUI:         devEui,
-		AppEUI:         RandomEUI(),
-		AppKey:         GetGenericAES128Key(),
-		DevAddr:        GetDevAddrFromDevEUI(devEui),
+		AppEUI:         tools.Random8Bytes(),
+		AppKey:         getGenericAES128Key(),
+		DevAddr:        getDevAddrFromDevEUI(devEui),
 		AppSKey:        appsKey,
 		NwSKey:         nwsKey,
 		Payloads:       payloads,
@@ -40,7 +40,7 @@ func NewNode(nwsKeyStr string, appsKeyStr string, description string, payloads [
 	}
 }
 
-func GetJoinRequestDataPayload(node *model.Node) []byte {
+func getJoinRequestDataPayload(node *model.Node) []byte {
 
 	phyPayload := lorawan.PHYPayload{
 		MHDR: lorawan.MHDR{
@@ -57,7 +57,7 @@ func GetJoinRequestDataPayload(node *model.Node) []byte {
 
 	err := phyPayload.SetMIC(node.AppKey)
 	if err != nil {
-		LOG_NODE.WithFields(logrus.Fields{
+		loggerNode.WithFields(logrus.Fields{
 			"ref": "lorhammer/lora/payloadFactory:NewJoinRequestPHYPayload()",
 			"err": err,
 		}).Error("Could not calculate MIC")
@@ -65,7 +65,7 @@ func GetJoinRequestDataPayload(node *model.Node) []byte {
 
 	b, err := phyPayload.MarshalBinary()
 	if err != nil {
-		LOG_NODE.Error("unable to marshal physical payload")
+		loggerNode.Error("unable to marshal physical payload")
 		return []byte{}
 	}
 	return b
@@ -78,13 +78,13 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 
 	if len(node.Payloads) == 0 {
 
-		LOG_NODE.WithFields(logrus.Fields{
+		loggerNode.WithFields(logrus.Fields{
 			"DevEui": node.DevEUI.String(),
 		}).Warn("The payload sent for node is empty, please specify a correct payload on the json scenario file")
 	}
 	var frmPayloadByteArray []byte
 	if len(node.Payloads) == 0 {
-		LOG_NODE.WithFields(logrus.Fields{
+		loggerNode.WithFields(logrus.Fields{
 			"DevEui": node.DevEUI.String(),
 		}).Warn("empty payload array given. So it send \"LorHammer\"")
 		frmPayloadByteArray, _ = hex.DecodeString("LorHammer")
@@ -100,7 +100,7 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 			// if the current payload is the last of the payload set, a complete round has been executed
 			if len(node.Payloads) == node.NextPayload {
 				node.PayloadsReplayLap++
-				LOG_NODE.WithFields(logrus.Fields{
+				loggerNode.WithFields(logrus.Fields{
 					"DevEui": node.DevEUI.String(),
 				}).Infof("Complete lap executed : %d", node.PayloadsReplayLap)
 				LOG_NODE.WithFields(logrus.Fields{
@@ -143,7 +143,7 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 	err := phyPayload.SetMIC(node.NwSKey)
 
 	if err != nil {
-		LOG_NODE.WithFields(logrus.Fields{
+		loggerNode.WithFields(logrus.Fields{
 			"ref": "lorhammer/lora/payloadFactory:NewJoinRequestPHYPayload()",
 			"err": err,
 		}).Fatal("Could not calculate MIC")
@@ -156,14 +156,14 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 	return b, nil
 }
 
-func GetDevAddrFromDevEUI(devEUI lorawan.EUI64) lorawan.DevAddr {
+func getDevAddrFromDevEUI(devEUI lorawan.EUI64) lorawan.DevAddr {
 	devAddr := lorawan.DevAddr{}
 	devEuiStr := devEUI.String()
 	devAddr.UnmarshalText([]byte(devEuiStr[len(devEuiStr)-8:]))
 	return devAddr
 }
 
-func GetGenericAES128Key() lorawan.AES128Key {
+func getGenericAES128Key() lorawan.AES128Key {
 	return lorawan.AES128Key{
 		byte(1), byte(2), byte(3), byte(4),
 		byte(5), byte(6), byte(7), byte(8),

@@ -13,7 +13,7 @@ func TestGetDevAddrFromDevEUI(t *testing.T) {
 		byte(5), byte(6), byte(7), byte(8),
 	}
 
-	devAddr := GetDevAddrFromDevEUI(eui)
+	devAddr := getDevAddrFromDevEUI(eui)
 
 	if devAddr.String() != "05060708" {
 		t.Fatalf("DevAddr string value must equal %s ", "05060708")
@@ -23,7 +23,7 @@ func TestGetDevAddrFromDevEUI(t *testing.T) {
 
 func TestNode_GetPushDataPayload(t *testing.T) {
 	// , "01B501002919000006018403131313121244"
-	node := NewNode("19842bd94743246b367c2e90942a1f73",
+	node := newNode("19842bd94743246b367c2e90942a1f73",
 		"19842bd94743246b367c2e90942a1f774",
 		"",
 		[]model.Payload{
@@ -68,7 +68,7 @@ func TestNode_GetPushDataPayload(t *testing.T) {
 
 func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArray(t *testing.T) {
 	// , "01B501002919000006018403131313121244"
-	node := NewNode("19842bd94743246b367c2e90942a1f73",
+	node := newNode("19842bd94743246b367c2e90942a1f73",
 		"19842bd94743246b367c2e90942a1f774",
 		"",
 		[]model.Payload{
@@ -115,7 +115,7 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArray(t *testing.T) 
 
 func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArrayAndReload(t *testing.T) {
 	// , "01B501002919000006018403131313121244"
-	node := NewNode("19842bd94743246b367c2e90942a1f73",
+	node := newNode("19842bd94743246b367c2e90942a1f73",
 		"19842bd94743246b367c2e90942a1f774",
 		"",
 		[]model.Payload{
@@ -162,7 +162,7 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArrayAndReload(t *te
 
 func TestNode_GetPushDataPayloadWithEmptyPayloadArray(t *testing.T) {
 	// , "01B501002919000006018403131313121244"
-	node := NewNode("19842bd94743246b367c2e90942a1f73",
+	node := newNode("19842bd94743246b367c2e90942a1f73",
 		"19842bd94743246b367c2e90942a1f774",
 		"",
 		[]model.Payload{},
@@ -203,7 +203,7 @@ func TestNode_GetPushDataPayloadWithEmptyPayloadArray(t *testing.T) {
 }
 
 func TestNewJoinRequestPHYPayload(t *testing.T) {
-	node := NewNode("",
+	node := newNode("",
 		"",
 		"",
 		[]model.Payload{
@@ -211,7 +211,7 @@ func TestNewJoinRequestPHYPayload(t *testing.T) {
 			{Value: "01B501002919000006018403131313121244"},
 		}, true)
 
-	dataPayload := GetJoinRequestDataPayload(node)
+	dataPayload := getJoinRequestDataPayload(node)
 	jrPayload := lorawan.PHYPayload{}
 	jrPayload.UnmarshalBinary(dataPayload)
 
