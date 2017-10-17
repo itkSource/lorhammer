@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 )
 
+//CMD is the stuct for communication between orchestrator and lorhammer
 type CMD struct {
 	CmdName CommandName     `json:"cmd"`
 	Payload json.RawMessage `json:"payload"`
 }
 
+//Init is the struc send by orchestrator to lorhammer
 type Init struct {
 	NsAddress            string    `json:"nsAddress"`
 	NbGateway            int       `json:"nbGatewayPerLorhammer"`
@@ -26,19 +28,21 @@ type Init struct {
 	RandomPayloads       bool      `json:"randomPayloads"`
 }
 
-// Payload struc define a payload with timestamp date attached
+// Payload struct define a payload with timestamp date attached
 // { "value": "a string", "date": <timestamp>}
 type Payload struct {
 	Value string `json:"value"`
 	Date  int64  `json:"date"`
 }
 
+//Register struct is the command send by lorhammer to orchestrator for register gateway and sensors to network-server
 type Register struct {
 	ScenarioUUID  string    `json:"scenarioid"`
 	Gateways      []Gateway `json:"gateways"`
 	CallBackTopic string    `json:"callBackTopic"`
 }
 
+//Start is the command send by orchestrator to lorhammer because all gateway and sensor have been registered
 type Start struct {
 	ScenarioUUID string `json:"scenarioid"`
 }

@@ -1,10 +1,12 @@
 package model
 
 import (
-	"github.com/brocaar/lorawan"
 	"time"
+
+	"github.com/brocaar/lorawan"
 )
 
+//Gateway represent a lorawan gateway
 type Gateway struct {
 	Nodes                 []*Node
 	NsAddress             string
@@ -15,6 +17,7 @@ type Gateway struct {
 	ReceiveTimeoutTime    time.Duration
 }
 
+//Node represent a lorawan sensor
 type Node struct {
 	DevAddr           lorawan.DevAddr
 	DevEUI            lorawan.EUI64
