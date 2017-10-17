@@ -27,8 +27,8 @@ func TestNode_GetPushDataPayload(t *testing.T) {
 		"19842bd94743246b367c2e90942a1f774",
 		"",
 		[]model.Payload{
-			model.Payload{Value: "01B501002919000006018403131313121233"},
-			model.Payload{Value: "01B501002919000006018403131313121244"},
+			{Value: "01B501002919000006018403131313121233"},
+			{Value: "01B501002919000006018403131313121244"},
 		},
 		true,
 	)
@@ -69,9 +69,9 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArray(t *testing.T) 
 		"19842bd94743246b367c2e90942a1f774",
 		"",
 		[]model.Payload{
-			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931200},
-			model.Payload{Value: "01B501002919000006018403131313121244", Date: 1488931201},
-			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931202},
+			{Value: "01B501002919000006018403131313121233", Date: 1488931200},
+			{Value: "01B501002919000006018403131313121244", Date: 1488931201},
+			{Value: "01B501002919000006018403131313121233", Date: 1488931202},
 		},
 		false,
 	)
@@ -113,9 +113,9 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArrayAndReload(t *te
 		"19842bd94743246b367c2e90942a1f774",
 		"",
 		[]model.Payload{
-			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931200},
-			model.Payload{Value: "01B501002919000006018403131313121244", Date: 1488931201},
-			model.Payload{Value: "01B501002919000006018403131313121233", Date: 1488931202},
+			{Value: "01B501002919000006018403131313121233", Date: 1488931200},
+			{Value: "01B501002919000006018403131313121244", Date: 1488931201},
+			{Value: "01B501002919000006018403131313121233", Date: 1488931202},
 		},
 		false,
 	)
@@ -195,8 +195,8 @@ func TestNewJoinRequestPHYPayload(t *testing.T) {
 		"",
 		"",
 		[]model.Payload{
-			model.Payload{Value: "01B501002919000006018403131313121233"},
-			model.Payload{Value: "01B501002919000006018403131313121244"},
+			{Value: "01B501002919000006018403131313121233"},
+			{Value: "01B501002919000006018403131313121244"},
 		}, true)
 
 	dataPayload := GetJoinRequestDataPayload(node)

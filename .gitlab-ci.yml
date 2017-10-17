@@ -11,36 +11,28 @@ stages:
     - compile
     - doc
 
-lint:gofmt:
+lint:
     stage: lint
     script:
-        - diff -u <(echo -n) <(gofmt -d ./src)
-        - if [ $? -eq 0 ]; then echo "code formatted"; else echo "run > gofmt -w -d ./src" && exit 1; fi
-
-lint:vet:
-    stage: lint
-    script:
-        - go tool vet -composites=false -shadow=true src/**/*.go
+        - make lint
 
 test:unit:
     stage: test
     script:
-        - ./install.sh
-        - go test -race $(go list ./src/...)
+        - make test
 
 test:coverage:
     stage: test
     coverage: /total[^\d]+(\d+.\d+\%)/
     script:
-        - ./install.sh
-        - ./resources/scripts/cover.sh -terminal
+        - make cover
 
 test:docker:
   stage: test
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light --snapshot
     - docker build -t "${CI_REGISTRY_IMAGE}/lorhammer:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-lorhammer .
     - docker build -t "${CI_REGISTRY_IMAGE}/orchestrator:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-orchestrator .
@@ -93,7 +85,7 @@ compile:all:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make vendor
     - ./resources/scripts/buildAllEnv.sh -full --snapshot
   only:
     - master@itk.fr/lorhammer
@@ -109,7 +101,7 @@ compile:docker:lorhammer:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light --snapshot
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY_IMAGE/lorhammer -f docker/lorhammer/Dockerfile-lorhammer .
@@ -124,7 +116,7 @@ compile:docker:orchestrator:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light --snapshot
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY_IMAGE/orchestrator -f docker/lorhammer/Dockerfile-orchestrator .
@@ -139,7 +131,7 @@ compile:tag:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make vendor
     - ./resources/scripts/buildAllEnv.sh -full
   only:
     - tags
@@ -154,7 +146,7 @@ compile:docker-tag:lorhammer:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-lorhammer .
@@ -169,7 +161,7 @@ compile:docker-tag:orchestrator:
   services:
     - docker:dind
   script:
-    - ./install.sh
+    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-orchestrator .
@@ -182,9 +174,7 @@ compile:docker-tag:orchestrator:
 pages:
   stage: doc
   script:
-    - resources/scripts/makeDoc.sh
-    - rm -rf doc/public
-    - mv doc/public_min public
+    - make doc
   artifacts:
     paths:
       - public
