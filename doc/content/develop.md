@@ -40,12 +40,12 @@ Follow the [quickstart](../quickstart) and be sure to have lorhammer, orchestrat
 We use [hugo](https://gohugo.io/) to generate static html from markdown.
 You can find documentation files in multiple directory. 
 All `.md` files at root path (README, CHANGELOG...) are used. We also use `doc/content/*.md`.
-The theme can be find in `doc/themes/hugorha` after the first call to the `makeDoc.sh` (see below).
+The theme can be find in `doc/themes/hugorha` after the first call to the `make doc` (see below).
 
 ## Generate doc
 
 ```shell
-./resources/scripts/makeDoc.sh
+make doc
 ```
 
 This script will install all requirements and generate the doc. 
@@ -53,7 +53,7 @@ This script will install all requirements and generate the doc.
 ## Develop doc
 
 ```shell
-./resources/scripts/makeDoc.sh -dev
+make doc-dev
 ```
 
 To launch a standalone web browser add `-dev` flag and open [http://localhost:1313/](http://localhost:1313/).

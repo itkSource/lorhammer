@@ -31,8 +31,7 @@ test:coverage:
     stage: test
     coverage: /total[^\d]+(\d+.\d+\%)/
     script:
-        - make dep
-        - ./resources/scripts/cover.sh -terminal
+        - make cover
 
 test:docker:
   stage: test
@@ -181,9 +180,7 @@ compile:docker-tag:orchestrator:
 pages:
   stage: doc
   script:
-    - resources/scripts/makeDoc.sh
-    - rm -rf doc/public
-    - mv doc/public_min public
+    - make doc
   artifacts:
     paths:
       - public

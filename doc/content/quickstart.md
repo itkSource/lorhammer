@@ -13,7 +13,7 @@ For details let's go to next section.
 ## build (optional)
 
 ```shell
-./build.sh
+make
 
 ```
 

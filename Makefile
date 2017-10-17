@@ -58,6 +58,10 @@ doc:
 	rm -rf doc/public
 	mv doc/public_min public
 
+.PHONY: doc-dev
+doc-dev:
+	./resources/scripts/makeDoc.sh -dev
+
 ####################
 ## CLEAN
 #####
@@ -68,3 +72,4 @@ clean:
 	rm -rf doc/public
 	rm -rf doc/public_min
 	rm -rf doc/themes
+	rm -rf public
