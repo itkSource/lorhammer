@@ -3,6 +3,12 @@ baseurl = "http://lorhammer.itk.fr/"
 title = "Lorhammer"
 PygmentsCodeFences = true
 relativeURLs = true
+enableGitInfo = true
+
+[outputs]
+    home = [ "HTML", "RSS", "JSON" ]
+    page = [ "HTML" ]
+
 
 [params]
 homePageTitle = "Lorhammer"
@@ -37,3 +43,17 @@ favicons = [
 
     [params.footer]
     copyrightHTML = "Copyright &#xA9; 2017 itk. All Rights Reserved."
+
+    [params.css]
+    specialFontName = "font/minspsw"
+
+    mainColor = "#680764"
+    gradient_1 = "#d84394"
+    gradient_2 = "#3c0445"
+    textColor = "#222"
+
+    bgColor = "#fff"
+    textColorOnMainColor = "#fff"
+
+    alertColor = "#B90822"
+    siteNameBorder = true
