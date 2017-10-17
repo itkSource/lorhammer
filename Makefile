@@ -6,10 +6,6 @@ DATE_BUILD=`date +%Y-%m-%d\_%H:%M`
 
 BIN_DIR = $(GOPATH)/bin
 DEP = $(BIN_DIR)/dep
-HUGO = $(BIN_DIR)/hugo
-THEME = doc/themes/hugorha
-GODOCDOWN = $(BIN_DIR)/godocdown
-MINIFY = $(BIN_DIR)/minify
 
 .PHONY: first
 first: build
@@ -27,8 +23,10 @@ vendor: $(DEP)
 ## LINT
 #####
 .PHONY: lint
-lint: vendor
+lint:
+	diff -u <(echo -n) <(gofmt -s -d ./src); [ $$? -eq 0 ]
 	go tool vet -composites=false -shadow=true src/**/*.go
+
 
 ####################
 ## TEST
@@ -36,6 +34,11 @@ lint: vendor
 .PHONY: test
 test: vendor
 	go test -race ./src/...
+
+.PHONY: cover
+cover: vendor
+	./resources/scripts/cover.sh -terminal
+
 
 ####################
 ## BUILD
