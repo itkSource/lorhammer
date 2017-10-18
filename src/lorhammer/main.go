@@ -116,7 +116,18 @@ func main() {
 		if err != nil {
 			LOG.WithError(err).Fatal("Can't create scenario with infos passed in flags")
 		}
-		sc.Cron(prometheus)
+		ctx := sc.Cron(prometheus)
+		go func() {
+			LOG.Info("Blocking routine waiting for cancel function")
+			<-ctx.Done()
+			LOG.Info("Releasing blocking routine after cancel function call")
+			cmd := model.CMD{
+				CmdName: model.STOP,
+			}
+			LOG.WithField("cmd ", cmd).Info("Apply Cmd Called")
+			// mqtt client is unneeded in case of shutdown command
+			command.ApplyCmd(cmd, nil, hostname, prometheus)
+		}()
 	} else {
 		LOG.Warn("No gateway, orchestrator will start scenarii")
 	}

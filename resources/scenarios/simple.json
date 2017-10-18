@@ -12,6 +12,7 @@
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 1,
     "nbNodePerGateway": [1, 1],
+    "nbScenarioReplayLaps": 0,
     "scenarioSleepTime": ["10s", "10s"],
     "receiveTimeoutTime": "1s",
     "gatewaySleepTime": ["100ms", "500ms"],

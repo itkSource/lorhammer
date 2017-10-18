@@ -1,0 +1,42 @@
+[{
+  "test": {
+    "type": "oneShot",
+    "rampTime": "0",
+    "repeatTime": "0"
+  },
+  "stopAllLorhammerTime": "0",
+  "sleepBeforeCheckTime": "2m",
+  "shutdownAllLorhammerTime": "0",
+  "sleepAtEndTime": "0",
+  "init": {
+    "nsAddress": "127.0.0.1:1700",
+    "nbGatewayPerLorhammer": 2,
+    "nbNodePerGateway": [3, 3],
+    "nbScenarioReplayLaps": 5,
+    "scenarioSleepTime": ["5s", "5s"],
+    "receiveTimeoutTime": "1s",
+    "withJoin": true,
+    "gatewaySleepTime": ["0ms", "0ms"],
+    "payloads" : [
+      {"value": "01B501002919000006018403131313121233", "date": 1488931200},
+      {"value": "01B501002919000006018403131313121244", "date": 1488931201},
+      {"value": "01B501002919000006018403131313121255", "date": 1488931202}
+    ]
+  },
+  "provisioning": {
+    "type": "none"
+  },
+  "check": {
+    "type": "prometheus",
+    "config": [
+      {"query": "sum(lorhammer_long_request)", "resultMin": 98, "resultMax": 98, "description": "(1 Pull Data + nb_nodes join ack + (3 messages * nb_node) * 5 times ) * 2 gateways"},
+      {"query": "sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"},
+      {"query": "count(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb lorhammer"},
+      {"query": "sum(lorhammer_gateway)", "resultMin": 0, "resultMax": 0, "description": "nb gateways"},
+      {"query": "sum(lorhammer_node)", "resultMin": 0, "resultMax": 0, "description": "nb nodes"}
+    ]
+  },
+  "deploy": {
+    "type": "none"
+  }
+}]

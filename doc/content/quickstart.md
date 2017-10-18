@@ -155,6 +155,7 @@ A scenario is an array of tests. A test is the description needed by the orchest
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 10,
     "nbNodePerGateway": [50, 50],
+    "nbScenarioReplayLaps": 0,
     "scenarioSleepTime": ["10s", "10s"],
     "receiveTimeoutTime": "1s",
     "gatewaySleepTime": ["100ms", "500ms"],
@@ -316,6 +317,10 @@ Type : **int** : The number of gateways to create per lorhammer
 Type : **int,int**
 
 The minimum and maximum number of nodes to instantiate per gateway. A random number between the given range will be used. Use the same value for min,max not to randomize.
+
+### nbScenarioReplayLaps
+
+Type : **int** : The number of times the entire set of payloads will be sent. "Zero" means infinite, all the scenario will be stopped regarding the temporal settings. 
 
 ### scenarioSleepTime 
 
