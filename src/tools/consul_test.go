@@ -2,9 +2,10 @@ package tools
 
 import (
 	"errors"
-	consul "github.com/hashicorp/consul/api"
 	"os"
 	"testing"
+
+	consul "github.com/hashicorp/consul/api"
 )
 
 const address = "127.0.0.1:8500"

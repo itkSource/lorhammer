@@ -2,28 +2,29 @@ package tools
 
 import (
 	"errors"
-	mqttLib "github.com/eclipse/paho.mqtt.golang"
 	"testing"
+
+	mqttLib "github.com/eclipse/paho.mqtt.golang"
 )
 
 type fakeSubMqtt struct{}
 
-func (_ fakeSubMqtt) IsConnected() bool       { return true }
-func (_ fakeSubMqtt) Connect() mqttLib.Token  { return nil }
-func (_ fakeSubMqtt) Disconnect(quiesce uint) {}
-func (_ fakeSubMqtt) Publish(topic string, qos byte, retained bool, payload interface{}) mqttLib.Token {
+func (fakeSubMqtt) IsConnected() bool       { return true }
+func (fakeSubMqtt) Connect() mqttLib.Token  { return nil }
+func (fakeSubMqtt) Disconnect(quiesce uint) {}
+func (fakeSubMqtt) Publish(topic string, qos byte, retained bool, payload interface{}) mqttLib.Token {
 	return nil
 }
-func (_ fakeSubMqtt) Subscribe(topic string, qos byte, callback mqttLib.MessageHandler) mqttLib.Token {
+func (fakeSubMqtt) Subscribe(topic string, qos byte, callback mqttLib.MessageHandler) mqttLib.Token {
 	return nil
 }
-func (_ fakeSubMqtt) SubscribeMultiple(filters map[string]byte, callback mqttLib.MessageHandler) mqttLib.Token {
+func (fakeSubMqtt) SubscribeMultiple(filters map[string]byte, callback mqttLib.MessageHandler) mqttLib.Token {
 	return nil
 }
-func (_ fakeSubMqtt) Unsubscribe(topics ...string) mqttLib.Token {
+func (fakeSubMqtt) Unsubscribe(topics ...string) mqttLib.Token {
 	return nil
 }
-func (_ fakeSubMqtt) AddRoute(topic string, callback mqttLib.MessageHandler) {}
+func (fakeSubMqtt) AddRoute(topic string, callback mqttLib.MessageHandler) {}
 
 func newMqtt(t *testing.T) Mqtt {
 	mqtt, err := NewMqtt("", fakeConsul{})

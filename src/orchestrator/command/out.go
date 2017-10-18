@@ -1,21 +1,22 @@
 package command
 
 import (
-	"github.com/Sirupsen/logrus"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
+
+	"github.com/Sirupsen/logrus"
 )
 
 func LaunchScenario(mqttClient tools.Mqtt, init model.Init) error {
-	if err := mqttClient.PublishSubCmd(tools.MQTT_INIT_TOPIC, model.INIT, init); err != nil {
+	if err := mqttClient.PublishSubCmd(tools.MqttInitTopic, model.INIT, init); err != nil {
 		return err
 	}
-	LOG.WithField("init", init).WithField("toTopic", tools.MQTT_INIT_TOPIC).Info("Send init message")
+	LOG.WithField("init", init).WithField("toTopic", tools.MqttInitTopic).Info("Send init message")
 	return nil
 }
 
 func StopScenario(mqttClient tools.Mqtt) {
-	if err := mqttClient.PublishCmd(tools.MQTT_INIT_TOPIC, model.STOP); err != nil {
+	if err := mqttClient.PublishCmd(tools.MqttInitTopic, model.STOP); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"ref": "orchestrator/orchestrator:stopScenario()",
 			"err": err,
@@ -23,13 +24,13 @@ func StopScenario(mqttClient tools.Mqtt) {
 	} else {
 		logrus.WithFields(logrus.Fields{
 			"ref":     "orchestrator/orchestrator:stopScenario()",
-			"toTopic": tools.MQTT_INIT_TOPIC,
+			"toTopic": tools.MqttInitTopic,
 		}).Info("Send stop message")
 	}
 }
 
 func ShutdownLorhammers(mqttClient tools.Mqtt) {
-	if err := mqttClient.PublishCmd(tools.MQTT_INIT_TOPIC, model.SHUTDOWN); err != nil {
+	if err := mqttClient.PublishCmd(tools.MqttInitTopic, model.SHUTDOWN); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"ref": "orchestrator/orchestrator:shutdownLorhammers()",
 			"err": err,
@@ -37,7 +38,7 @@ func ShutdownLorhammers(mqttClient tools.Mqtt) {
 	} else {
 		logrus.WithFields(logrus.Fields{
 			"ref":     "orchestrator/orchestrator:shutdownLorhammers()",
-			"toTopic": tools.MQTT_INIT_TOPIC,
+			"toTopic": tools.MqttInitTopic,
 		}).Info("Send shutdown message")
 	}
 }

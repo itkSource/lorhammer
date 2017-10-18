@@ -1,13 +1,15 @@
 package tools
 
 import (
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/prometheus/client_golang/prometheus"
-	"time"
 )
 
-var _LOG_PROMETHEUS = logrus.WithField("logger", "tools/prometheus")
+var logPrometheus = logrus.WithField("logger", "tools/prometheus")
 
+//Prometheus export prometheus metrics
 type Prometheus interface {
 	StartTimer() func()
 	AddGateway(nb int)
@@ -24,6 +26,7 @@ type prometheusImpl struct {
 	nbLongRequest prometheus.Counter
 }
 
+//NewPrometheus return a Prometheus instance
 func NewPrometheus() Prometheus {
 	udpDuration := prometheus.NewHistogram(prometheus.HistogramOpts{
 		Name:    "lorhammer_durations",
@@ -58,7 +61,7 @@ func (prom *prometheusImpl) StartTimer() func() {
 	start := time.Now()
 	return func() {
 		t := time.Now().Sub(start).Seconds() * 1000
-		_LOG_PROMETHEUS.WithField("time", t).Debug("Time")
+		logPrometheus.WithField("time", t).Debug("Time")
 		prom.udpDuration.Observe(t)
 	}
 }

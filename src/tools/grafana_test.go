@@ -14,13 +14,13 @@ type fakeConsul struct {
 	serviceFirstError error
 }
 
-func (_ fakeConsul) GetAddress() string                                      { return "" }
-func (_ fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
+func (fakeConsul) GetAddress() string                                      { return "" }
+func (fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
 func (f fakeConsul) ServiceFirst(name string, prefix string) (string, error) {
 	return "grafanaUrl", f.serviceFirstError
 }
-func (_ fakeConsul) DeRegister(string) error               { return nil }
-func (_ fakeConsul) AllServices() ([]ConsulService, error) { return nil, nil }
+func (fakeConsul) DeRegister(string) error               { return nil }
+func (fakeConsul) AllServices() ([]ConsulService, error) { return nil, nil }
 
 func newGrafana(t *testing.T, bodyGet string, errorGet error, bodyPost string, errorPost error) *grafanaClientImpl {
 	g, err := NewGrafana(fakeConsul{})

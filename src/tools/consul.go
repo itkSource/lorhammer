@@ -2,11 +2,12 @@ package tools
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	consul "github.com/hashicorp/consul/api"
 	"os"
 	"os/signal"
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
+	consul "github.com/hashicorp/consul/api"
 )
 
 type subConsulAgent interface {
@@ -23,6 +24,7 @@ type subConsulCatalog interface {
 	Service(service, tag string, q *consul.QueryOptions) ([]*consul.CatalogService, *consul.QueryMeta, error)
 }
 
+//Consul permit to interact with consul api
 type Consul interface {
 	GetAddress() string
 	Register(ip string, hostname string, httpPort int) error
@@ -31,6 +33,7 @@ type Consul interface {
 	AllServices() ([]ConsulService, error)
 }
 
+//ConsulService represent a service registered in consul
 type ConsulService struct {
 	ServiceID   string
 	ServiceName string
@@ -44,8 +47,9 @@ type consulImpl struct {
 	Address string
 }
 
-var _LOG_CONSUL = logrus.WithField("logger", "tools/consul/init")
+var logConsul = logrus.WithField("logger", "tools/consul/init")
 
+//NewConsul return a Consul
 func NewConsul(consulAddress string) (Consul, error) {
 	config := consul.DefaultConfig()
 	config.Address = consulAddress
@@ -96,9 +100,9 @@ func (c *consulImpl) deRegisterOnKill(name string) {
 	go func() {
 		for range chanSignal {
 			if err := c.DeRegister(name); err != nil {
-				_LOG_CONSUL.WithField("service", name).WithError(err).Error("can't unregister")
+				logConsul.WithField("service", name).WithError(err).Error("can't unregister")
 			}
-			_LOG_CONSUL.WithField("service", name).Info("DeRegister from consul")
+			logConsul.WithField("service", name).Info("DeRegister from consul")
 			c.exiter(0)
 		}
 	}()

@@ -115,11 +115,11 @@ func (p *Scenario) start(prometheus tools.Prometheus, cancelFunction context.Can
 	// all gateways have ended, the scenario is stopped properly by calling the stop method
 	if doAllGatewaysHaveEnded(p) {
 		cancelFunction()
-		logrus.Info("AllGatewaysHaveEnded")
+		logger.Info("AllGatewaysHaveEnded")
 		return
 	}
 
-	logger.WithFields("nbGateways").Info("Gateways started")
+	logger.WithField("nbGateways", len(p.Gateways)).Info("Gateways started")
 
 	for i := 0; i < len(p.Gateways); i++ {
 		time.Sleep(tools.RandomDuration(p.GatewaySleepTime[0], p.GatewaySleepTime[1]))

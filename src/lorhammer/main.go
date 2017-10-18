@@ -52,7 +52,7 @@ func main() {
 	}
 
 	// PORT
-	httpPort, err := tools.FreeTcpPort()
+	httpPort, err := tools.FreeTCPPort()
 	if err != nil {
 		logger.WithError(err).Error("Free tcp port error")
 	} else {
@@ -60,7 +60,7 @@ func main() {
 	}
 
 	// IP
-	ip, err := tools.DetectIp(*localIP)
+	ip, err := tools.DetectIP(*localIP)
 	if err != nil {
 		logger.WithError(err).Error("Ip error")
 	} else {
@@ -97,7 +97,7 @@ func main() {
 				if err := mqttClient.Connect(); err != nil {
 					logger.WithError(err).Warn("Can't connect to mqtt, lorhammer is in standalone mode")
 				}
-				listenMqtt(mqttClient, []string{tools.MQTT_INIT_TOPIC, tools.MQTT_START_TOPIC + "/" + hostname}, hostname, prometheus)
+				listenMqtt(mqttClient, []string{tools.MqttInitTopic, tools.MqttStartTopic + "/" + hostname}, hostname, prometheus)
 			}
 		}
 	}

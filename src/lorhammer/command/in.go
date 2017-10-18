@@ -14,6 +14,7 @@ import (
 var logger = logrus.WithField("logger", "lorhammer/command/in")
 var scenarios = sync.Map{}
 
+//ApplyCmd take a model.CMD and execute it
 func ApplyCmd(command model.CMD, mqtt tools.Mqtt, hostname string, prometheus tools.Prometheus) {
 	var err error
 	switch command.CmdName {
@@ -58,19 +59,18 @@ func applyInitCmd(command model.CMD, mqtt tools.Mqtt, hostname string) error {
 	}
 
 	registerCmd := model.Register{
-		CallBackTopic: tools.MQTT_START_TOPIC + "/" + hostname,
+		CallBackTopic: tools.MqttStartTopic + "/" + hostname,
 		Gateways:      gateways,
 		ScenarioUUID:  sc.UUID,
 	}
 
-	err = mqtt.PublishSubCmd(tools.MQTT_ORCHESTRATOR_TOPIC, model.REGISTER, registerCmd)
+	err = mqtt.PublishSubCmd(tools.MqttOrchestratorTopic, model.REGISTER, registerCmd)
 	if err != nil {
 		return err
-	} else {
-		scenarios.Store(sc.UUID, sc)
-		logger.WithField("toTopic", tools.MQTT_ORCHESTRATOR_TOPIC).Info("Sent registration command to orchestrator")
 	}
 
+	scenarios.Store(sc.UUID, sc)
+	logger.WithField("toTopic", tools.MqttOrchestratorTopic).Info("Sent registration command to orchestrator")
 	return nil
 }
 

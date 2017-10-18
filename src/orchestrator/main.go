@@ -66,7 +66,7 @@ func main() {
 		if errMqtt := mqttClient.Connect(); errMqtt != nil {
 			logger.WithError(errMqtt).Error("Error while connecting to mqtt")
 		}
-		if errHandleCmd := mqttClient.HandleCmd([]string{tools.MQTT_ORCHESTRATOR_TOPIC}, func(cmd model.CMD) {
+		if errHandleCmd := mqttClient.HandleCmd([]string{tools.MqttOrchestratorTopic}, func(cmd model.CMD) {
 			if errApplyCmd := command.ApplyCmd(cmd, mqttClient, func(register model.Register) error {
 				return provisioning.Provision(currentTestSuite.Uuid, currentTestSuite.Provisioning, register)
 			}); errApplyCmd != nil {
@@ -75,7 +75,7 @@ func main() {
 		}); errHandleCmd != nil {
 			logger.WithError(errHandleCmd).Error("Error while subscribing to topic")
 		} else {
-			logger.WithField("topic", tools.MQTT_ORCHESTRATOR_TOPIC).Info("Listen mqtt")
+			logger.WithField("topic", tools.MqttOrchestratorTopic).Info("Listen mqtt")
 		}
 	}
 
