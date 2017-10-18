@@ -1,7 +1,7 @@
 package testSuite
 
 import (
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/deploy"

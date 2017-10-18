@@ -2,7 +2,7 @@ package deploy
 
 import (
 	"encoding/json"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"lorhammer/src/tools"
 	"os/exec"
 )

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var logHTTPProvisioner = logrus.WithField("logger", "orchestrator/provisioning/http")

@@ -3,7 +3,7 @@ package checker
 import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"lorhammer/src/tools"
 	"regexp"
 	"sync"

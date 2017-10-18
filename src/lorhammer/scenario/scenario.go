@@ -8,8 +8,8 @@ import (
 
 	"context"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 var logger = logrus.WithField("logger", "lorhammer/scenario/scenario")

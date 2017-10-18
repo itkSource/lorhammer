@@ -6,7 +6,7 @@ import (
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/brocaar/lorawan"
 )
 

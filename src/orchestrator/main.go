@@ -14,7 +14,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var version string // set at build time

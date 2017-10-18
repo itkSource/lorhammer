@@ -1,7 +1,7 @@
 package testType
 
 import (
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"lorhammer/src/model"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/tools"

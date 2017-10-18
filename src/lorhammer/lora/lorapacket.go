@@ -10,7 +10,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
 	"github.com/brocaar/lorawan"
 )

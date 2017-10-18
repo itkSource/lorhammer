@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"lorhammer/src/model"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	mqttLib "github.com/eclipse/paho.mqtt.golang"
 )
 

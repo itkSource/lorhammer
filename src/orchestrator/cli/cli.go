@@ -2,7 +2,7 @@ package cli
 
 import (
 	"bufio"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/prometheus"
 	"lorhammer/src/tools"

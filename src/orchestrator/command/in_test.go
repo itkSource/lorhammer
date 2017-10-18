@@ -3,7 +3,7 @@ package command
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"lorhammer/src/model"
 	"testing"
 )

@@ -3,7 +3,7 @@ package deploy
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"lorhammer/src/tools"
 	"time"
 )

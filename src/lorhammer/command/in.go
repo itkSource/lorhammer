@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var logger = logrus.WithField("logger", "lorhammer/command/in")

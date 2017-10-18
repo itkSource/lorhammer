@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"strconv"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	consul "github.com/hashicorp/consul/api"
 )
 
