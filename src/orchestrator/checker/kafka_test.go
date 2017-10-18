@@ -3,10 +3,11 @@ package checker
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Shopify/sarama"
-	"github.com/Shopify/sarama/mocks"
 	"testing"
 	"time"
+
+	"github.com/Shopify/sarama"
+	"github.com/Shopify/sarama/mocks"
 )
 
 func TestNewKafka(t *testing.T) {
@@ -41,7 +42,7 @@ func TestKafka_StartNewConsumerError(t *testing.T) {
 
 type fakeErrorReporter struct{}
 
-func (_ fakeErrorReporter) Errorf(string, ...interface{}) {}
+func (fakeErrorReporter) Errorf(string, ...interface{}) {}
 
 func TestKafka_StartTopicError(t *testing.T) {
 	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test"}`)))

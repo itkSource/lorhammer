@@ -5,7 +5,7 @@ import (
 	"lorhammer/src/tools"
 )
 
-const NoneType = Type("none")
+const noneType = Type("none")
 
 type none struct{}
 
@@ -13,10 +13,10 @@ func newNone(_ tools.Consul, _ json.RawMessage) (Checker, error) {
 	return none{}, nil
 }
 
-func (_ none) Start() error {
+func (none) Start() error {
 	return nil
 }
 
-func (_ none) Check() ([]CheckerSuccess, []CheckerError) {
-	return make([]CheckerSuccess, 0), make([]CheckerError, 0)
+func (none) Check() ([]Success, []Error) {
+	return make([]Success, 0), make([]Error, 0)
 }

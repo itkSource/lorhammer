@@ -14,27 +14,27 @@ type fakeConsul struct {
 	serviceFirstError error
 }
 
-func (_ fakeConsul) GetAddress() string                                      { return "" }
-func (_ fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
+func (fakeConsul) GetAddress() string                                      { return "" }
+func (fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
 func (f fakeConsul) ServiceFirst(name string, prefix string) (string, error) {
 	return "prometheusUrl", f.serviceFirstError
 }
-func (_ fakeConsul) DeRegister(string) error                     { return nil }
-func (_ fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }
+func (fakeConsul) DeRegister(string) error                     { return nil }
+func (fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }
 
-type PrometheusApiClientFake struct {
+type prometheusAPIClientFake struct {
 	returnFloat []float64
 	returnError error
 }
 
-func (p PrometheusApiClientFake) ExecQuery(query string) (float64, error) {
+func (p prometheusAPIClientFake) ExecQuery(query string) (float64, error) {
 	nbCall++
 	return p.returnFloat[nbCall-1], p.returnError
 }
 
-func initPrometheusClientApi(res []float64, err error) prometheus.ApiClient {
+func initPrometheusClientAPI(res []float64, err error) prometheus.ApiClient {
 	nbCall = 0
-	return PrometheusApiClientFake{
+	return prometheusAPIClientFake{
 		returnFloat: res,
 		returnError: err,
 	}
@@ -78,10 +78,10 @@ func TestPrometheusChecker_Start(t *testing.T) {
 }
 
 func TestReturnNothingIfNoTest(t *testing.T) {
-	prometheusApiClient := initPrometheusClientApi([]float64{float64(0)}, nil)
+	prometheusAPIClient := initPrometheusClientAPI([]float64{float64(0)}, nil)
 	checks := make([]prometheusCheck, 0)
 	check := prometheusChecker{
-		apiClient: prometheusApiClient,
+		apiClient: prometheusAPIClient,
 		checks:    checks,
 	}
 	ok, err := check.Check()
@@ -96,7 +96,7 @@ func TestReturnNothingIfNoTest(t *testing.T) {
 
 func TestReturnOkIfValueIsGood(t *testing.T) {
 	res := float64(1256.3598)
-	prometheusApiClient := initPrometheusClientApi([]float64{res}, nil)
+	prometheusAPIClient := initPrometheusClientAPI([]float64{res}, nil)
 	checks := make([]prometheusCheck, 1)
 	checks[0] = prometheusCheck{
 		Description: "description",
@@ -105,7 +105,7 @@ func TestReturnOkIfValueIsGood(t *testing.T) {
 		ResultMax:   float64(1257),
 	}
 	check := prometheusChecker{
-		apiClient: prometheusApiClient,
+		apiClient: prometheusAPIClient,
 		checks:    checks,
 	}
 
@@ -114,10 +114,10 @@ func TestReturnOkIfValueIsGood(t *testing.T) {
 	if len(ok) != 1 {
 		t.Fatal("1 good test should return 1 ok")
 	}
-	if ok[0].(PrometheusCheckOk).Query != checks[0] || ok[0].Details()["Query"] != checks[0].Query {
+	if ok[0].(prometheusCheckOk).Query != checks[0] || ok[0].Details()["Query"] != checks[0].Query {
 		t.Fatal("1 good test should return same query")
 	}
-	if ok[0].(PrometheusCheckOk).Val != res || ok[0].Details()["Val"] != res {
+	if ok[0].(prometheusCheckOk).Val != res || ok[0].Details()["Val"] != res {
 		t.Fatal("1 good test should return good val")
 	}
 	if len(err) != 0 {
@@ -127,7 +127,7 @@ func TestReturnOkIfValueIsGood(t *testing.T) {
 
 func TestMultipleGood(t *testing.T) {
 	res := float64(1256.3598)
-	prometheusApiClient := initPrometheusClientApi([]float64{res, res}, nil)
+	prometheusAPIClient := initPrometheusClientAPI([]float64{res, res}, nil)
 	checks := make([]prometheusCheck, 2)
 	checks[0] = prometheusCheck{
 		Description: "description",
@@ -142,7 +142,7 @@ func TestMultipleGood(t *testing.T) {
 		ResultMax:   float64(1257),
 	}
 	check := prometheusChecker{
-		apiClient: prometheusApiClient,
+		apiClient: prometheusAPIClient,
 		checks:    checks,
 	}
 
@@ -158,7 +158,7 @@ func TestMultipleGood(t *testing.T) {
 
 func TestReturnErrorsIfValueIsNotInGap(t *testing.T) {
 	res := float64(1256.3598)
-	prometheusApiClient := initPrometheusClientApi([]float64{res}, nil)
+	prometheusAPIClient := initPrometheusClientAPI([]float64{res}, nil)
 	checks := make([]prometheusCheck, 1)
 	checks[0] = prometheusCheck{
 		Description: "description",
@@ -167,7 +167,7 @@ func TestReturnErrorsIfValueIsNotInGap(t *testing.T) {
 		ResultMax:   float64(1256),
 	}
 	check := prometheusChecker{
-		apiClient: prometheusApiClient,
+		apiClient: prometheusAPIClient,
 		checks:    checks,
 	}
 
@@ -179,13 +179,13 @@ func TestReturnErrorsIfValueIsNotInGap(t *testing.T) {
 	if len(err) != 1 {
 		t.Fatal("1 bad test should return 1 err")
 	}
-	if err[0].(PrometheusCheckError).Query != checks[0] || err[0].Details()["Query"] != checks[0].Query {
+	if err[0].(prometheusCheckError).Query != checks[0] || err[0].Details()["Query"] != checks[0].Query {
 		t.Fatal("1 bad test should return same query")
 	}
-	if err[0].(PrometheusCheckError).Val != res || err[0].Details()["Val"] != res {
+	if err[0].(prometheusCheckError).Val != res || err[0].Details()["Val"] != res {
 		t.Fatal("1 bad test should return good val")
 	}
-	if len(err[0].(PrometheusCheckError).Reason) == 0 {
+	if len(err[0].(prometheusCheckError).Reason) == 0 {
 		t.Fatal("1 bad test should return a complete reason")
 	}
 }
@@ -193,7 +193,7 @@ func TestReturnErrorsIfValueIsNotInGap(t *testing.T) {
 func TestMultipleGoodBad(t *testing.T) {
 	resGood := float64(1256.3598)
 	resBad := float64(1)
-	prometheusApiClient := initPrometheusClientApi([]float64{resGood, resBad}, nil)
+	prometheusAPIClient := initPrometheusClientAPI([]float64{resGood, resBad}, nil)
 	checks := make([]prometheusCheck, 2)
 	checks[0] = prometheusCheck{
 		Description: "description",
@@ -208,7 +208,7 @@ func TestMultipleGoodBad(t *testing.T) {
 		ResultMax:   float64(1257),
 	}
 	check := prometheusChecker{
-		apiClient: prometheusApiClient,
+		apiClient: prometheusAPIClient,
 		checks:    checks,
 	}
 
@@ -217,19 +217,19 @@ func TestMultipleGoodBad(t *testing.T) {
 	if len(ok) != 1 {
 		t.Fatal("1 good test should return 1 ok")
 	}
-	if ok[0].(PrometheusCheckOk).Val != resGood {
+	if ok[0].(prometheusCheckOk).Val != resGood {
 		t.Fatal("Good test should return good res")
 	}
 	if len(err) != 1 {
 		t.Fatal("1 bad test should return 1 err")
 	}
-	if err[0].(PrometheusCheckError).Val != resBad {
+	if err[0].(prometheusCheckError).Val != resBad {
 		t.Fatal("Bad test should return bad res")
 	}
 }
 
 func TestPrometheusFail(t *testing.T) {
-	prometheusApiClient := initPrometheusClientApi([]float64{0}, errors.New("Prometheus fail"))
+	prometheusAPIClient := initPrometheusClientAPI([]float64{0}, errors.New("Prometheus fail"))
 	checks := make([]prometheusCheck, 1)
 	checks[0] = prometheusCheck{
 		Description: "description",
@@ -238,7 +238,7 @@ func TestPrometheusFail(t *testing.T) {
 		ResultMax:   float64(1257),
 	}
 	check := prometheusChecker{
-		apiClient: prometheusApiClient,
+		apiClient: prometheusAPIClient,
 		checks:    checks,
 	}
 	ok, err := check.Check()
