@@ -3,20 +3,21 @@ package deploy
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"lorhammer/src/tools"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"lorhammer/src/tools"
+	"github.com/sirupsen/logrus"
 )
 
-const TypeAmazon = "amazon"
+const typeAmazon = "amazon"
 
-var _LOG_AMAZON = logrus.WithField("logger", "orchestrator/deploy/amazon")
+var logAmazon = logrus.WithField("logger", "orchestrator/deploy/amazon")
 
 type amazonImpl struct {
 	Region           string          `json:"region"`
-	ImageId          string          `json:"imageId"`
+	ImageID          string          `json:"imageId"`
 	InstanceType     string          `json:"instanceType"`
 	KeyPairName      string          `json:"keyPairName"`
 	SecurityGroupIds []string        `json:"securityGroupIds"`
@@ -27,10 +28,10 @@ type amazonImpl struct {
 	ec2Client       *ec2.EC2
 	distantDeployer *distantImpl
 	consulAddress   string
-	instancesId     []*string
+	instancesID     []*string
 }
 
-func NewAmazonFromJson(serialized json.RawMessage, consulClient tools.Consul) (Deployer, error) {
+func newAmazonFromJSON(serialized json.RawMessage, consulClient tools.Consul) (deployer, error) {
 	client := &amazonImpl{}
 	if err := json.Unmarshal(serialized, client); err != nil {
 		return nil, err
@@ -52,7 +53,7 @@ func NewAmazonFromJson(serialized json.RawMessage, consulClient tools.Consul) (D
 
 func (client *amazonImpl) RunBefore() error {
 	runResult, err := client.ec2Client.RunInstances(&ec2.RunInstancesInput{
-		ImageId:          aws.String(client.ImageId),
+		ImageId:          aws.String(client.ImageID),
 		InstanceType:     aws.String(client.InstanceType),
 		KeyName:          aws.String(client.KeyPairName),
 		SecurityGroupIds: aws.StringSlice(client.SecurityGroupIds),
@@ -63,18 +64,18 @@ func (client *amazonImpl) RunBefore() error {
 		return err
 	}
 
-	instancesId := make([]*string, len(runResult.Instances))
+	instancesID := make([]*string, len(runResult.Instances))
 	for index, instance := range runResult.Instances {
-		instancesId[index] = instance.InstanceId
+		instancesID[index] = instance.InstanceId
 	}
-	client.instancesId = instancesId
+	client.instancesID = instancesID
 
-	_LOG_AMAZON.WithField("nb", len(runResult.Instances)).Info("Created instance on amazon wait until running")
-	if err := client.ec2Client.WaitUntilInstanceStatusOk(&ec2.DescribeInstanceStatusInput{InstanceIds: instancesId}); err != nil {
+	logAmazon.WithField("nb", len(runResult.Instances)).Info("Created instance on amazon wait until running")
+	if err := client.ec2Client.WaitUntilInstanceStatusOk(&ec2.DescribeInstanceStatusInput{InstanceIds: instancesID}); err != nil {
 		return err
 	}
 
-	_LOG_AMAZON.Info("Configure networks")
+	logAmazon.Info("Configure networks")
 	for _, instance := range runResult.Instances {
 		for _, network := range instance.NetworkInterfaces {
 			client.ec2Client.ModifyNetworkInterfaceAttribute(&ec2.ModifyNetworkInterfaceAttributeInput{
@@ -83,7 +84,7 @@ func (client *amazonImpl) RunBefore() error {
 			})
 		}
 	}
-	_LOG_AMAZON.WithField("nb", len(runResult.Instances)).Info("Created instance on amazon running")
+	logAmazon.WithField("nb", len(runResult.Instances)).Info("Created instance on amazon running")
 
 	return nil
 }
@@ -93,34 +94,34 @@ func (client *amazonImpl) Deploy() error {
 }
 
 func (client *amazonImpl) RunAfter() error {
-	res, err := client.ec2Client.DescribeInstances(&ec2.DescribeInstancesInput{InstanceIds: client.instancesId})
+	res, err := client.ec2Client.DescribeInstances(&ec2.DescribeInstancesInput{InstanceIds: client.instancesID})
 	if err != nil {
 		return err
 	}
 
-	_LOG_AMAZON.WithField("nb", len(client.instancesId)).Info("Deploy lorhammer")
+	logAmazon.WithField("nb", len(client.instancesID)).Info("Deploy lorhammer")
 
 	for _, reservation := range res.Reservations {
 		for _, instance := range reservation.Instances {
-			client.distantDeployer.IpServer = *instance.PublicDnsName
+			client.distantDeployer.IPServer = *instance.PublicDnsName
 			client.distantDeployer.AfterCmd = fmt.Sprintf("nohup %s/lorhammer -consul %s -local-ip %s > lorahmmer.log 2>&1 &", client.distantDeployer.PathWhereScp, client.consulAddress, *instance.PublicDnsName)
 			err := client.distantDeployer.Deploy()
 			if err != nil {
-				_LOG_AMAZON.WithError(err).Error("Lorhammer not deployed")
+				logAmazon.WithError(err).Error("Lorhammer not deployed")
 			} else {
-				_LOG_AMAZON.Info("Lorhammer deployed")
+				logAmazon.Info("Lorhammer deployed")
 			}
 
 			err = client.distantDeployer.RunAfter()
 			if err != nil {
-				_LOG_AMAZON.WithError(err).Error("Lorhammer not started")
+				logAmazon.WithError(err).Error("Lorhammer not started")
 			} else {
-				_LOG_AMAZON.Info("Lorhammers started")
+				logAmazon.Info("Lorhammers started")
 			}
 		}
 	}
 
-	_LOG_AMAZON.WithField("nb", len(client.instancesId)).Info("All Lorhammers deployed !!")
+	logAmazon.WithField("nb", len(client.instancesID)).Info("All Lorhammers deployed !!")
 
 	return nil
 }

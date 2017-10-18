@@ -7,13 +7,13 @@ import (
 	"testing"
 )
 
-func newDistantFromJson(j string) (Deployer, error) {
+func newDistantFromJSONTest(j string) (deployer, error) {
 	raw := json.RawMessage([]byte(j))
-	return NewDistantFromJson(raw, fakeConsul{})
+	return newDistantFromJSON(raw, fakeConsul{})
 }
 
 func TestNewDistantFromJson(t *testing.T) {
-	d, err := newDistantFromJson(`{}`)
+	d, err := newDistantFromJSONTest(`{}`)
 	if err != nil {
 		t.Fatal("good distant deployer json should not throw error")
 	}
@@ -23,7 +23,7 @@ func TestNewDistantFromJson(t *testing.T) {
 }
 
 func TestNewDistantFromJsonError(t *testing.T) {
-	d, err := newDistantFromJson(`{`)
+	d, err := newDistantFromJSONTest(`{`)
 	if err == nil {
 		t.Fatal("bad distant deployer json should throw error")
 	}
@@ -33,7 +33,7 @@ func TestNewDistantFromJsonError(t *testing.T) {
 }
 
 func TestDistantImpl_RunBefore(t *testing.T) {
-	d, err := newDistantFromJson(`{"beforeCmd": "/", "nbDistantToLaunch": 1}`)
+	d, err := newDistantFromJSONTest(`{"beforeCmd": "/", "nbDistantToLaunch": 1}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -51,7 +51,7 @@ func TestDistantImpl_RunBefore(t *testing.T) {
 }
 
 func TestDistantImpl_RunBeforeError(t *testing.T) {
-	d, err := newDistantFromJson(`{"beforeCmd": "/", "nbDistantToLaunch": 2}`)
+	d, err := newDistantFromJSONTest(`{"beforeCmd": "/", "nbDistantToLaunch": 2}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -61,7 +61,7 @@ func TestDistantImpl_RunBeforeError(t *testing.T) {
 	if err := d.RunBefore(); err == nil {
 		t.Fatal("DistantDeploy run before should return error")
 	} else {
-		if len(err.(DistantRunError).Errors) != 2 {
+		if len(err.(distantRunError).Errors) != 2 {
 			t.Fatal("DistantDeploy run before should return 2 errors")
 		}
 		if strings.Count(err.Error(), "\n") < 2 {
@@ -71,7 +71,7 @@ func TestDistantImpl_RunBeforeError(t *testing.T) {
 }
 
 func TestDistantImpl_Deploy(t *testing.T) {
-	d, err := newDistantFromJson(`{"beforeCmd": "/", "nbDistantToLaunch": 2}`)
+	d, err := newDistantFromJSONTest(`{"beforeCmd": "/", "nbDistantToLaunch": 2}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -84,7 +84,7 @@ func TestDistantImpl_Deploy(t *testing.T) {
 }
 
 func TestDistantImpl_DeployError(t *testing.T) {
-	d, err := newDistantFromJson(`{"beforeCmd": "/", "nbDistantToLaunch": 2}`)
+	d, err := newDistantFromJSONTest(`{"beforeCmd": "/", "nbDistantToLaunch": 2}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -97,7 +97,7 @@ func TestDistantImpl_DeployError(t *testing.T) {
 }
 
 func TestDistantImpl_RunAfter(t *testing.T) {
-	d, err := newDistantFromJson(`{"afterCmd": "/", "nbDistantToLaunch": 1}`)
+	d, err := newDistantFromJSONTest(`{"afterCmd": "/", "nbDistantToLaunch": 1}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -115,7 +115,7 @@ func TestDistantImpl_RunAfter(t *testing.T) {
 }
 
 func TestDistantImpl_RunAfterError(t *testing.T) {
-	d, err := newDistantFromJson(`{"afterCmd": "/", "nbDistantToLaunch": 2}`)
+	d, err := newDistantFromJSONTest(`{"afterCmd": "/", "nbDistantToLaunch": 2}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -125,7 +125,7 @@ func TestDistantImpl_RunAfterError(t *testing.T) {
 	if err := d.RunAfter(); err == nil {
 		t.Fatal("DistantDeploy run after should return error")
 	} else {
-		if len(err.(DistantRunError).Errors) != 2 {
+		if len(err.(distantRunError).Errors) != 2 {
 			t.Fatal("DistantDeploy run after should return 2 errors")
 		}
 		if strings.Count(err.Error(), "\n") < 2 {

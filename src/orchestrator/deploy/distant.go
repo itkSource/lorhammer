@@ -3,19 +3,20 @@ package deploy
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"lorhammer/src/tools"
 	"os/exec"
+
+	"github.com/sirupsen/logrus"
 )
 
-const TypeDistant = "distant"
+const typeDistant = "distant"
 
-var _LOG_DISTANT = logrus.WithField("logger", "orchestrator/deploy/distant")
+var logDistant = logrus.WithField("logger", "orchestrator/deploy/distant")
 
 type distantImpl struct {
-	SshKeyPath        string `json:"sshKeyPath"`
+	SSHKeyPath        string `json:"sshKeyPath"`
 	User              string `json:"user"`
-	IpServer          string `json:"ipServer"`
+	IPServer          string `json:"ipServer"`
 	PathFile          string `json:"pathFile"`
 	PathWhereScp      string `json:"pathWhereScp"`
 	BeforeCmd         string `json:"beforeCmd"`
@@ -25,12 +26,12 @@ type distantImpl struct {
 	cmdFabric func(name string, arg ...string) *exec.Cmd
 }
 
-func NewDistantFromJson(serialized json.RawMessage, _ tools.Consul) (Deployer, error) {
-	if d, err := newDistantImpl(serialized); err != nil {
+func newDistantFromJSON(serialized json.RawMessage, _ tools.Consul) (deployer, error) {
+	d, err := newDistantImpl(serialized)
+	if err != nil {
 		return nil, err
-	} else {
-		return d, nil
 	}
+	return d, nil
 }
 
 func newDistantImpl(serialized json.RawMessage) (*distantImpl, error) {
@@ -47,11 +48,11 @@ func (distant *distantImpl) RunBefore() error {
 }
 
 func (distant *distantImpl) Deploy() error {
-	c := fmt.Sprintf("%s@%s:%s", distant.User, distant.IpServer, distant.PathWhereScp)
-	_LOG_DISTANT.WithField("cmd", "scp -q -i "+distant.SshKeyPath+" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "+distant.PathFile+" "+c).Info("Will exec cmd")
-	cmd := distant.cmdFabric("scp", "-q", "-i", distant.SshKeyPath, "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", distant.PathFile, c)
+	c := fmt.Sprintf("%s@%s:%s", distant.User, distant.IPServer, distant.PathWhereScp)
+	logDistant.WithField("cmd", "scp -q -i "+distant.SSHKeyPath+" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "+distant.PathFile+" "+c).Info("Will exec cmd")
+	cmd := distant.cmdFabric("scp", "-q", "-i", distant.SSHKeyPath, "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", distant.PathFile, c)
 	if stdoutStderr, err := cmd.CombinedOutput(); err != nil {
-		_LOG_DISTANT.WithField("output", fmt.Sprintf("%s", stdoutStderr)).Info("Scp output")
+		logDistant.WithField("output", fmt.Sprintf("%s", stdoutStderr)).Info("Scp output")
 		return err
 	}
 	return nil
@@ -61,11 +62,11 @@ func (distant *distantImpl) RunAfter() error {
 	return distant.runCmd(distant.AfterCmd)
 }
 
-type DistantRunError struct {
+type distantRunError struct {
 	Errors []error
 }
 
-func (distErr DistantRunError) Error() string {
+func (distErr distantRunError) Error() string {
 	s := "DistantRunError: \n"
 	for _, err := range distErr.Errors {
 		s = s + " \n " + err.Error()
@@ -74,9 +75,9 @@ func (distErr DistantRunError) Error() string {
 }
 
 func (distant *distantImpl) runCmd(cmd string) error {
-	errs := DistantRunError{Errors: make([]error, 0)}
-	ip := fmt.Sprintf("%s@%s", distant.User, distant.IpServer)
-	_LOG_DISTANT.WithField("cmd", "ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "+ip+" "+cmd).Info("Will exec cmd")
+	errs := distantRunError{Errors: make([]error, 0)}
+	ip := fmt.Sprintf("%s@%s", distant.User, distant.IPServer)
+	logDistant.WithField("cmd", "ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "+ip+" "+cmd).Info("Will exec cmd")
 
 	chanErr := make(chan error)
 	defer close(chanErr)
@@ -85,7 +86,7 @@ func (distant *distantImpl) runCmd(cmd string) error {
 		go func() {
 			cmd := distant.cmdFabric("ssh", "-q", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", ip, cmd)
 			if stdoutStderr, err := cmd.CombinedOutput(); err != nil {
-				_LOG_DISTANT.WithField("output", fmt.Sprintf("%s", stdoutStderr)).Info("Ssh output")
+				logDistant.WithField("output", fmt.Sprintf("%s", stdoutStderr)).Info("Ssh output")
 				chanErr <- err
 			} else {
 				chanErr <- nil
@@ -101,7 +102,6 @@ func (distant *distantImpl) runCmd(cmd string) error {
 
 	if len(errs.Errors) > 0 {
 		return errs
-	} else {
-		return nil
 	}
+	return nil
 }

@@ -3,29 +3,33 @@ package deploy
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"lorhammer/src/tools"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
-var _LOG_DEPLOY = logrus.WithField("logger", "orchestrator/deploy/deploy")
+var logDeploy = logrus.WithField("logger", "orchestrator/deploy/deploy")
 
+//Type is type to define a deployer
 type Type string
 
+//Model represent a deployer in config file
 type Model struct {
 	Type                 Type
 	SleepAfterDeployTime time.Duration
 	Config               json.RawMessage
 }
 
-type modelJson struct {
+type modelJSON struct {
 	Type                 Type            `json:"type"`
 	SleepAfterDeployTime string          `json:"sleepAfterDeployTime"`
 	Config               json.RawMessage `json:"config"`
 }
 
+//UnmarshalJSON permit to json to object a depoyer
 func (m *Model) UnmarshalJSON(b []byte) error {
-	mjson := &modelJson{}
+	mjson := &modelJSON{}
 	err := json.Unmarshal(b, mjson)
 	if err != nil {
 		return err
@@ -44,29 +48,28 @@ func (m *Model) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-type Deployer interface {
+type deployer interface {
 	RunBefore() error
 	Deploy() error
 	RunAfter() error
 }
 
-var deployers = make(map[Type]func(config json.RawMessage, consulClient tools.Consul) (Deployer, error))
+var deployers = make(map[Type]func(config json.RawMessage, consulClient tools.Consul) (deployer, error))
 
 func init() {
-	deployers[TypeNone] = NewNone
-	deployers[TypeDistant] = NewDistantFromJson
-	deployers[TypeAmazon] = NewAmazonFromJson
-	deployers[TypeLocal] = NewLocalFromJson
+	deployers[typeNone] = newNone
+	deployers[typeDistant] = newDistantFromJSON
+	deployers[typeAmazon] = newAmazonFromJSON
+	deployers[typeLocal] = newLocalFromJSON
 }
 
+//Start launch a deployement
 func Start(model Model, consulClient tools.Consul) error {
-	var d Deployer
-	var err error
-	if dep := deployers[model.Type]; dep == nil {
+	dep, ok := deployers[model.Type]
+	if !ok {
 		return fmt.Errorf("Unknown type %s for deployer", model.Type)
-	} else {
-		d, err = dep(model.Config, consulClient)
 	}
+	d, err := dep(model.Config, consulClient)
 	if err != nil {
 		return err
 	}
@@ -79,7 +82,7 @@ func Start(model Model, consulClient tools.Consul) error {
 	if err := d.RunAfter(); err != nil {
 		return err
 	}
-	_LOG_DEPLOY.WithField("duration", model.SleepAfterDeployTime).Info("Sleep to lets prometheus discover new lorhammer")
+	logDeploy.WithField("duration", model.SleepAfterDeployTime).Info("Sleep to lets prometheus discover new lorhammer")
 	time.Sleep(model.SleepAfterDeployTime)
 	return nil
 }

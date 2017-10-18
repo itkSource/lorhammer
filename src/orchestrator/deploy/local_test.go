@@ -15,15 +15,15 @@ type sharedCounter struct {
 
 type fakeConsul struct{}
 
-func (_ fakeConsul) GetAddress() string                                      { return "" }
-func (_ fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
-func (_ fakeConsul) ServiceFirst(name string, prefix string) (string, error) { return "", nil }
-func (_ fakeConsul) DeRegister(string) error                                 { return nil }
-func (_ fakeConsul) AllServices() ([]tools.ConsulService, error)             { return nil, nil }
+func (fakeConsul) GetAddress() string                                      { return "" }
+func (fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
+func (fakeConsul) ServiceFirst(name string, prefix string) (string, error) { return "", nil }
+func (fakeConsul) DeRegister(string) error                                 { return nil }
+func (fakeConsul) AllServices() ([]tools.ConsulService, error)             { return nil, nil }
 
-func newLocalFromJson(j string) (Deployer, error) {
+func newLocalFromJSONTest(j string) (deployer, error) {
 	raw := json.RawMessage([]byte(j))
-	return NewLocalFromJson(raw, fakeConsul{})
+	return newLocalFromJSON(raw, fakeConsul{})
 }
 
 func testCall(countChan chan bool, nbRequired int, t *testing.T) {
@@ -50,7 +50,7 @@ func testCall(countChan chan bool, nbRequired int, t *testing.T) {
 }
 
 func TestNewLocalFromJson(t *testing.T) {
-	d, err := newLocalFromJson(`{}`)
+	d, err := newLocalFromJSONTest(`{}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -60,7 +60,7 @@ func TestNewLocalFromJson(t *testing.T) {
 }
 
 func TestNewLocalFromJsonError(t *testing.T) {
-	d, err := newLocalFromJson(`{`)
+	d, err := newLocalFromJSONTest(`{`)
 	if err == nil {
 		t.Fatal("bad local deployer json should throw error")
 	}
@@ -70,7 +70,7 @@ func TestNewLocalFromJsonError(t *testing.T) {
 }
 
 func TestLocalImpl_RunBefore(t *testing.T) {
-	d, err := newLocalFromJson(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": true}`)
+	d, err := newLocalFromJSONTest(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": true}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -89,7 +89,7 @@ func TestLocalImpl_RunBefore(t *testing.T) {
 }
 
 func TestLocalImpl_RunBeforeNoClean(t *testing.T) {
-	d, err := newLocalFromJson(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false}`)
+	d, err := newLocalFromJSONTest(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -108,7 +108,7 @@ func TestLocalImpl_RunBeforeNoClean(t *testing.T) {
 }
 
 func TestLocalImpl_Deploy(t *testing.T) {
-	d, err := newLocalFromJson(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false}`)
+	d, err := newLocalFromJSONTest(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -127,7 +127,7 @@ func TestLocalImpl_Deploy(t *testing.T) {
 }
 
 func TestLocalImpl_DeployWithLocalIp(t *testing.T) {
-	d, err := newLocalFromJson(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false, "localIp": "0.0.0.0"}`)
+	d, err := newLocalFromJSONTest(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false, "localIp": "0.0.0.0"}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -148,7 +148,7 @@ func TestLocalImpl_DeployWithLocalIp(t *testing.T) {
 }
 
 func TestLocalImpl_DeployErr(t *testing.T) {
-	d, err := newLocalFromJson(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false}`)
+	d, err := newLocalFromJSONTest(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
@@ -163,7 +163,7 @@ func TestLocalImpl_DeployErr(t *testing.T) {
 	if err := d.Deploy(); err == nil {
 		t.Fatal("LocalDeploy Deploy() with bad command should return error")
 	} else {
-		if len(err.(LocalRunError).Errors) != 3 {
+		if len(err.(localRunError).Errors) != 3 {
 			t.Fatal("3 instances errors should return 3 errors")
 		}
 		if strings.Count(err.Error(), "\n") < 3 {
@@ -174,7 +174,7 @@ func TestLocalImpl_DeployErr(t *testing.T) {
 }
 
 func TestLocalImpl_RunAfter(t *testing.T) {
-	d, err := newLocalFromJson(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false}`)
+	d, err := newLocalFromJSONTest(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false}`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
