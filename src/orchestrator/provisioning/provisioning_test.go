@@ -23,7 +23,7 @@ func TestFake(t *testing.T) {
 
 func TestNone(t *testing.T) {
 	m := Model{
-		Type: NoneType,
+		Type: noneType,
 	}
 
 	if err := Provision("2", m, model.Register{}); err != nil {
@@ -57,7 +57,7 @@ func TestOther(t *testing.T) {
 
 func TestGoRoutineSafe(t *testing.T) {
 	m := Model{
-		Type: NoneType,
+		Type: noneType,
 	}
 
 	if err := Provision("4", m, model.Register{}); err != nil {
@@ -93,7 +93,7 @@ func TestGoRoutineSafe(t *testing.T) {
 
 func TestCleanAfterDeProvision(t *testing.T) {
 	m := Model{
-		Type: NoneType,
+		Type: noneType,
 	}
 
 	if err := Provision("5", m, model.Register{}); err != nil {

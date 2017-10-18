@@ -14,7 +14,7 @@ import (
 
 var logHTTPProvisioner = logrus.WithField("logger", "orchestrator/provisioning/http")
 
-const HttpType = Type("http")
+const httpType = Type("http")
 
 type httpProvisoner struct {
 	CreationAPIURL    string `json:"creationApiUrl"`

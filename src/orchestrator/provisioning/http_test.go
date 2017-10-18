@@ -11,7 +11,7 @@ import (
 )
 
 func TestNilConfig(t *testing.T) {
-	httpProvisioner, err := NewHttpProvisioner(nil)
+	httpProvisioner, err := newHTTPProvisioner(nil)
 
 	if err == nil {
 		t.Fatal("Error expected not to be nil")
@@ -24,7 +24,7 @@ func TestNilConfig(t *testing.T) {
 
 func TestBadConfig(t *testing.T) {
 	badConfig := json.RawMessage("Wrong JSON string")
-	httpProvisioner, err := NewHttpProvisioner(badConfig)
+	httpProvisioner, err := newHTTPProvisioner(badConfig)
 
 	if err == nil {
 		t.Fatal("Error expected not to be nil")
@@ -37,7 +37,7 @@ func TestBadConfig(t *testing.T) {
 
 func TestGoodConfig(t *testing.T) {
 	goodConfig := json.RawMessage(`{"creationApiUrl": "createURL", "deletionApiUrl": "deleteURL"}`)
-	provisioner, err := NewHttpProvisioner(goodConfig)
+	provisioner, err := newHTTPProvisioner(goodConfig)
 
 	if err != nil {
 		t.Fatal("Error expected to be nil")

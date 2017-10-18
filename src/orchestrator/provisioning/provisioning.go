@@ -7,8 +7,10 @@ import (
 	"sync"
 )
 
+//Type represent provioner type from json
 type Type string
 
+//Model is the representation of provisioner in json config file
 type Model struct {
 	Type   Type            `json:"type"`
 	Config json.RawMessage `json:"config"`
@@ -23,35 +25,30 @@ var provisioners = make(map[Type]func(config json.RawMessage) (provisioner, erro
 var instances = sync.Map{}
 
 func init() {
-	provisioners[NoneType] = NewNone
+	provisioners[noneType] = newNone
 	provisioners[loraserverType] = newLoraserver
-	provisioners[SemtechV4Type] = NewSemtechV4
-	provisioners[HttpType] = NewHttpProvisioner
+	provisioners[semtechV4Type] = newSemtechV4
+	provisioners[httpType] = newHTTPProvisioner
 }
 
+//Provision start a provisioner
 func Provision(uuid string, provisioning Model, sensorsToRegister model.Register) error {
-	if pro := provisioners[provisioning.Type]; pro != nil {
-		if instance, ok := instances.Load(uuid); ok {
-			if err := instance.(provisioner).Provision(sensorsToRegister); err != nil {
+	err := errors.New("Unknown Provisioning type")
+	if provisionerFabrik, ok := provisioners[provisioning.Type]; ok {
+		instance, instanceExist := instances.Load(uuid)
+		if !instanceExist {
+			instance, err = provisionerFabrik(provisioning.Config)
+			if err != nil {
 				return err
-			} else {
-				return nil
 			}
-		} else if instance, err := pro(provisioning.Config); err != nil {
-			return err
-		} else {
 			instances.Store(uuid, instance)
-			if err := instance.Provision(sensorsToRegister); err != nil {
-				return err
-			} else {
-				return nil
-			}
 		}
-
+		return instance.(provisioner).Provision(sensorsToRegister)
 	}
-	return errors.New("Unknown Provisioning type")
+	return err
 }
 
+//DeProvision delete all references of a previous Provision()
 func DeProvision(uuid string) error {
 	if instance, ok := instances.Load(uuid); ok {
 		instances.Delete(uuid)
