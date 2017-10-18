@@ -17,9 +17,10 @@ var LOG_GATEWAY = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/gate
 func NewGateway(nbNode int, init model.Init) *model.Gateway {
 	parsedTime, _ := time.ParseDuration(init.ReceiveTimeoutTime)
 	gateway := &model.Gateway{
-		NsAddress:          init.NsAddress,
-		MacAddress:         RandomEUI(),
-		ReceiveTimeoutTime: parsedTime,
+		NsAddress:             init.NsAddress,
+		MacAddress:            RandomEUI(),
+		ReceiveTimeoutTime:    parsedTime,
+		PayloadsReplayMaxLaps: init.NbScenarioReplayLaps,
 	}
 
 	if init.RxpkDate > 0 {
@@ -64,7 +65,7 @@ func Join(gateway *model.Gateway, prometheus tools.Prometheus, withJoin bool) {
 	defer close(poison)
 
 	go readPackets(Conn, poison, next, threadListenUdp)
-	readLoraPackets(gateway, poison, next, threadListenUdp, endTimer, prometheus)
+	readLoraJoinPackets(gateway, poison, next, threadListenUdp, endTimer, prometheus, withJoin)
 }
 
 func Start(gateway *model.Gateway, prometheus tools.Prometheus, fcnt uint32) {
@@ -93,7 +94,7 @@ func Start(gateway *model.Gateway, prometheus tools.Prometheus, fcnt uint32) {
 	defer close(poison)
 
 	go readPackets(Conn, poison, next, threadListenUdp)
-	readLoraPackets(gateway, poison, next, threadListenUdp, endTimer, prometheus)
+	readLoraPushPackets(gateway, poison, next, threadListenUdp, endTimer, prometheus)
 }
 
 func sendPullData(gateway *model.Gateway, Conn net.Conn) {
@@ -140,7 +141,7 @@ func sendJoinRequestPackets(gateway *model.Gateway, Conn net.Conn) {
 				LOG_GATEWAY.WithFields(logrus.Fields{
 					"ref": "lora/gateway:Start()",
 					"err": err,
-				}).Error("Can't write udp")
+				}).Error("Can't write JoinRequestPackets udp")
 			}
 		}
 	}
@@ -149,27 +150,33 @@ func sendJoinRequestPackets(gateway *model.Gateway, Conn net.Conn) {
 func sendPushPackets(gateway *model.Gateway, Conn net.Conn, fcnt uint32) {
 	rxpk := make([]loraserver_structs.RXPK, 1)
 	for _, node := range gateway.Nodes {
-		buf, err := GetPushDataPayload(node, fcnt)
-		if err != nil {
-			LOG_GATEWAY.WithFields(logrus.Fields{
-				"ref": "lora/gateway:Start()",
-				"err": err,
-			}).Error("Can't get next lora packet to send")
+		if node.PayloadsReplayLap < gateway.PayloadsReplayMaxLaps {
+			buf, err := GetPushDataPayload(node, fcnt)
+			if err != nil {
+				LOG_GATEWAY.WithFields(logrus.Fields{
+					"ref": "lora/gateway:Start()",
+					"err": err,
+				}).Error("Can't get next lora packet to send")
+			}
+			rxpk[0] = NewRxpk(buf, gateway)
+			packet, err := Packet{Rxpk: rxpk}.Prepare(gateway)
+			if err != nil {
+				LOG_GATEWAY.WithFields(logrus.Fields{
+					"ref": "lora/gateway:Start()",
+					"err": err,
+				}).Error("Can't prepare lora packet")
+			}
+			if _, err = Conn.Write(packet); err != nil {
+				LOG_GATEWAY.WithFields(logrus.Fields{
+					"ref": "lora/gateway:Start()",
+					"err": err,
+				}).Error("Can't write PushPackets udp")
+			}
 		}
-		rxpk[0] = NewRxpk(buf, gateway)
-		packet, err := Packet{Rxpk: rxpk}.Prepare(gateway)
-		if err != nil {
-			LOG_GATEWAY.WithFields(logrus.Fields{
-				"ref": "lora/gateway:Start()",
-				"err": err,
-			}).Error("Can't prepare lora packet")
-		}
-		if _, err = Conn.Write(packet); err != nil {
-			LOG_GATEWAY.WithFields(logrus.Fields{
-				"ref": "lora/gateway:Start()",
-				"err": err,
-			}).Error("Can't write udp")
-		}
+	}
+	if isGatewayScenarioCompleted(gateway) {
+		gateway.AllLapsCompleted = true
+		return
 	}
 }
 
@@ -207,9 +214,34 @@ func readPackets(Conn net.Conn, poison chan bool, next chan bool, threadListenUd
 	}
 }
 
-func readLoraPackets(gateway *model.Gateway, poison chan bool, next chan bool, threadListenUdp chan []byte, endTimer func(), prometheus tools.Prometheus) {
+func readLoraJoinPackets(gateway *model.Gateway, poison chan bool, next chan bool, threadListenUdp chan []byte, endTimer func(), prometheus tools.Prometheus, withJoin bool) {
+	nbReceivedAckMsg := readLoraPackets(gateway, poison, next, threadListenUdp, endTimer, prometheus)
+	nbEmittedMsg := 1 // One PullData request has been sent
+	if withJoin {
+		nbEmittedMsg += len(gateway.Nodes)
+	}
+	LOG_GATEWAY.WithFields(logrus.Fields{
+		"ref":      "lora/gateway:Join()",
+		"withJoin": withJoin,
+		"nb":       nbEmittedMsg - nbReceivedAckMsg,
+	}).Warn("Receive PullData or Join Request ack after 2 seconds")
+	prometheus.AddLongRequest(nbEmittedMsg - nbReceivedAckMsg)
+}
 
-	nbMsg := 0
+func readLoraPushPackets(gateway *model.Gateway, poison chan bool, next chan bool, threadListenUdp chan []byte, endTimer func(), prometheus tools.Prometheus) {
+	nbReceivedAckMsg := readLoraPackets(gateway, poison, next, threadListenUdp, endTimer, prometheus)
+	if len(gateway.Nodes)-nbReceivedAckMsg > 0 {
+		LOG_GATEWAY.WithFields(logrus.Fields{
+			"ref": "lora/gateway:Start()",
+			"nb":  len(gateway.Nodes) - nbReceivedAckMsg,
+		}).Warn("Receive data after 2 second")
+		prometheus.AddLongRequest(len(gateway.Nodes) - nbReceivedAckMsg)
+	}
+}
+
+func readLoraPackets(gateway *model.Gateway, poison chan bool, next chan bool, threadListenUdp chan []byte, endTimer func(), prometheus tools.Prometheus) int {
+
+	nbReceivedAckMsg := 0
 	localPoison := make(chan bool)
 
 	go func() {
@@ -237,7 +269,7 @@ func readLoraPackets(gateway *model.Gateway, poison chan bool, next chan bool, t
 					"ackOk?":          res[3] == byte(1),
 				}).Debug("Receive data before 1 second")
 				if res[3] == byte(1) {
-					nbMsg++
+					nbReceivedAckMsg++
 				}
 			}
 			if quit {
@@ -251,13 +283,29 @@ func readLoraPackets(gateway *model.Gateway, poison chan bool, next chan bool, t
 	<-time.After(gateway.ReceiveTimeoutTime)
 	poison <- true
 	localPoison <- true
-	if len(gateway.Nodes)-nbMsg > 0 {
-		LOG_GATEWAY.WithFields(logrus.Fields{
-			"ref": "lora/gateway:Start()",
-			"nb":  len(gateway.Nodes) - nbMsg,
-		}).Warn("Receive data after 2 second")
+	return nbReceivedAckMsg
+}
+
+func isGatewayScenarioCompleted(gateway *model.Gateway) bool {
+	//infinite case when PayloadsReplayMaxRound is set to 0 or inferior
+	if gateway.PayloadsReplayMaxLaps <= 0 {
+		return false
 	}
-	prometheus.AddLongRequest(len(gateway.Nodes) - nbMsg)
+	for _, node := range gateway.Nodes {
+		// if only one node has not reached the expected number of rounds, break the loop and return false
+		if node.PayloadsReplayLap < gateway.PayloadsReplayMaxLaps {
+			LOG_GATEWAY.WithFields(logrus.Fields{
+				"DevEui":                node.DevEUI.String(),
+				"PayloadsReplayLap":     node.PayloadsReplayLap,
+				"PayloadsReplayMaxLaps": gateway.PayloadsReplayMaxLaps,
+			}).Debug("node has not finished yet")
+			return false
+		}
+	}
+	LOG_GATEWAY.WithFields(logrus.Fields{
+		"MacAddress": gateway.MacAddress.String(),
+	}).Debugf("Gateway scenario is completed")
+	return true
 }
 
 func RandomEUI() lorawan.EUI64 {

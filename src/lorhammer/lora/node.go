@@ -97,14 +97,25 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 			if len(node.Payloads) >= i-1 {
 				node.NextPayload = i + 1
 			}
-			if len(node.Payloads) == i {
+			// if the current payload is the last of the payload set, a complete round has been executed
+			if len(node.Payloads) == node.NextPayload {
+				node.PayloadsReplayLap++
 				LOG_NODE.WithFields(logrus.Fields{
 					"DevEui": node.DevEUI.String(),
-				}).Infof("all payloads sended. restart from beginning (%d/%d)", i, len(node.Payloads))
+				}).Infof("Complete lap executed : %d", node.PayloadsReplayLap)
+				LOG_NODE.WithFields(logrus.Fields{
+					"DevEui": node.DevEUI.String(),
+				}).Infof("All payloads sended. restart from beginning (%d/%d)", node.NextPayload, len(node.Payloads))
 				node.NextPayload = 0
-				i = node.NextPayload
 			}
 		}
+		LOG_NODE.WithFields(logrus.Fields{
+			"DevEui":             node.DevEUI.String(),
+			"Valeur de i":        i,
+			"len(node.Payloads)": len(node.Payloads),
+			"node.NextPayload":   node.NextPayload,
+			"Payload : ":         node.Payloads[i].Value,
+		}).Debug("Payload sent")
 		frmPayloadByteArray, _ = hex.DecodeString(node.Payloads[i].Value)
 	}
 

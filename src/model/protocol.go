@@ -10,19 +10,20 @@ type CMD struct {
 }
 
 type Init struct {
-	NsAddress          string    `json:"nsAddress"`
-	NbGateway          int       `json:"nbGatewayPerLorhammer"`
-	NbNode             [2]int    `json:"nbNodePerGateway"`
-	ScenarioSleepTime  [2]string `json:"scenarioSleepTime"`
-	GatewaySleepTime   [2]string `json:"gatewaySleepTime"`
-	AppsKey            string    `json:"appskey"`
-	Nwskey             string    `json:"nwskey"`
-	WithJoin           bool      `json:"withJoin"`
-	Payloads           []Payload `json:"payloads"`
-	RxpkDate           int64     `json:"rxpkDate"`
-	ReceiveTimeoutTime string    `json:"receiveTimeoutTime"`
-	Description        string    `json:"description"`
-	RandomPayloads     bool      `json:"randomPayloads"`
+	NsAddress            string    `json:"nsAddress"`
+	NbGateway            int       `json:"nbGatewayPerLorhammer"`
+	NbNode               [2]int    `json:"nbNodePerGateway"`
+	NbScenarioReplayLaps int       `json:"nbScenarioReplayLaps"`
+	ScenarioSleepTime    [2]string `json:"scenarioSleepTime"`
+	GatewaySleepTime     [2]string `json:"gatewaySleepTime"`
+	AppsKey              string    `json:"appskey"`
+	Nwskey               string    `json:"nwskey"`
+	WithJoin             bool      `json:"withJoin"`
+	Payloads             []Payload `json:"payloads"`
+	RxpkDate             int64     `json:"rxpkDate"`
+	ReceiveTimeoutTime   string    `json:"receiveTimeoutTime"`
+	Description          string    `json:"description"`
+	RandomPayloads       bool      `json:"randomPayloads"`
 }
 
 // Payload struc define a payload with timestamp date attached

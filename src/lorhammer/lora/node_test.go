@@ -38,6 +38,9 @@ func TestNode_GetPushDataPayload(t *testing.T) {
 	if err != nil {
 		t.Fatal("Couldn't get PushData payload")
 	}
+	if node.PayloadsReplayLap != 0 {
+		t.Fatal("Only one of two payloads has been sent, a complete round is not supposed to be reached")
+	}
 	phyPayload := lorawan.PHYPayload{}
 	err = phyPayload.UnmarshalBinary(dataPayload)
 	if err != nil {
@@ -75,7 +78,7 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArray(t *testing.T) 
 		},
 		false,
 	)
-	for index := 0; index < 3; index++ {
+	for index := 0; index < len(node.Payloads); index++ {
 		fcnt := uint32(1)
 		dataPayload, err := GetPushDataPayload(node, fcnt)
 		if err != nil {
@@ -104,6 +107,9 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArray(t *testing.T) 
 			t.Fatal("the MacPayload should be of Type MACPayload ")
 		}
 	}
+	if node.PayloadsReplayLap != 1 {
+		t.Fatal("Replay round has not been incremented")
+	}
 
 }
 
@@ -119,7 +125,7 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArrayAndReload(t *te
 		},
 		false,
 	)
-	for index := 0; index < 5; index++ {
+	for index := 0; index < 8; index++ {
 		fcnt := uint32(1)
 		dataPayload, err := GetPushDataPayload(node, fcnt)
 		if err != nil {
@@ -147,6 +153,9 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArrayAndReload(t *te
 		if !ok {
 			t.Fatal("the MacPayload should be of Type MACPayload ")
 		}
+	}
+	if node.PayloadsReplayLap != 2 {
+		t.Fatal("Replay round has not been incremented")
 	}
 
 }
@@ -164,6 +173,9 @@ func TestNode_GetPushDataPayloadWithEmptyPayloadArray(t *testing.T) {
 	dataPayload, err := GetPushDataPayload(node, fcnt)
 	if err != nil {
 		t.Fatal("Couldn't get PushData payload")
+	}
+	if node.PayloadsReplayLap != 0 {
+		t.Fatal("The payload tab is empty, a complete round is not supposed to be reached")
 	}
 	phyPayload := lorawan.PHYPayload{}
 	err = phyPayload.UnmarshalBinary(dataPayload)

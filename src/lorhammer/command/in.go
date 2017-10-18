@@ -81,20 +81,31 @@ func applyStartCmd(command model.CMD, prometheus tools.Prometheus) {
 		if sc, isPresent := scenarios.Load(startMessage.ScenarioUUID); isPresent {
 			LOG.Warn("Start scenario")
 			sc.(*scenario.Scenario).Join(prometheus)
-			sc.(*scenario.Scenario).Cron(prometheus)
+			ctx := sc.(*scenario.Scenario).Cron(prometheus)
+			go func() {
+				LOG.Debug("Blocking routine waiting for cancel function")
+				<-ctx.Done()
+				LOG.Debug("Releasing blocking routine after cancel function call")
+				stopScenario(sc.(*scenario.Scenario), prometheus)
+			}()
 		} else {
 			LOG.WithField("uuid", startMessage.ScenarioUUID).Error("Can't find scenario")
 		}
 	}
 }
 
+func stopScenario(scenario *scenario.Scenario, prometheus tools.Prometheus) {
+	LOG.WithField("scenario", scenario.Uuid).Warn("Stopping scenario")
+	scenario.Stop(prometheus)
+	scenarios.Delete(scenario.Uuid)
+}
+
 func applyStopCmd(prometheus tools.Prometheus) {
 	LOG.Warn("Stop scenarios")
 	scenarios.Range(func(key interface{}, value interface{}) bool {
-		value.(*scenario.Scenario).Stop(prometheus)
+		stopScenario(value.(*scenario.Scenario), prometheus)
 		return true
 	})
-	scenarios = sync.Map{}
 }
 
 func applyShutdownCmd() {

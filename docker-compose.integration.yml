@@ -4,14 +4,16 @@ services:
 
   lorhammer:
     image: ${CI_REGISTRY_IMAGE}/lorhammer:${CI_PIPELINE_ID}
-    command: /bin/lorhammer -consul consul:8500 -local-ip lorhammer
+    command: -consul consul:8500 -local-ip lorhammer
     depends_on:
       - consul
       - mqtt
 
   orchestrator:
     image: ${CI_REGISTRY_IMAGE}/orchestrator:${CI_PIPELINE_ID}
-    command: /bin/orchestrator -consul consul:8500 -from-file "${FROM_FILE}"
+    command: -consul consul:8500 -from-file "${FROM_FILE}"
+    volumes:
+      - ./resources/scenarios/ci/:/resources/scenarios/ci/
     depends_on:
       - consul
       - mqtt

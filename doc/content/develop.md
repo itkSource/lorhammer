@@ -14,7 +14,7 @@ This page describes the development environment installation of lorhammer and gi
 
 ## Requirement
 
-* [Go](https://golang.org/doc/install) >= 1.8
+* [Go](https://golang.org/doc/install) >= 1.9
 * [Docker](https://docs.docker.com/engine/installation/) & [Docker-compose](https://docs.docker.com/compose/install/).
 * [make command](http://www.tutorialspoint.com/unix_commands/make.htm)
 
