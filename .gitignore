@@ -10,3 +10,4 @@ public
 resources/scenarios/simple-ranch.json
 vendor
 dist
+.vscode
