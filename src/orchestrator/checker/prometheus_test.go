@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var nbCall int = 0
+var nbCall int
 
 type fakeConsul struct {
 	serviceFirstError error
@@ -32,7 +32,7 @@ func (p prometheusAPIClientFake) ExecQuery(query string) (float64, error) {
 	return p.returnFloat[nbCall-1], p.returnError
 }
 
-func initPrometheusClientAPI(res []float64, err error) prometheus.ApiClient {
+func initPrometheusClientAPI(res []float64, err error) prometheus.APIClient {
 	nbCall = 0
 	return prometheusAPIClientFake{
 		returnFloat: res,

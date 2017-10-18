@@ -5,6 +5,7 @@ COMMIT=`git rev-parse HEAD`
 DATE_BUILD=`date +%Y-%m-%d\_%H:%M`
 
 BIN_DIR = $(GOPATH)/bin
+GOLINT = $(BIN_DIR)/golint
 DEP = $(BIN_DIR)/dep
 
 .PHONY: first
@@ -23,10 +24,14 @@ vendor: $(DEP)
 ####################
 ## LINT
 #####
+$(GOLINT):
+	go get -u github.com/golang/lint/golint
+
 .PHONY: lint
-lint:
+lint: $(GOLINT)
 	diff -u <(echo -n) <(gofmt -s -d ./src); [ $$? -eq 0 ]
 	go tool vet -composites=false -shadow=true src/**/*.go
+	diff -u <(echo -n) <(golint ./src/...); [ $$? -eq 0 ]
 
 
 ####################
