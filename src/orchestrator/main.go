@@ -68,7 +68,7 @@ func main() {
 		}
 		if errHandleCmd := mqttClient.HandleCmd([]string{tools.MqttOrchestratorTopic}, func(cmd model.CMD) {
 			if errApplyCmd := command.ApplyCmd(cmd, mqttClient, func(register model.Register) error {
-				return provisioning.Provision(currentTestSuite.Uuid, currentTestSuite.Provisioning, register)
+				return provisioning.Provision(currentTestSuite.UUID, currentTestSuite.Provisioning, register)
 			}); errApplyCmd != nil {
 				logger.WithField("cmd", string(cmd.Payload)).WithError(errApplyCmd).Error("ApplyCmd error")
 			}
@@ -101,7 +101,7 @@ func main() {
 			testReport, err := test.LaunchTest(consulClient, mqttClient, grafanaClient)
 			if err != nil {
 				logger.WithError(err).Error("Error during test")
-			} else if err := testSuite.WriteFile(testReport, *reportFile); err != nil {
+			} else if err := testReport.WriteFile(*reportFile); err != nil {
 				logger.WithError(err).Error("Can't report test")
 			} else {
 				checkErrors = append(checkErrors, testReport.ChecksError...)

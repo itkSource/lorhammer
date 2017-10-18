@@ -1,17 +1,18 @@
 package testType
 
 import (
-	"github.com/sirupsen/logrus"
 	"lorhammer/src/model"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/tools"
 	"math"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
-const TypeRamp Type = "ramp"
+const typeRamp Type = "ramp"
 
-var LOG_RAMP = logrus.WithField("logger", "orchestrator/testType/ramp")
+var logRamp = logrus.WithField("logger", "orchestrator/testType/ramp")
 
 type ramp struct {
 	nbGateway        int
@@ -45,7 +46,7 @@ func (r *ramp) start(init model.Init, mqttClient tools.Mqtt) {
 
 func (r *ramp) launch(mqttClient tools.Mqtt, init model.Init) bool {
 	nbGatewayToLaunch := r.nextTick()
-	LOG_RAMP.WithField("nbGateway", nbGatewayToLaunch).Info("Launch ramp")
+	logRamp.WithField("nbGateway", nbGatewayToLaunch).Info("Launch ramp")
 	if nbGatewayToLaunch > 0 {
 		init := model.Init{
 			NbGateway:         nbGatewayToLaunch,
@@ -55,7 +56,7 @@ func (r *ramp) launch(mqttClient tools.Mqtt, init model.Init) bool {
 			GatewaySleepTime:  init.GatewaySleepTime,
 		}
 		if err := command.LaunchScenario(mqttClient, init); err != nil {
-			LOG_RAMP.WithError(err).Error("Can't launch scenario")
+			logRamp.WithError(err).Error("Can't launch scenario")
 		}
 	}
 	return r.willLaunch()

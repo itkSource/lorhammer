@@ -18,7 +18,7 @@ func TestFake(t *testing.T) {
 }
 
 func TestNone(t *testing.T) {
-	err := Start(Test{testType: TypeNone}, model.Init{}, nil)
+	err := Start(Test{testType: typeNone}, model.Init{}, nil)
 
 	if err != nil {
 		t.Fatalf("None test should not error : %s", err)
