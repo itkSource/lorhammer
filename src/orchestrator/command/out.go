@@ -14,7 +14,7 @@ func LaunchScenario(mqttClient tools.Mqtt, init model.Init) error {
 	if err := mqttClient.PublishSubCmd(tools.MqttInitTopic, model.INIT, init); err != nil {
 		return err
 	}
-	loggerIn.WithField("init", init).WithField("toTopic", tools.MqttInitTopic).Info("Send init message")
+	loggerOut.WithField("init", init).WithField("toTopic", tools.MqttInitTopic).Info("Send init message")
 	return nil
 }
 
