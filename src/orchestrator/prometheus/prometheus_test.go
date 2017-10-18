@@ -3,48 +3,49 @@ package prometheus
 import (
 	"context"
 	"errors"
-	api "github.com/prometheus/client_golang/api/prometheus/v1"
-	"github.com/prometheus/common/model"
 	"lorhammer/src/tools"
 	"testing"
 	"time"
+
+	api "github.com/prometheus/client_golang/api/prometheus/v1"
+	"github.com/prometheus/common/model"
 )
 
 type fakeConsul struct {
-	serviceFirstUrl   string
+	serviceFirstURL   string
 	serviceFirstError error
 }
 
-func (_ fakeConsul) GetAddress() string                                      { return "" }
-func (_ fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
+func (fakeConsul) GetAddress() string                                      { return "" }
+func (fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
 func (f fakeConsul) ServiceFirst(name string, prefix string) (string, error) {
-	return f.serviceFirstUrl, f.serviceFirstError
+	return f.serviceFirstURL, f.serviceFirstError
 }
-func (_ fakeConsul) DeRegister(string) error                     { return nil }
-func (_ fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }
+func (fakeConsul) DeRegister(string) error                     { return nil }
+func (fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }
 
-type fakePrometheusApi struct {
+type fakePrometheusAPI struct {
 	results      []float64
 	resultsError error
 }
 
-func (f fakePrometheusApi) Query(ctx context.Context, query string, ts time.Time) (model.Value, error) {
+func (f fakePrometheusAPI) Query(ctx context.Context, query string, ts time.Time) (model.Value, error) {
 	values := make([]*model.Sample, len(f.results))
 	for i, val := range f.results {
 		values[i] = &model.Sample{Value: model.SampleValue(val)}
 	}
 	return model.Vector(values), f.resultsError
 }
-func (f fakePrometheusApi) QueryRange(ctx context.Context, query string, r api.Range) (model.Value, error) {
+func (f fakePrometheusAPI) QueryRange(ctx context.Context, query string, r api.Range) (model.Value, error) {
 	return nil, nil
 }
 
-func (f fakePrometheusApi) LabelValues(ctx context.Context, label string) (model.LabelValues, error) {
+func (f fakePrometheusAPI) LabelValues(ctx context.Context, label string) (model.LabelValues, error) {
 	return nil, nil
 }
 
 func TestNewApiClient(t *testing.T) {
-	c, err := NewApiClient(fakeConsul{})
+	c, err := NewAPIClient(fakeConsul{})
 	if err != nil {
 		t.Fatal("Valid prometheus config should not return error")
 	}
@@ -54,7 +55,7 @@ func TestNewApiClient(t *testing.T) {
 }
 
 func TestNewApiClientErrorConsul(t *testing.T) {
-	c, err := NewApiClient(fakeConsul{serviceFirstError: errors.New("error")})
+	c, err := NewAPIClient(fakeConsul{serviceFirstError: errors.New("error")})
 	if err == nil {
 		t.Fatal("No prometheus found in consul should return error")
 	}
@@ -64,7 +65,7 @@ func TestNewApiClientErrorConsul(t *testing.T) {
 }
 
 func TestNewApiClientErrorBadConsulUrl(t *testing.T) {
-	c, err := NewApiClient(fakeConsul{serviceFirstUrl: ":"})
+	c, err := NewAPIClient(fakeConsul{serviceFirstURL: ":"})
 	if err == nil {
 		t.Fatal("Bad url for prometheus in consul should return error")
 	}
@@ -74,8 +75,8 @@ func TestNewApiClientErrorBadConsulUrl(t *testing.T) {
 }
 
 func TestApiClientImpl_ExecQuery(t *testing.T) {
-	c, _ := NewApiClient(fakeConsul{})
-	c.(*apiClientImpl).queryApi = fakePrometheusApi{results: []float64{255.0}}
+	c, _ := NewAPIClient(fakeConsul{})
+	c.(*apiClientImpl).queryAPI = fakePrometheusAPI{results: []float64{255.0}}
 	res, err := c.ExecQuery("")
 	if err != nil {
 		t.Fatal("Valid call to prometheus api should not throw error")
@@ -87,8 +88,8 @@ func TestApiClientImpl_ExecQuery(t *testing.T) {
 }
 
 func TestApiClientImpl_ExecQueryZero(t *testing.T) {
-	c, _ := NewApiClient(fakeConsul{})
-	c.(*apiClientImpl).queryApi = fakePrometheusApi{results: []float64{}}
+	c, _ := NewAPIClient(fakeConsul{})
+	c.(*apiClientImpl).queryAPI = fakePrometheusAPI{results: []float64{}}
 	res, err := c.ExecQuery("")
 	if err != nil {
 		t.Fatal("Valid call to prometheus api should not throw error")
@@ -99,8 +100,8 @@ func TestApiClientImpl_ExecQueryZero(t *testing.T) {
 }
 
 func TestApiClientImpl_ExecQueryError(t *testing.T) {
-	c, _ := NewApiClient(fakeConsul{})
-	c.(*apiClientImpl).queryApi = fakePrometheusApi{results: []float64{}, resultsError: errors.New("error")}
+	c, _ := NewAPIClient(fakeConsul{})
+	c.(*apiClientImpl).queryAPI = fakePrometheusAPI{results: []float64{}, resultsError: errors.New("error")}
 	_, err := c.ExecQuery("")
 	if err == nil {
 		t.Fatal("If prometheus api report error, prometheus client should throw error")

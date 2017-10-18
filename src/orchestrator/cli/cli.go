@@ -52,7 +52,7 @@ func scanChoose(scanner *bufio.Scanner, chooses []string) string {
 }
 
 func fetchAndDisplayNbLorhammer(consulClient tools.Consul) {
-	prometheusAPIClient, err := prometheus.NewApiClient(consulClient)
+	prometheusAPIClient, err := prometheus.NewAPIClient(consulClient)
 	if err != nil {
 		logger.WithError(err).Error("Error while constructing new prometheus api client")
 	}

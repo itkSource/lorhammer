@@ -9,7 +9,7 @@ import (
 const prometheusType = Type("prometheus")
 
 type prometheusChecker struct {
-	apiClient prometheus.ApiClient
+	apiClient prometheus.APIClient
 	checks    []prometheusCheck
 }
 
@@ -57,7 +57,7 @@ func newPrometheus(consulClient tools.Consul, rawConfig json.RawMessage) (Checke
 	if err := json.Unmarshal(rawConfig, checks); err != nil {
 		return nil, err
 	}
-	prometheusAPIClient, err := prometheus.NewApiClient(consulClient)
+	prometheusAPIClient, err := prometheus.NewAPIClient(consulClient)
 	if err != nil {
 		return nil, err
 	}
