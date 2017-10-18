@@ -95,7 +95,7 @@ func main() {
 		if err != nil {
 			logger.WithError(err).WithField("file", *scenarioFromFile).Panic("Error while parsing test suite file")
 		}
-		checkErrors := make([]checker.CheckerError, 0)
+		checkErrors := make([]checker.Error, 0)
 		for _, test := range tests {
 			currentTestSuite = test
 			testReport, err := test.LaunchTest(consulClient, mqttClient, grafanaClient)

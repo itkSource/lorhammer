@@ -1,7 +1,6 @@
 package testSuite
 
 import (
-	"github.com/sirupsen/logrus"
 	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/deploy"
@@ -9,6 +8,8 @@ import (
 	"lorhammer/src/orchestrator/testType"
 	"lorhammer/src/tools"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 var LOG = logrus.WithField("logger", "orchestrator/testSuite/test")
@@ -74,7 +75,7 @@ func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mq
 	}, nil
 }
 
-func checkResults(check checker.Checker) ([]checker.CheckerSuccess, []checker.CheckerError) {
+func checkResults(check checker.Checker) ([]checker.Success, []checker.Error) {
 	ok, errs := check.Check()
 	if len(errs) > 0 {
 		LOG.WithField("nb", len(errs)).Error("Check results errors")
