@@ -180,7 +180,7 @@ func TestLaunchTest(t *testing.T) {
 			t.Fatalf(`1 valid scenario should return 1 valid testSuite for : "%s"`, ct.description)
 		}
 		if test.needProvisioning {
-			provisioning.Provision(tests[0].Uuid, tests[0].Provisioning, model.Register{})
+			provisioning.Provision(tests[0].UUID, tests[0].Provisioning, model.Register{})
 		}
 		report, err := tests[0].LaunchTest(fakeConsul{}, &fakeMqtt{}, ct.grafana)
 		if ct.testValid && err != nil {
@@ -210,13 +210,13 @@ type fakeConsul struct {
 	serviceFirstError error
 }
 
-func (_ fakeConsul) GetAddress() string                                      { return "" }
-func (_ fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
+func (fakeConsul) GetAddress() string                                      { return "" }
+func (fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
 func (f fakeConsul) ServiceFirst(name string, prefix string) (string, error) {
 	return "prometheusUrl", f.serviceFirstError
 }
-func (_ fakeConsul) DeRegister(string) error                     { return nil }
-func (_ fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }
+func (fakeConsul) DeRegister(string) error                     { return nil }
+func (fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }
 
 type fakeGrafana struct {
 	err error

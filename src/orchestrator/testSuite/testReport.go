@@ -7,16 +7,18 @@ import (
 	"time"
 )
 
+//TestReport is a struct wich encapsulate all information about a test
 type TestReport struct {
 	StartDate          time.Time         `json:"startDate"`
 	EndDate            time.Time         `json:"endDate"`
 	Input              *TestSuite        `json:"input"`
 	ChecksSuccess      []checker.Success `json:"checksSuccess"`
 	ChecksError        []checker.Error   `json:"checksError"`
-	GrafanaSnapshotUrl string            `json:"grafanaSnapshotUrl"`
+	GrafanaSnapshotURL string            `json:"grafanaSnapshotUrl"`
 }
 
-func WriteFile(testReport *TestReport, pathReportFile string) error {
+//WriteFile write the report in json into the file located at pathReportFile
+func (testReport *TestReport) WriteFile(pathReportFile string) error {
 	serialized, err := json.MarshalIndent(testReport, "", "    ")
 	if err != nil {
 		return err
