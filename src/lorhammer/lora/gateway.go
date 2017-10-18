@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
+	"github.com/sirupsen/logrus"
 )
 
 var loggerGateway = logrus.WithField("logger", "lorhammer/lora/gateway")

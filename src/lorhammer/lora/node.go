@@ -6,8 +6,8 @@ import (
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
 
-	"github.com/sirupsen/logrus"
 	"github.com/brocaar/lorawan"
+	"github.com/sirupsen/logrus"
 )
 
 var loggerNode = logrus.WithFields(logrus.Fields{"logger": "lorhammer/lora/node"})

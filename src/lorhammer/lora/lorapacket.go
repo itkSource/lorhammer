@@ -10,9 +10,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
 	"github.com/brocaar/lorawan"
+	"github.com/sirupsen/logrus"
 )
 
 type packet struct {

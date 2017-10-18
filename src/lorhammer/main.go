@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"runtime"
 
-	"github.com/sirupsen/logrus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 )
 
 var version string // set at build time

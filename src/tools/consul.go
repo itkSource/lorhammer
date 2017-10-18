@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"strconv"
 
-	"github.com/sirupsen/logrus"
 	consul "github.com/hashicorp/consul/api"
+	"github.com/sirupsen/logrus"
 )
 
 type subConsulAgent interface {

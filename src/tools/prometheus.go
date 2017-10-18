@@ -3,8 +3,8 @@ package tools
 import (
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 )
 
 var logPrometheus = logrus.WithField("logger", "tools/prometheus")
