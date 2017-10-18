@@ -2,15 +2,16 @@ package command
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
+
+	"github.com/sirupsen/logrus"
 )
 
-var LOG = logrus.WithField("logger", "orchestrator/command/in")
+var loggerIn = logrus.WithField("logger", "orchestrator/command/in")
 
+//ApplyCmd launch a model.CMD received from a lorhammer
 func ApplyCmd(command model.CMD, mqtt tools.Mqtt, provision func(model.Register) error) error {
 	switch command.CmdName {
 
@@ -19,12 +20,12 @@ func ApplyCmd(command model.CMD, mqtt tools.Mqtt, provision func(model.Register)
 		if err := json.Unmarshal(command.Payload, &sensorsToRegister); err != nil {
 			return err
 		}
-		LOG.WithField("nbGateways", len(sensorsToRegister.Gateways)).Info("Received registration command")
+		loggerIn.WithField("nbGateways", len(sensorsToRegister.Gateways)).Info("Received registration command")
 
 		if err := provision(sensorsToRegister); err != nil {
 			return err
 		}
-		LOG.WithField("nbGateways", len(sensorsToRegister.Gateways)).Info("Provisioning done")
+		loggerIn.WithField("nbGateways", len(sensorsToRegister.Gateways)).Info("Provisioning done")
 
 		startMessage := model.Start{
 			ScenarioUUID: sensorsToRegister.ScenarioUUID,
@@ -33,10 +34,10 @@ func ApplyCmd(command model.CMD, mqtt tools.Mqtt, provision func(model.Register)
 		if err := mqtt.PublishSubCmd(sensorsToRegister.CallBackTopic, model.START, startMessage); err != nil {
 			return err
 		}
-		LOG.Info("Start message sent")
+		loggerIn.Info("Start message sent")
 
 	default:
-		return errors.New(fmt.Sprintf("Unknown command %s", command.CmdName))
+		return fmt.Errorf("Unknown command %s", command.CmdName)
 	}
 	return nil
 }
