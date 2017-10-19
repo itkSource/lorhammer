@@ -1,17 +1,17 @@
 # Changelog
 
-## Version 0.3.0 - [UNRELEASED]
+## Version 0.3.0 - 2017-10-19 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.3.0)
 
 * **SCENARIO** Add a property to set the number of times the entire set of payloads will be sent [issues/48](https://gitlab.com/itk.fr/lorhammer/issues/48)
-* **CI** use make to build
+* **CI** use make to build [issues/46](https://gitlab.com/itk.fr/lorhammer/issues/46)
 * **GO** update to golang 1.9 and use sync.map instead of concurrent-map [issues/47](https://gitlab.com/itk.fr/lorhammer/issues/47)
 * **PROVISIONER** Add HTTP generic provisioner with a POST to add sensors and POST to delete them [issues/38](https://gitlab.com/itk.fr/lorhammer/issues/38)
 
-## Version 0.2.2 - 2017-10-27 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.2)
+## Version 0.2.2 - 2017-07-27 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.2)
 
 * **CI** repair docker creation on tag
 
-## Version 0.2.1 - 2017-10-27 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.1)
+## Version 0.2.1 - 2017-07-27 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.1)
 
 * **CI** clean artifact released by deleting useless i386 arch and directories containing binaries already present in tar.gz [issues/41](https://gitlab.com/itk.fr/lorhammer/issues/41)
 * **ORCHESTRATOR** fix bug : kafka receive message after closing kafka connexion [issues/42](https://gitlab.com/itk.fr/lorhammer/issues/42)
@@ -19,7 +19,7 @@
 * **ORCHESTRATOR** fix bug : if a scenario fail, but next scenario success, orchestrator exit(>0) now [issues/25](https://gitlab.com/itk.fr/lorhammer/issues/25)
 * **PROVISIONER** Goroutine over node creation to speed process in [loraserver](https://www.loraserver.io/) provisioner, you need to add `nbProvisionerParallel: 10` in scenario file [issues/17](https://gitlab.com/itk.fr/lorhammer/issues/17)
 
-## Version 0.2.0 - 2017-10-21 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.0)
+## Version 0.2.0 - 2017-07-21 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.0)
 
 > Scenario file format has changed, please update it before use new lorhammer version! 
 
