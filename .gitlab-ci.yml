@@ -11,10 +11,16 @@ stages:
     - compile
     - doc
 
-lint:
+lint:code:
     stage: lint
     script:
         - make lint
+
+lint:vendor:
+    stage: lint
+    script:
+        - make vendor
+        - git diff --exit-code
 
 test:unit:
     stage: test
