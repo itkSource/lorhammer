@@ -29,6 +29,7 @@ installDepthAndLaunch() {
         hugo -s doc
         minify --recursive --output ./doc/public_min/ ./doc/public
         cp -u -r ./doc/public/images/. ./doc/public_min/images
+        cp -u -r ./doc/public/font/. ./doc/public_min/font
     fi
 }
 
