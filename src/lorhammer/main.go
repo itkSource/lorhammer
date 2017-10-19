@@ -118,13 +118,13 @@ func main() {
 		}
 		ctx := sc.Cron(prometheus)
 		go func() {
-			LOG.Info("Blocking routine waiting for cancel function")
+			logger.Info("Blocking routine waiting for cancel function")
 			<-ctx.Done()
-			LOG.Info("Releasing blocking routine after cancel function call")
+			logger.Info("Releasing blocking routine after cancel function call")
 			cmd := model.CMD{
 				CmdName: model.STOP,
 			}
-			LOG.WithField("cmd ", cmd).Info("Apply Cmd Called")
+			logger.WithField("cmd ", cmd).Info("Apply Cmd Called")
 			// mqtt client is unneeded in case of shutdown command
 			command.ApplyCmd(cmd, nil, hostname, prometheus)
 		}()

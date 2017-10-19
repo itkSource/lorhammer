@@ -69,3 +69,75 @@ func TestRandomBytes(t *testing.T) {
 		}
 	}
 }
+
+func TestRandom2Bytes(t *testing.T) {
+	if len(Random2Bytes()) != 2 {
+		t.Fatalf("Random2Bytes should return a slice of 2 bytes")
+	}
+	nbSame := 0
+	for i := 0; i < 100000; i++ {
+		first := Random2Bytes()
+		second := Random2Bytes()
+		if first[0] == second[0] && first[1] == second[1] {
+			nbSame++
+		}
+	}
+	if nbSame > 10 {
+		t.Fatalf("Random2Bytes should be random generated")
+	}
+}
+
+func TestRandom4Bytes(t *testing.T) {
+	if len(Random4Bytes()) != 4 {
+		t.Fatalf("Random4Bytes should return a slice of 4 bytes")
+	}
+	nbSame := 0
+	for i := 0; i < 100000; i++ {
+		first := Random4Bytes()
+		second := Random4Bytes()
+		if first[0] == second[0] && first[1] == second[1] && first[2] == second[2] && first[3] == second[3] {
+			nbSame++
+		}
+	}
+	if nbSame > 10 {
+		t.Fatalf("Random4Bytes should be random generated")
+	}
+}
+
+func TestRandom8Bytes(t *testing.T) {
+	if len(Random8Bytes()) != 8 {
+		t.Fatalf("Random8Bytes should return a slice of 8 bytes")
+	}
+	nbSame := 0
+	for i := 0; i < 100000; i++ {
+		first := Random8Bytes()
+		second := Random8Bytes()
+		if first[0] == second[0] && first[1] == second[1] && first[2] == second[2] && first[3] == second[3] &&
+			first[4] == second[4] && first[5] == second[5] && first[6] == second[6] && first[7] == second[7] {
+			nbSame++
+		}
+	}
+	if nbSame > 10 {
+		t.Fatalf("Random8Bytes should be random generated")
+	}
+}
+
+func TestRandom16Bytes(t *testing.T) {
+	if len(Random16Bytes()) != 16 {
+		t.Fatalf("Random16Bytes should return a slice of 16 bytes")
+	}
+	nbSame := 0
+	for i := 0; i < 100000; i++ {
+		first := Random16Bytes()
+		second := Random16Bytes()
+		if first[0] == second[0] && first[1] == second[1] && first[2] == second[2] && first[3] == second[3] &&
+			first[4] == second[4] && first[5] == second[5] && first[6] == second[6] && first[7] == second[7] &&
+			first[8] == second[8] && first[9] == second[9] && first[10] == second[10] && first[11] == second[11] &&
+			first[12] == second[12] && first[13] == second[13] && first[14] == second[14] && first[15] == second[15] {
+			nbSame++
+		}
+	}
+	if nbSame > 10 {
+		t.Fatalf("Random16Bytes should be random generated")
+	}
+}

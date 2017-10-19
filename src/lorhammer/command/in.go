@@ -84,9 +84,9 @@ func applyStartCmd(command model.CMD, prometheus tools.Prometheus) {
 			sc.(*scenario.Scenario).Join(prometheus)
 			ctx := sc.(*scenario.Scenario).Cron(prometheus)
 			go func() {
-				LOG.Debug("Blocking routine waiting for cancel function")
+				logger.Debug("Blocking routine waiting for cancel function")
 				<-ctx.Done()
-				LOG.Debug("Releasing blocking routine after cancel function call")
+				logger.Debug("Releasing blocking routine after cancel function call")
 				stopScenario(sc.(*scenario.Scenario), prometheus)
 			}()
 		} else {
@@ -96,9 +96,9 @@ func applyStartCmd(command model.CMD, prometheus tools.Prometheus) {
 }
 
 func stopScenario(scenario *scenario.Scenario, prometheus tools.Prometheus) {
-	LOG.WithField("scenario", scenario.Uuid).Warn("Stopping scenario")
+	logger.WithField("scenario", scenario.UUID).Warn("Stopping scenario")
 	scenario.Stop(prometheus)
-	scenarios.Delete(scenario.Uuid)
+	scenarios.Delete(scenario.UUID)
 }
 
 func applyStopCmd(prometheus tools.Prometheus) {

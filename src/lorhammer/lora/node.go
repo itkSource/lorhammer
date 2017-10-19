@@ -101,15 +101,13 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 			if len(node.Payloads) == node.NextPayload {
 				node.PayloadsReplayLap++
 				loggerNode.WithFields(logrus.Fields{
-					"DevEui": node.DevEUI.String(),
-				}).Infof("Complete lap executed : %d", node.PayloadsReplayLap)
-				LOG_NODE.WithFields(logrus.Fields{
-					"DevEui": node.DevEUI.String(),
-				}).Infof("All payloads sended. restart from beginning (%d/%d)", node.NextPayload, len(node.Payloads))
+					"DevEui":            node.DevEUI.String(),
+					"PayloadsReplayLap": node.PayloadsReplayLap,
+				}).Info("Complete lap executed")
 				node.NextPayload = 0
 			}
 		}
-		LOG_NODE.WithFields(logrus.Fields{
+		loggerNode.WithFields(logrus.Fields{
 			"DevEui":             node.DevEUI.String(),
 			"Valeur de i":        i,
 			"len(node.Payloads)": len(node.Payloads),

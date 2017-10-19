@@ -44,24 +44,28 @@ func RandomDuration(min, max time.Duration) time.Duration {
 
 //Random2Bytes generate random [2]byte
 func Random2Bytes() [2]byte {
-	return [2]byte{RandomBytes(1)[0], RandomBytes(1)[0]}
+	r := RandomBytes(2)
+	return [2]byte{r[0], r[1]}
 }
 
 //Random4Bytes generate random [4]byte
 func Random4Bytes() [4]byte {
-	return [4]byte{RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0]}
+	r := RandomBytes(4)
+	return [4]byte{r[0], r[1], r[2], r[3]}
 }
 
 //Random8Bytes generate random [8]byte
 func Random8Bytes() [8]byte {
-	return [8]byte{RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0],
-		RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0]}
+	r := RandomBytes(8)
+	return [8]byte{r[0], r[1], r[2], r[3],
+		r[4], r[5], r[6], r[7]}
 }
 
 //Random16Bytes generate random [16]byte
 func Random16Bytes() [16]byte {
-	return [16]byte{RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0],
-		RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0],
-		RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0],
-		RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0], RandomBytes(1)[0]}
+	r := RandomBytes(16)
+	return [16]byte{r[0], r[1], r[2], r[3],
+		r[4], r[5], r[6], r[7],
+		r[8], r[9], r[10], r[11],
+		r[12], r[13], r[14], r[15]}
 }
