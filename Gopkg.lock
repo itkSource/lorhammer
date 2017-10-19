@@ -8,12 +8,6 @@
   version = "v1.12.0"
 
 [[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "a3f95b5c423586578a4e099b11a46c2479628cac"
-  version = "1.0.2"
-
-[[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/xml/xmlutil","service/ec2","service/sts"]
   revision = "b73b028e599fa9176687c70b8f9cafbe57c27d20"
@@ -26,10 +20,10 @@
   revision = "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9"
 
 [[projects]]
+  branch = "master"
   name = "github.com/brocaar/lora-gateway-bridge"
   packages = ["gateway"]
-  revision = "45f68616845699622ebbfda7a2b9dc6fa71cbec1"
-  version = "2.1.5"
+  revision = "9c86f8d233f5f2491c7364db819e3469928f3b48"
 
 [[projects]]
   name = "github.com/brocaar/loraserver"
@@ -188,6 +182,12 @@
   revision = "1f30fe9094a513ce4c700b9a54458bbb0c96996c"
 
 [[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "a3f95b5c423586578a4e099b11a46c2479628cac"
+  version = "1.0.2"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","proxy","websocket"]
@@ -202,6 +202,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "10a4d0d821fd1a8b012ba8ec3c8c5969c781156145ea19eea9956e7791863e61"
+  inputs-digest = "75625d864fa400c77c27323ffef1172bb84dcac9afb634366290d4f7d90060a7"
   solver-name = "gps-cdcl"
   solver-version = 1
