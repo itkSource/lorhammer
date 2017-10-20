@@ -200,6 +200,8 @@ type fakeMqtt struct {
 }
 
 func (m *fakeMqtt) Connect() error                                              { return nil }
+func (m *fakeMqtt) Disconnect()                                                 {}
+func (m *fakeMqtt) Handle(topics []string, handle func(message []byte)) error   { return nil }
 func (m *fakeMqtt) HandleCmd(topics []string, handle func(cmd model.CMD)) error { return nil }
 func (m *fakeMqtt) PublishCmd(topic string, cmdName model.CommandName) error    { return nil }
 func (m *fakeMqtt) PublishSubCmd(topic string, cmdName model.CommandName, subCmd interface{}) error {

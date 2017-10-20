@@ -20,6 +20,8 @@ var logMqtt = logrus.WithField("logger", "tools/mqtt")
 //Mqtt is responsible of communication with the mqtt server
 type Mqtt interface {
 	Connect() error
+	Disconnect()
+	Handle(topics []string, handle func(message []byte)) error
 	HandleCmd(topics []string, handle func(cmd model.CMD)) error
 	PublishCmd(topic string, cmdName model.CommandName) error
 	PublishSubCmd(topic string, cmdName model.CommandName, subCmd interface{}) error
@@ -29,7 +31,7 @@ type mqttImpl struct {
 	client mqttLib.Client
 }
 
-//NewMqtt return a Mqtt
+//NewMqtt return a Mqtt based on consul `mqtt` service and set clientID with hostname
 func NewMqtt(hostname string, consulClient Consul) (Mqtt, error) {
 	url, err := consulClient.ServiceFirst("mqtt", "tcp://")
 
@@ -37,8 +39,11 @@ func NewMqtt(hostname string, consulClient Consul) (Mqtt, error) {
 		return nil, err
 	}
 
-	clientID := MqttStartTopic + "/" + hostname
+	return NewMqttBasic(url, MqttStartTopic+"/"+hostname)
+}
 
+//NewMqttBasic return a Mqtt client
+func NewMqttBasic(url string, clientID string) (Mqtt, error) {
 	// uncomment next line to see all mqtt logs (very verbose)
 	// mqttLib.DEBUG = log.New(os.Stderr, "", log.LstdFlags)
 
@@ -55,6 +60,10 @@ func NewMqtt(hostname string, consulClient Consul) (Mqtt, error) {
 	}, nil
 }
 
+func (mqtt *mqttImpl) Disconnect() {
+	mqtt.client.Disconnect(0)
+}
+
 func (mqtt *mqttImpl) Connect() error {
 	if token := mqtt.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
@@ -62,22 +71,28 @@ func (mqtt *mqttImpl) Connect() error {
 	return nil
 }
 
-func (mqtt *mqttImpl) HandleCmd(topics []string, handle func(cmd model.CMD)) error {
+func (mqtt *mqttImpl) Handle(topics []string, handle func(message []byte)) error {
 	filters := make(map[string]byte)
 	for _, topic := range topics {
 		filters[topic] = byte(0)
 	}
 	if token := mqtt.client.SubscribeMultiple(filters, func(client mqttLib.Client, message mqttLib.Message) {
-		var command model.CMD
-		if err := json.Unmarshal(message.Payload(), &command); err != nil {
-			logMqtt.WithField("msg", string(message.Payload())).WithError(err).Warn("Skeep message because can't unMarshalling incoming message")
-		} else {
-			handle(command)
-		}
+		handle(message.Payload())
 	}); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
+}
+
+func (mqtt *mqttImpl) HandleCmd(topics []string, handle func(cmd model.CMD)) error {
+	return mqtt.Handle(topics, func(message []byte) {
+		var command model.CMD
+		if err := json.Unmarshal(message, &command); err != nil {
+			logMqtt.WithField("msg", string(message)).WithError(err).Warn("Skeep message because can't unMarshalling incoming message")
+		} else {
+			handle(command)
+		}
+	})
 }
 
 func (mqtt *mqttImpl) publish(topic string, message []byte) error {

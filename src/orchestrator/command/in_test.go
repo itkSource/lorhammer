@@ -48,14 +48,10 @@ type fakeMqtt struct {
 	test mqttTest
 }
 
-func (m *fakeMqtt) Connect() error {
-	return nil
-}
-
-func (m *fakeMqtt) HandleCmd(topics []string, handle func(cmd model.CMD)) error {
-	return nil
-}
-
+func (m *fakeMqtt) Connect() error                                              { return nil }
+func (m *fakeMqtt) Disconnect()                                                 {}
+func (m *fakeMqtt) Handle(topics []string, handle func(messgae []byte)) error   { return nil }
+func (m *fakeMqtt) HandleCmd(topics []string, handle func(cmd model.CMD)) error { return nil }
 func (m *fakeMqtt) PublishCmd(topic string, cmdName model.CommandName) error {
 	if m.test.publishError {
 		return errors.New("Error")
