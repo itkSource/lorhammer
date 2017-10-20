@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.3.1 - UNRELEASED
+
+* **PROVISIONER** Fix bug : when HTTP generic provisioner Deprovision() bad scenario was send [issues/51](https://gitlab.com/itk.fr/lorhammer/issues/51)
+
 ## Version 0.3.0 - 2017-10-19 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.3.0)
 
 * **SCENARIO** Add a property to set the number of times the entire set of payloads will be sent [issues/48](https://gitlab.com/itk.fr/lorhammer/issues/48)
