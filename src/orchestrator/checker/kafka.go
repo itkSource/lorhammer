@@ -108,7 +108,6 @@ func (k *kafka) handleMessage(pc sarama.PartitionConsumer) {
 					var re = regexp.MustCompile(dynamicValueToRemove)
 					s = re.ReplaceAllLiteralString(s, ``)
 				}
-				logKafka.Warn(s)
 				if s == check.Text {
 					atLeastMatch = true
 					k.muSuccess.Lock()

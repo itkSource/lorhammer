@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/Sirupsen/logrus"
 	"io"
 	"lorhammer/src/model"
 	"net/http"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 var logHTTPProvisioner = logrus.WithField("logger", "orchestrator/provisioning/http")
@@ -16,12 +17,11 @@ var logHTTPProvisioner = logrus.WithField("logger", "orchestrator/provisioning/h
 const HttpType = Type("http")
 
 type httpProvisoner struct {
-	CreationApiURL string `json:"creationApiUrl"`
-	DeletionApiURL string `json:"deletionApiUrl"`
-	Post           func(url string, contentType string, body io.Reader) (resp *http.Response, err error)
+	CreationAPIURL    string `json:"creationApiUrl"`
+	DeletionAPIURL    string `json:"deletionApiUrl"`
+	post              func(url string, contentType string, body io.Reader) (resp *http.Response, err error)
+	sensorsRegistered []model.Register
 }
-
-var registeredSensorsBytes [][]byte = make([][]byte, 0)
 
 func NewHttpProvisioner(rawConfig json.RawMessage) (provisioner, error) {
 	timeout := time.Duration(5 * time.Second)
@@ -29,7 +29,7 @@ func NewHttpProvisioner(rawConfig json.RawMessage) (provisioner, error) {
 		Timeout: timeout,
 	}
 	config := &httpProvisoner{
-		Post: client.Post,
+		post: client.Post,
 	}
 
 	if err := json.Unmarshal(rawConfig, config); err != nil {
@@ -43,7 +43,7 @@ func (httpProvisioner *httpProvisoner) Provision(sensorsToRegister model.Registe
 	if err != nil {
 		return err
 	}
-	resp, err := httpProvisioner.Post(httpProvisioner.CreationApiURL, "application/json", bytes.NewReader(byteData))
+	resp, err := httpProvisioner.post(httpProvisioner.CreationAPIURL, "application/json", bytes.NewReader(byteData))
 	if err != nil {
 		return err
 	}
@@ -51,37 +51,37 @@ func (httpProvisioner *httpProvisoner) Provision(sensorsToRegister model.Registe
 	if !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
 		logHTTPProvisioner.WithFields(logrus.Fields{
 			"errorCode": resp.StatusCode,
-			"errorName": resp.Status}).Error("Wrong return code in HTTP provisioning")
+			"errorName": resp.Status,
+			"dataPost":  string(byteData),
+		}).Error("Wrong return code in HTTP provisioning")
 		err = errors.New("Wrong return code")
 		return err
 	}
 
-	registeredSensorsBytes = append(registeredSensorsBytes, byteData)
+	httpProvisioner.sensorsRegistered = append(httpProvisioner.sensorsRegistered, sensorsToRegister)
 	return nil
 }
 
 func (httpProvisioner *httpProvisoner) DeProvision() error {
-	for _, registeredSensorBytes := range registeredSensorsBytes {
-		err := httpProvisioner.deleteRequest(registeredSensorBytes)
+	for _, sensorsRegistered := range httpProvisioner.sensorsRegistered {
+		byteData, err := json.Marshal(sensorsRegistered)
 		if err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-func (httpProvisioner *httpProvisoner) deleteRequest(sensorBytes []byte) error {
-	resp, err := httpProvisioner.Post(httpProvisioner.DeletionApiURL, "application/json", bytes.NewReader(sensorBytes))
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
-		logHTTPProvisioner.WithFields(logrus.Fields{
-			"errorCode": resp.StatusCode,
-			"errorName": resp.Status}).Error("Wrong return code in HTTP de-provisioning")
-		err = errors.New("Wrong return code")
-		return err
+		resp, err := httpProvisioner.post(httpProvisioner.DeletionAPIURL, "application/json", bytes.NewReader(byteData))
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		if !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
+			logHTTPProvisioner.WithFields(logrus.Fields{
+				"errorCode": resp.StatusCode,
+				"errorName": resp.Status,
+				"dataPost":  string(byteData),
+			}).Error("Wrong return code in HTTP de-provisioning")
+			err = errors.New("Wrong return code")
+			return err
+		}
 	}
 	return nil
 }
