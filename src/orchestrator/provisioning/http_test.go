@@ -134,7 +134,7 @@ func TestEmptyDeProvision(t *testing.T) {
 func TestWrongStatusCodeDeProvision(t *testing.T) {
 	httpProv := httpProvisoner{
 		DeletionAPIURL:    "testURL",
-		sensorsRegistered: []model.Register{model.Register{ScenarioUUID: "1"}},
+		sensorsRegistered: []model.Register{{ScenarioUUID: "1"}},
 		post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
 			if url != "testURL" {
 				t.Log(url)
@@ -155,7 +155,7 @@ func TestWrongStatusCodeDeProvision(t *testing.T) {
 func TestDeProvisionOK(t *testing.T) {
 	httpProv := httpProvisoner{
 		DeletionAPIURL:    "testURL",
-		sensorsRegistered: []model.Register{model.Register{ScenarioUUID: "1"}},
+		sensorsRegistered: []model.Register{{ScenarioUUID: "1"}},
 		post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
 			if url != "testURL" {
 				t.Log(url)
