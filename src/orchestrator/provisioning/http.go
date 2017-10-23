@@ -23,7 +23,7 @@ type httpProvisoner struct {
 	sensorsRegistered []model.Register
 }
 
-func NewHttpProvisioner(rawConfig json.RawMessage) (provisioner, error) {
+func newHTTPProvisioner(rawConfig json.RawMessage) (provisioner, error) {
 	timeout := time.Duration(5 * time.Second)
 	client := http.Client{
 		Timeout: timeout,
