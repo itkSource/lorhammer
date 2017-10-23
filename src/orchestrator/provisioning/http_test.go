@@ -49,21 +49,21 @@ func TestGoodConfig(t *testing.T) {
 
 	httpProv := provisioner.(*httpProvisoner)
 
-	if httpProv.CreationApiURL != "createURL" {
-		t.Log(httpProv.CreationApiURL)
+	if httpProv.CreationAPIURL != "createURL" {
+		t.Log(httpProv.CreationAPIURL)
 		t.Fatal("Wrong returned creation API URL")
 	}
 
-	if httpProv.DeletionApiURL != "deleteURL" {
-		t.Log(httpProv.DeletionApiURL)
+	if httpProv.DeletionAPIURL != "deleteURL" {
+		t.Log(httpProv.DeletionAPIURL)
 		t.Fatal("Wrong returned deletion API URL")
 	}
 }
 
 func TestNilProvision(t *testing.T) {
 	httpProv := httpProvisoner{
-		CreationApiURL: "testURL",
-		Post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
+		CreationAPIURL: "testURL",
+		post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
 			if url != "testURL" {
 				t.Log(url)
 				t.Fatal("Wrong creation URL API")
@@ -79,8 +79,8 @@ func TestNilProvision(t *testing.T) {
 }
 
 func TestWrongStatusCodeProvision(t *testing.T) {
-	httpProv := httpProvisoner{CreationApiURL: "testURL",
-		Post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
+	httpProv := httpProvisoner{CreationAPIURL: "testURL",
+		post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
 			if url != "testURL" {
 				t.Log(url)
 				t.Fatal("Wrong creation URL API")
@@ -95,15 +95,15 @@ func TestWrongStatusCodeProvision(t *testing.T) {
 	if err == nil {
 		t.Fatal("Error expected not to be nil")
 	}
-	if len(registeredSensorsBytes) == 1 {
+	if len(httpProv.sensorsRegistered) != 0 {
 		t.Fatal("Registered sensors expected to be 0")
 	}
 }
 
 func TestGoodProvision(t *testing.T) {
 	httpProv := httpProvisoner{
-		CreationApiURL: "testURL",
-		Post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
+		CreationAPIURL: "testURL",
+		post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
 			if url != "testURL" {
 				t.Log(url)
 				t.Fatal("Wrong creation URL API")
@@ -118,13 +118,12 @@ func TestGoodProvision(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error expected not to be nil")
 	}
-	if len(registeredSensorsBytes) != 1 {
+	if len(httpProv.sensorsRegistered) != 1 {
 		t.Fatal("Registered sensors expected to be 1")
 	}
 }
 
 func TestEmptyDeProvision(t *testing.T) {
-	registeredSensorsBytes = make([][]byte, 0)
 	httpProv := httpProvisoner{}
 	err := httpProv.DeProvision()
 	if err != nil {
@@ -133,10 +132,10 @@ func TestEmptyDeProvision(t *testing.T) {
 }
 
 func TestWrongStatusCodeDeProvision(t *testing.T) {
-	registeredSensorsBytes = make([][]byte, 0)
-	registeredSensorsBytes = append(registeredSensorsBytes, []byte{1, 0})
-	httpProv := httpProvisoner{DeletionApiURL: "testURL",
-		Post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
+	httpProv := httpProvisoner{
+		DeletionAPIURL:    "testURL",
+		sensorsRegistered: []model.Register{{ScenarioUUID: "1"}},
+		post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
 			if url != "testURL" {
 				t.Log(url)
 				t.Fatal("Wrong deletion URL API")
@@ -145,7 +144,8 @@ func TestWrongStatusCodeDeProvision(t *testing.T) {
 				StatusCode: http.StatusInternalServerError,
 				Body:       ioutil.NopCloser(nil),
 			}, nil
-		}}
+		},
+	}
 	err := httpProv.DeProvision()
 	if err == nil {
 		t.Fatal("Error expected not to be nil")
@@ -153,10 +153,10 @@ func TestWrongStatusCodeDeProvision(t *testing.T) {
 }
 
 func TestDeProvisionOK(t *testing.T) {
-	registeredSensorsBytes = make([][]byte, 0)
-	registeredSensorsBytes = append(registeredSensorsBytes, []byte{1, 0})
-	httpProv := httpProvisoner{DeletionApiURL: "testURL",
-		Post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
+	httpProv := httpProvisoner{
+		DeletionAPIURL:    "testURL",
+		sensorsRegistered: []model.Register{{ScenarioUUID: "1"}},
+		post: func(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
 			if url != "testURL" {
 				t.Log(url)
 				t.Fatal("Wrong deletion URL API")
@@ -165,7 +165,8 @@ func TestDeProvisionOK(t *testing.T) {
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(nil),
 			}, nil
-		}}
+		},
+	}
 	err := httpProv.DeProvision()
 	if err != nil {
 		t.Fatal("Error expected to be nil")

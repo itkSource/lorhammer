@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"lorhammer/src/model"
 	"lorhammer/src/orchestrator/checker"
@@ -14,13 +13,15 @@ import (
 	"os"
 	"runtime"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 var version string // set at build time
 var commit string  // set at build time
 var date string    // set at build time
 
-var LOG = logrus.WithField("logger", "orchestrator/orchestrator")
+var logger = logrus.WithField("logger", "orchestrator/main")
 
 func main() {
 	showVersion := flag.Bool("version", false, "Show current version and build time")
@@ -45,12 +46,12 @@ func main() {
 
 	// CONSUL PART
 	if *consulAddr == "" {
-		LOG.Error("You need to specify at least -consul with ip:port")
+		logger.Error("You need to specify at least -consul with ip:port")
 		return
 	}
 	consulClient, err := tools.NewConsul(*consulAddr)
 	if err != nil {
-		LOG.WithError(err).Panic("Can't build consul")
+		logger.WithError(err).Panic("Can't build consul")
 	}
 
 	logrus.Warn("Welcome to the Lorhammer's Orchestrator")
@@ -60,47 +61,48 @@ func main() {
 	// MQTT PART
 	mqttClient, err := tools.NewMqtt(host, consulClient)
 	if err != nil {
-		LOG.WithError(err).Error("Can't build mqtt client")
+		logger.WithError(err).Error("Can't build mqtt client")
 	} else {
 		if errMqtt := mqttClient.Connect(); errMqtt != nil {
-			LOG.WithError(errMqtt).Error("Error while connecting to mqtt")
+			logger.WithError(errMqtt).Error("Error while connecting to mqtt")
 		}
 		if errHandleCmd := mqttClient.HandleCmd([]string{tools.MQTT_ORCHESTRATOR_TOPIC}, func(cmd model.CMD) {
 			if errApplyCmd := command.ApplyCmd(cmd, mqttClient, func(register model.Register) error {
 				return provisioning.Provision(currentTestSuite.Uuid, currentTestSuite.Provisioning, register)
 			}); errApplyCmd != nil {
-				LOG.WithField("cmd", cmd).WithError(errApplyCmd).Error("ApplyCmd error")
+				logger.WithField("cmd", string(cmd.Payload)).WithError(errApplyCmd).Error("ApplyCmd error")
 			}
 		}); errHandleCmd != nil {
-			LOG.WithError(errHandleCmd).Error("Error while subscribing to topic")
+			logger.WithError(errHandleCmd).Error("Error while subscribing to topic")
 		} else {
-			LOG.WithField("topic", tools.MQTT_ORCHESTRATOR_TOPIC).Info("Listen mqtt")
+			logger.WithField("topic", tools.MQTT_ORCHESTRATOR_TOPIC).Info("Listen mqtt")
 		}
 	}
 
 	// GRAFANA
 	grafanaClient, err := tools.NewGrafana(consulClient)
 	if err != nil {
-		LOG.WithError(err).Error("Error while constructing new grafana api client")
+		logger.WithError(err).Error("Error while constructing new grafana api client")
 	}
 
+	// SCENARIO
 	if *scenarioFromFile != "" {
 		configFile, err := ioutil.ReadFile(*scenarioFromFile)
 		if err != nil {
-			LOG.WithError(err).Panic("Error while reading test suite file")
+			logger.WithError(err).Panic("Error while reading test suite file")
 		}
 		tests, err := testSuite.FromFile(configFile)
 		if err != nil {
-			LOG.WithError(err).WithField("file", *scenarioFromFile).Panic("Error while parsing test suite file")
+			logger.WithError(err).WithField("file", *scenarioFromFile).Panic("Error while parsing test suite file")
 		}
 		checkErrors := make([]checker.CheckerError, 0)
 		for _, test := range tests {
 			currentTestSuite = test
 			testReport, err := test.LaunchTest(consulClient, mqttClient, grafanaClient)
 			if err != nil {
-				LOG.WithError(err).Error("Error during test")
+				logger.WithError(err).Error("Error during test")
 			} else if err := testSuite.WriteFile(testReport, *reportFile); err != nil {
-				LOG.WithError(err).Error("Can't report test")
+				logger.WithError(err).Error("Can't report test")
 			} else {
 				checkErrors = append(checkErrors, testReport.ChecksError...)
 			}
