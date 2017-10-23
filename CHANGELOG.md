@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.3.1 - UNRELEASED
+## Version 0.3.1 - 2017-10-23 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.3.1)
 
 * **PROVISIONER** Fix bug : when HTTP generic provisioner Deprovision() bad scenario was send [issues/51](https://gitlab.com/itk.fr/lorhammer/issues/51)
 
