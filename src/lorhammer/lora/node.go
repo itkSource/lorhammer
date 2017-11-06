@@ -71,8 +71,8 @@ func getJoinRequestDataPayload(node *model.Node) []byte {
 	return b
 }
 
-// GetPushDataPayload return the nextbayte arraypush data
-func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
+// GetPushDataPayload return the nextbyte arraypush data
+func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, int64, error) {
 
 	fport := uint8(1)
 
@@ -83,6 +83,7 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 		}).Warn("The payload sent for node is empty, please specify a correct payload on the json scenario file")
 	}
 	var frmPayloadByteArray []byte
+	var date int64
 	if len(node.Payloads) == 0 {
 		loggerNode.WithFields(logrus.Fields{
 			"DevEui": node.DevEUI.String(),
@@ -106,6 +107,9 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 				}).Info("Complete lap executed")
 				node.NextPayload = 0
 			}
+			// only extract timestamp when payloads are consumed in natural order and not randomly,
+			// keep the "0" default value instead
+			date = node.Payloads[i].Date
 		}
 		loggerNode.WithFields(logrus.Fields{
 			"DevEui":             node.DevEUI.String(),
@@ -113,6 +117,7 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 			"len(node.Payloads)": len(node.Payloads),
 			"node.NextPayload":   node.NextPayload,
 			"Payload : ":         node.Payloads[i].Value,
+			"Date : ":         node.Payloads[i].Date,
 		}).Debug("Payload sent")
 		frmPayloadByteArray, _ = hex.DecodeString(node.Payloads[i].Value)
 	}
@@ -149,9 +154,9 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, error) {
 
 	b, err := phyPayload.MarshalBinary()
 	if err != nil {
-		return nil, errors.New("unable to marshal physical payload")
+		return nil, 0, errors.New("unable to marshal physical payload")
 	}
-	return b, nil
+	return b, date, nil
 }
 
 func getDevAddrFromDevEUI(devEUI lorawan.EUI64) lorawan.DevAddr {
