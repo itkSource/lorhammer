@@ -107,7 +107,7 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, int64, error) {
 				}).Info("Complete lap executed")
 				node.NextPayload = 0
 			}
-			// only extract timestamp when payloads are consumed in natural order and not randomly,
+			// only extract timestamp when payloads are consumed in declaration order and not randomly,
 			// keep the "0" default value instead
 			date = node.Payloads[i].Date
 		}
