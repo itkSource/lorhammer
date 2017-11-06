@@ -36,13 +36,11 @@ func newRxpk(data []byte, date int64, gateway *model.Gateway) loraserver_structs
 		Data: base64.StdEncoding.EncodeToString(data),
 	}
 
-	// The date set to the gateway has the priority to set the RxpkDate
-	if gateway.RxpkDate > 0 {
+	if gateway.RxpkDate > 0 { // The date set to the gateway has the priority to set the RxpkDate
 		rxpk.Time = loraserver_structs.CompactTime(time.Unix(gateway.RxpkDate, 0).UTC())
-	// By contract, if the date is equal or inferior to 0, the RxpkDate is set to now
-	} else if date > 0 {
+	} else if date > 0 { // If the date is superior to 0, it is used as RxpkDate
 		rxpk.Time = loraserver_structs.CompactTime(time.Unix(date, 0).UTC())
-	} else {
+	} else { // if the date is equal or inferior to 0, the RxpkDate is set to now
 		rxpk.Time = loraserver_structs.CompactTime(time.Now().UTC())
 	}
 	return rxpk

@@ -117,7 +117,7 @@ func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, int64, error) {
 			"len(node.Payloads)": len(node.Payloads),
 			"node.NextPayload":   node.NextPayload,
 			"Payload : ":         node.Payloads[i].Value,
-			"Date : ":         node.Payloads[i].Date,
+			"Date : ":            node.Payloads[i].Date,
 		}).Debug("Payload sent")
 		frmPayloadByteArray, _ = hex.DecodeString(node.Payloads[i].Value)
 	}
