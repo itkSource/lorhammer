@@ -35,11 +35,11 @@ favicons = [
 
     [params.header]
     links = [
-        '<a href="https://gitlab.com/itk.fr/lorhammer/commits/master"><img alt="build status" src="https://gitlab.com/itk.fr/lorhammer/badges/master/build.svg" /></a>',
-        '<a href="https://gitlab.com/itk.fr/lorhammer/commits/master"><img alt="coverage report" src="https://gitlab.com/itk.fr/lorhammer/badges/master/coverage.svg" /></a>',
-        '<a href="https://goreportcard.com/report/gitlab.com/itk.fr/lorhammer"><img alt="Go Report Card" src="https://goreportcard.com/badge/gitlab.com/itk.fr/lorhammer" /></a>',
-		'<a href="http://www.itk.fr" target="blank" class="btn">itk.fr</a>',
-		'<a href="http://gitlab.com/itk.fr/lorhammer" target="blank" class="btn">ForkMe</a>'
+        '<a href="https://gitlab.com/itk.fr/lorhammer/commits/master" title="↪ pipeline (new window)" target="blank"><img alt="build status" src="https://gitlab.com/itk.fr/lorhammer/badges/master/build.svg" /></a>',
+        '<a href="https://gitlab.com/itk.fr/lorhammer/commits/master" title="↪ coverage (new window)" target="blank"><img alt="coverage report" src="https://gitlab.com/itk.fr/lorhammer/badges/master/coverage.svg" /></a>',
+        '<a href="https://goreportcard.com/report/gitlab.com/itk.fr/lorhammer" title="↪ report (new window)" target="blank"><img alt="Go Report Card" src="https://goreportcard.com/badge/gitlab.com/itk.fr/lorhammer" /></a>',
+		'<a href="http://www.itk.fr" title="↪ itk.fr (new window)" target="blank" class="btn">itk.fr</a>',
+		'<a href="http://gitlab.com/itk.fr/lorhammer" title="↪ ForkMe (new window)" target="blank" class="btn">ForkMe</a>'
     ]
 
     [params.footer]
