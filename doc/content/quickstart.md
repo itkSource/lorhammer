@@ -361,8 +361,8 @@ Type : **array(model.Payload)**
 This array holds the different payloads you want the nodes to send through all their messages. 
 Each node will send one of the payloads at a time (in the array natural order or randomly if the `randomPayloads` property is set to true). 
 The payloads here are hexadecimal string representations. 
-A date property can be added for each payload, and will be used to set the rxpkDate of the frame. This can be helpful if that
-date is used as an absolute time reference to timestamp the measures. 
+A date property can be added for each payload, and will be used to set the rxpkDate of the frame. 
+This can be helpful if that date is used as an absolute time reference to timestamp the measures. 
 
 
 ### randomPayloads 
