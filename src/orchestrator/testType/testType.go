@@ -8,22 +8,25 @@ import (
 	"time"
 )
 
+//Type represent a testType
 type Type string
 
+//Test is the representation of a test in config file
 type Test struct {
 	testType   Type
 	repeatTime time.Duration
 	rampTime   time.Duration
 }
 
-type testJson struct {
+type testJSON struct {
 	TestType   Type   `json:"type"`
 	RepeatTime string `json:"repeatTime"`
 	RampTime   string `json:"rampTime"`
 }
 
+//UnmarshalJSON permit to load a Test from a json
 func (test *Test) UnmarshalJSON(b []byte) error {
-	var serialized testJson
+	var serialized testJSON
 	if err := json.Unmarshal(b, &serialized); err != nil {
 		return err
 	}
@@ -44,12 +47,13 @@ func (test *Test) UnmarshalJSON(b []byte) error {
 var testers = make(map[Type]func(test Test, init model.Init, mqttClient tools.Mqtt))
 
 func init() {
-	testers[TypeNone] = startNone
-	testers[TypeOneShot] = startOneShot
-	testers[TypeRepeat] = startRepeat
-	testers[TypeRamp] = startRamp
+	testers[typeNone] = startNone
+	testers[typeOneShot] = startOneShot
+	testers[typeRepeat] = startRepeat
+	testers[typeRamp] = startRamp
 }
 
+//Start launch a test
 func Start(test Test, init model.Init, mqttClient tools.Mqtt) error {
 	if tester := testers[test.testType]; tester != nil {
 		go tester(test, init, mqttClient)

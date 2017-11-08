@@ -1,15 +1,16 @@
 package testType
 
 import (
-	"github.com/Sirupsen/logrus"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
+
+	"github.com/sirupsen/logrus"
 )
 
-const TypeNone Type = "none"
+const typeNone Type = "none"
 
-var LOG_NONE = logrus.WithField("logger", "orchestrator/testType/none")
+var logNone = logrus.WithField("logger", "orchestrator/testType/none")
 
 func startNone(_ Test, _ model.Init, _ tools.Mqtt) {
-	LOG_NONE.WithField("type", "none").Warn("Nothing to test")
+	logNone.WithField("type", "none").Warn("Nothing to test")
 }

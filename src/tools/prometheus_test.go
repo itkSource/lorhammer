@@ -1,10 +1,11 @@
 package tools
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
-	dto "github.com/prometheus/client_model/go"
 	"testing"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 )
 
 type fakePrometheusHistogram struct {
@@ -12,10 +13,10 @@ type fakePrometheusHistogram struct {
 	start time.Time
 }
 
-func (_ fakePrometheusHistogram) Desc() *prometheus.Desc           { return nil }
-func (_ fakePrometheusHistogram) Write(*dto.Metric) error          { return nil }
-func (_ fakePrometheusHistogram) Describe(chan<- *prometheus.Desc) {}
-func (_ fakePrometheusHistogram) Collect(chan<- prometheus.Metric) {}
+func (fakePrometheusHistogram) Desc() *prometheus.Desc           { return nil }
+func (fakePrometheusHistogram) Write(*dto.Metric) error          { return nil }
+func (fakePrometheusHistogram) Describe(chan<- *prometheus.Desc) {}
+func (fakePrometheusHistogram) Collect(chan<- prometheus.Metric) {}
 func (f fakePrometheusHistogram) Observe(observedTime float64) {
 	if time.Now().Sub(f.start).Seconds()*1000 < observedTime {
 		f.t.Fatal("Observed time must be now minus start time multiply by 1000 (to be milliseconds)")

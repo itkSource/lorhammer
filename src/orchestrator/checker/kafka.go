@@ -2,14 +2,15 @@ package checker
 
 import (
 	"encoding/json"
-	"github.com/Shopify/sarama"
-	"github.com/Sirupsen/logrus"
 	"lorhammer/src/tools"
 	"regexp"
 	"sync"
+
+	"github.com/Shopify/sarama"
+	"github.com/sirupsen/logrus"
 )
 
-const KafkaType = Type("kafka")
+const kafkaType = Type("kafka")
 
 var logKafka = logrus.WithField("logger", "orchestrator/checker/kafka")
 
@@ -17,9 +18,9 @@ type kafka struct {
 	config        kafkaConfig
 	newConsumer   func(addrs []string, config *sarama.Config) (sarama.Consumer, error)
 	kafkaConsumer sarama.Consumer
-	success       []CheckerSuccess
+	success       []Success
 	muSuccess     sync.Mutex
-	err           []CheckerError
+	err           []Error
 	muErr         sync.Mutex
 	poison        chan bool
 }
@@ -71,12 +72,12 @@ func newKafka(_ tools.Consul, rawConfig json.RawMessage) (Checker, error) {
 }
 
 func (k *kafka) Start() error {
-	if kafkaConsumer, err := k.newConsumer(k.config.Address, nil); err != nil {
+	kafkaConsumer, err := k.newConsumer(k.config.Address, nil)
+	if err != nil {
 		logKafka.WithError(err).Error("Kafka new consumer")
 		return err
-	} else {
-		k.kafkaConsumer = kafkaConsumer
 	}
+	k.kafkaConsumer = kafkaConsumer
 	partitionList, err := k.kafkaConsumer.Partitions(k.config.Topic)
 	if err != nil {
 		logKafka.WithError(err).Error("Kafka partitions")
@@ -133,7 +134,7 @@ func (k *kafka) handleMessage(pc sarama.PartitionConsumer) {
 	pc.Close()
 }
 
-func (k *kafka) Check() ([]CheckerSuccess, []CheckerError) {
+func (k *kafka) Check() ([]Success, []Error) {
 	partitionList, err := k.kafkaConsumer.Partitions(k.config.Topic)
 	if err != nil {
 		logKafka.WithError(err).Error("Kafka partitions")

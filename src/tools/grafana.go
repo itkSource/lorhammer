@@ -4,23 +4,25 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
-	_GRAFANA_CONSUL_SERVICE    = "grafana"
-	_GRAFANA_DASHBOARD_NAME    = "lora"
-	_GRAFANA_URL_API_DASHBOARD = "/api/dashboards/db/"
-	_GRAFANA_URL_API_SNAPSHOT  = "/api/snapshots"
-	_GRAFANA_URL_SNAPSHOT      = "/dashboard/snapshot/"
+	grafanaConsulService   = "grafana"
+	grafanaDashboardName   = "lora"
+	grafanaURLApiDashboard = "/api/dashboards/db/"
+	grafanaURLApiSnapshot  = "/api/snapshots"
+	grafanaURLSnapshot     = "/dashboard/snapshot/"
 )
 
-var LOG_GRAFANA = logrus.WithField("logger", "tools/grafana")
+var logGrafana = logrus.WithField("logger", "tools/grafana")
 
+//GrafanaClient permit to interact with grafana pi
 type GrafanaClient interface {
 	MakeSnapshot(startTime time.Time, endTime time.Time) (string, error)
 }
@@ -39,13 +41,14 @@ type makeSnapshot struct {
 
 type snapshot struct {
 	DeleteKey string `json:"deleteKey"`
-	DeleteUrl string `json:"deleteUrl"`
+	DeleteURL string `json:"deleteUrl"`
 	Key       string `json:"key"`
-	Url       string `json:"url"`
+	URL       string `json:"url"`
 }
 
+//NewGrafana return a grafana client
 func NewGrafana(consulClient Consul) (GrafanaClient, error) {
-	address, err := consulClient.ServiceFirst(_GRAFANA_CONSUL_SERVICE, "http://")
+	address, err := consulClient.ServiceFirst(grafanaConsulService, "http://")
 	if err != nil {
 		return nil, err
 	}
@@ -57,20 +60,20 @@ func NewGrafana(consulClient Consul) (GrafanaClient, error) {
 }
 
 func (grafana *grafanaClientImpl) MakeSnapshot(startTime time.Time, endTime time.Time) (string, error) {
-	dashboard, err := grafana.getDashboard(_GRAFANA_DASHBOARD_NAME, startTime, endTime)
+	dashboard, err := grafana.getDashboard(grafanaDashboardName, startTime, endTime)
 	if err != nil {
 		return "", err
 	}
 	mSnapshot := makeSnapshot{
 		Dashboard: dashboard,
-		Name:      _GRAFANA_DASHBOARD_NAME,
+		Name:      grafanaDashboardName,
 		Expires:   3600,
 	}
 	body, err := json.Marshal(mSnapshot)
 	if err != nil {
 		return "", err
 	}
-	res, err := grafana.httpPoster(grafana.url+_GRAFANA_URL_API_SNAPSHOT, "application/json", bytes.NewBuffer(body))
+	res, err := grafana.httpPoster(grafana.url+grafanaURLApiSnapshot, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return "", err
 	}
@@ -79,16 +82,16 @@ func (grafana *grafanaClientImpl) MakeSnapshot(startTime time.Time, endTime time
 	if err := json.NewDecoder(res.Body).Decode(&s); err != nil {
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(res.Body)
-		LOG_GRAFANA.WithField("body", buf.String()).Error("Grafana response")
+		logGrafana.WithField("body", buf.String()).WithError(err).Error("Grafana response")
 		return "", err
 	}
-	urlSnapshot := grafana.url + _GRAFANA_URL_SNAPSHOT + s.Key
-	LOG_GRAFANA.WithField("url", urlSnapshot).Info("Snapshot grafana")
+	urlSnapshot := grafana.url + grafanaURLSnapshot + s.Key
+	logGrafana.WithField("url", urlSnapshot).Info("Snapshot grafana")
 	return urlSnapshot, nil
 }
 
 func (grafana *grafanaClientImpl) getDashboard(name string, startTime time.Time, endTime time.Time) (json.RawMessage, error) {
-	res, err := grafana.httpGetter(grafana.url + _GRAFANA_URL_API_DASHBOARD + name)
+	res, err := grafana.httpGetter(grafana.url + grafanaURLApiDashboard + name)
 	if err != nil {
 		return nil, err
 	}

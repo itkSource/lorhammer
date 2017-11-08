@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var logHTTPProvisioner = logrus.WithField("logger", "orchestrator/provisioning/http")
 
-const HttpType = Type("http")
+const httpType = Type("http")
 
 type httpProvisoner struct {
 	CreationAPIURL    string `json:"creationApiUrl"`
@@ -23,7 +23,7 @@ type httpProvisoner struct {
 	sensorsRegistered []model.Register
 }
 
-func NewHttpProvisioner(rawConfig json.RawMessage) (provisioner, error) {
+func newHTTPProvisioner(rawConfig json.RawMessage) (provisioner, error) {
 	timeout := time.Duration(5 * time.Second)
 	client := http.Client{
 		Timeout: timeout,

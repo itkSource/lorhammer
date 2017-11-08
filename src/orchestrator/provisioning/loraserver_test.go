@@ -9,21 +9,18 @@ import (
 	"time"
 )
 
-func newLoraserverFromJson(j string) *loraserver {
-	raw := json.RawMessage([]byte(j))
-	l, _ := newLoraserver(raw)
-	return l.(*loraserver)
-}
-
 func newDefautlLoraserver() *loraserver {
-	return newLoraserverFromJson(`{
+	j := `{
 	  "apiUrl":"",
 	  "abp" : true,
       "login" : "admin",
       "password" : "admin",
       "appId": "19",
       "nbProvisionerParallel": 1
-    }`)
+	}`
+	raw := json.RawMessage([]byte(j))
+	l, _ := newLoraserver(raw)
+	return l.(*loraserver)
 }
 
 func newNodes(nb int) []*model.Node {
@@ -157,7 +154,7 @@ func TestDeprovisioningLoraserverWithtouUrl(t *testing.T) {
 
 func TestDeprovisioningLoraserverError(t *testing.T) {
 	l := newDefautlLoraserver()
-	l.ApiUrl = "/"
+	l.APIURL = "/"
 	l.doRequest = newDoRequest(false, false, false, true)
 
 	err := l.DeProvision()
@@ -168,7 +165,7 @@ func TestDeprovisioningLoraserverError(t *testing.T) {
 
 func TestDeprovisioningLoraserver(t *testing.T) {
 	l := newDefautlLoraserver()
-	l.ApiUrl = "/"
+	l.APIURL = "/"
 	l.doRequest = newDoRequest(false, false, false, false)
 
 	err := l.DeProvision()

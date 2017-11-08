@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+//Hostname return unique hostname_ip:port string
 func Hostname(ip string, port int) (string, error) {
 	name, err := os.Hostname()
 	if err != nil {
@@ -16,14 +17,19 @@ func Hostname(ip string, port int) (string, error) {
 	return fmt.Sprintf("%s_%s:%d", name, ip, port), err
 }
 
-func DetectIp(localIp string) (string, error) {
-	if strings.Compare("", localIp) == 0 {
-		return foundIp()
+//DetectIP return IP v4
+//If an ip withtout "127" (local) and withtout "172" (docker) is found
+//If multiple ip is found return an error
+//If no ip ip conresponding is found return an error
+func DetectIP(localIP string) (string, error) {
+	if strings.Compare("", localIP) == 0 {
+		return foundIP()
 	}
-	return localIp, nil
+	return localIP, nil
 }
 
-func FreeTcpPort() (int, error) {
+//FreeTCPPort return free tcp port on host
+func FreeTCPPort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", ":0")
 	if err != nil {
 		return 0, err
@@ -36,7 +42,7 @@ func FreeTcpPort() (int, error) {
 	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
-func foundIp() (string, error) {
+func foundIP() (string, error) {
 	ifaces, err := net.Interfaces()
 
 	if err != nil {
@@ -59,9 +65,9 @@ func foundIp() (string, error) {
 				ip = v.IP
 			}
 
-			splitIp := strings.Split(ip.String(), ".")
+			splitIP := strings.Split(ip.String(), ".")
 
-			if len(splitIp) == 4 && strings.Compare(splitIp[0], "127") != 0 && strings.Compare(splitIp[0], "172") != 0 {
+			if len(splitIP) == 4 && strings.Compare(splitIP[0], "127") != 0 && strings.Compare(splitIP[0], "172") != 0 {
 				ips = append(ips, ip.String())
 			}
 		}

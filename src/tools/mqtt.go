@@ -2,19 +2,22 @@ package tools
 
 import (
 	"encoding/json"
-	"github.com/Sirupsen/logrus"
-	mqttLib "github.com/eclipse/paho.mqtt.golang"
 	"lorhammer/src/model"
+
+	mqttLib "github.com/eclipse/paho.mqtt.golang"
+	"github.com/sirupsen/logrus"
 )
 
+//Channels mqtt to use
 const (
-	MQTT_START_TOPIC        = "/lorhammer"
-	MQTT_INIT_TOPIC         = "/lorhammer/all"
-	MQTT_ORCHESTRATOR_TOPIC = "/lorhammer/orchestrator"
+	MqttStartTopic        = "/lorhammer"
+	MqttInitTopic         = "/lorhammer/all"
+	MqttOrchestratorTopic = "/lorhammer/orchestrator"
 )
 
-var _LOG_MQTT = logrus.WithField("logger", "tools/mqtt")
+var logMqtt = logrus.WithField("logger", "tools/mqtt")
 
+//Mqtt is responsible of communication with the mqtt server
 type Mqtt interface {
 	Connect() error
 	HandleCmd(topics []string, handle func(cmd model.CMD)) error
@@ -26,6 +29,7 @@ type mqttImpl struct {
 	client mqttLib.Client
 }
 
+//NewMqtt return a Mqtt
 func NewMqtt(hostname string, consulClient Consul) (Mqtt, error) {
 	url, err := consulClient.ServiceFirst("mqtt", "tcp://")
 
@@ -33,20 +37,15 @@ func NewMqtt(hostname string, consulClient Consul) (Mqtt, error) {
 		return nil, err
 	}
 
-	clientId := MQTT_START_TOPIC + "/" + hostname
+	clientID := MqttStartTopic + "/" + hostname
 
 	// uncomment next line to see all mqtt logs (very verbose)
 	// mqttLib.DEBUG = log.New(os.Stderr, "", log.LstdFlags)
 
-	connOpts := mqttLib.NewClientOptions().AddBroker(url).SetClientID(clientId).SetOnConnectHandler(func(client mqttLib.Client) {
-		_LOG_MQTT.WithFields(logrus.Fields{
-			"mqtt":     url,
-			"ClientID": clientId,
-		}).Info("Connected to Mqtt broker")
+	connOpts := mqttLib.NewClientOptions().AddBroker(url).SetClientID(clientID).SetOnConnectHandler(func(client mqttLib.Client) {
+		logMqtt.WithField("mqtt", url).WithField("ClientID", clientID).Info("Connected to Mqtt broker")
 	}).SetConnectionLostHandler(func(client mqttLib.Client, reason error) {
-		_LOG_MQTT.WithFields(logrus.Fields{
-			"err": reason.Error(),
-		}).Warn("Connection mqtt lost")
+		logMqtt.WithError(reason).Warn("Connection mqtt lost")
 	})
 
 	client := mqttLib.NewClient(connOpts)
@@ -71,10 +70,7 @@ func (mqtt *mqttImpl) HandleCmd(topics []string, handle func(cmd model.CMD)) err
 	if token := mqtt.client.SubscribeMultiple(filters, func(client mqttLib.Client, message mqttLib.Message) {
 		var command model.CMD
 		if err := json.Unmarshal(message.Payload(), &command); err != nil {
-			_LOG_MQTT.WithFields(logrus.Fields{
-				"err": err,
-				"msg": string(message.Payload()),
-			}).Warn("Skeep message because can't unMarshalling incoming message")
+			logMqtt.WithField("msg", string(message.Payload())).WithError(err).Warn("Skeep message because can't unMarshalling incoming message")
 		} else {
 			handle(command)
 		}
@@ -94,10 +90,7 @@ func (mqtt *mqttImpl) publishFullCmd(topic string, cmd model.CMD) error {
 	if err != nil {
 		return err
 	}
-	_LOG_MQTT.WithFields(logrus.Fields{
-		"topic": topic,
-		"cmd":   cmd.CmdName,
-	}).Info("Send mqtt cmd")
+	logMqtt.WithField("topic", topic).WithField("cmd", cmd.CmdName).Info("Send mqtt cmd")
 	return mqtt.publish(topic, message)
 }
 

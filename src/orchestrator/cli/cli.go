@@ -2,23 +2,25 @@ package cli
 
 import (
 	"bufio"
-	"github.com/Sirupsen/logrus"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/prometheus"
 	"lorhammer/src/tools"
 	"os"
 	"strconv"
+
+	"github.com/sirupsen/logrus"
 )
 
-var LOG = logrus.WithField("logger", "orchestrator/cli/cli")
+var logger = logrus.WithField("logger", "orchestrator/cli/cli")
 
+//Start launch the cli mode and ask to user to select actions
 func Start(mqttClient tools.Mqtt, consulClient tools.Consul) {
 	scanner := bufio.NewScanner(os.Stdin)
-	LOG.Warn("What do you wan to do ?")
-	LOG.Warn("1 - stop all scenarios")
-	LOG.Warn("2 - shutdown all lorhammers")
-	LOG.Warn("3 - nb lorhammers")
-	LOG.Warn("4 - clean consul services")
+	logger.Warn("What do you wan to do ?")
+	logger.Warn("1 - stop all scenarios")
+	logger.Warn("2 - shutdown all lorhammers")
+	logger.Warn("3 - nb lorhammers")
+	logger.Warn("4 - clean consul services")
 	switch scanChoose(scanner, []string{"1", "2", "3", "4"}) {
 	case "1":
 		command.StopScenario(mqttClient)
@@ -39,49 +41,49 @@ func scanChoose(scanner *bufio.Scanner, chooses []string) string {
 	}
 	scanner.Scan()
 	choose := scanner.Text()
-	if _, ok := mapChooses[choose]; ok {
+	_, ok := mapChooses[choose]
+	if ok {
 		return choose
-	} else {
-		LOG.WithFields(logrus.Fields{
-			"response": choose,
-		}).Error("Enter a valid choose please")
-		return scanChoose(scanner, chooses)
 	}
+	logger.WithFields(logrus.Fields{
+		"response": choose,
+	}).Error("Enter a valid choose please")
+	return scanChoose(scanner, chooses)
 }
 
 func fetchAndDisplayNbLorhammer(consulClient tools.Consul) {
-	prometheusApiClient, err := prometheus.NewApiClient(consulClient)
+	prometheusAPIClient, err := prometheus.NewAPIClient(consulClient)
 	if err != nil {
-		LOG.WithError(err).Error("Error while constructing new prometheus api client")
+		logger.WithError(err).Error("Error while constructing new prometheus api client")
 	}
-	if nbLorhammer, err := prometheusApiClient.ExecQuery("count(lorhammer_durations_count)"); err != nil {
-		LOG.WithError(err).Error("Error while retreiving nb lorhammer")
+	if nbLorhammer, err := prometheusAPIClient.ExecQuery("count(lorhammer_durations_count)"); err != nil {
+		logger.WithError(err).Error("Error while retreiving nb lorhammer")
 	} else {
-		LOG.Warnf("They are %d lorhammers", int(nbLorhammer))
+		logger.Warnf("They are %d lorhammers", int(nbLorhammer))
 	}
 }
 
 func cleanConsulServices(scanner *bufio.Scanner, consulClient tools.Consul) {
 	for { // block until user enter 0
 		if services, err := consulClient.AllServices(); err != nil {
-			LOG.WithError(err).Error("Can't retreive all services")
+			logger.WithError(err).Error("Can't retreive all services")
 		} else {
 			chooses := make([]string, len(services)+1)
-			LOG.Warn("0 - return to main menu")
+			logger.Warn("0 - return to main menu")
 			chooses[0] = "0"
 			for i, service := range services {
-				LOG.Warnf("%d - unregister %s : %s", i+1, service.ServiceID, service.ServiceName)
+				logger.Warnf("%d - unregister %s : %s", i+1, service.ServiceID, service.ServiceName)
 				chooses[i+1] = strconv.Itoa(i + 1)
 			}
 			choose := scanChoose(scanner, chooses)
 			if index, err := strconv.Atoi(choose); err != nil {
-				LOG.WithError(err).Error("Choose not a number")
+				logger.WithError(err).Error("Choose not a number")
 			} else {
 				if index == 0 {
 					return
 				}
 				if err := consulClient.DeRegister(services[index-1].ServiceID); err != nil {
-					LOG.WithField("service", services[index-1]).WithError(err).Error("Can't unregister")
+					logger.WithField("service", services[index-1]).WithError(err).Error("Can't unregister")
 				}
 			}
 		}

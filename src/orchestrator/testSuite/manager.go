@@ -1,7 +1,6 @@
 package testSuite
 
 import (
-	"github.com/Sirupsen/logrus"
 	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/deploy"
@@ -9,25 +8,28 @@ import (
 	"lorhammer/src/orchestrator/testType"
 	"lorhammer/src/tools"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
-var LOG = logrus.WithField("logger", "orchestrator/testSuite/test")
+var loggerManager = logrus.WithField("logger", "orchestrator/testSuite/test")
 
+//LaunchTest manage life cycle of a test (start, stop, check, report...)
 func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, grafanaClient tools.GrafanaClient) (*TestReport, error) {
 	check, err := checker.Get(consulClient, test.Check) //build checker here because no need to start test if checker is bad configured
 	if err != nil {
-		LOG.WithError(err).Error("Error to get checker")
+		loggerManager.WithError(err).Error("Error to get checker")
 		return nil, err
 	}
 
 	if err := deploy.Start(test.Deploy, consulClient); err != nil {
-		LOG.WithError(err).Error("Error to deploy")
+		loggerManager.WithError(err).Error("Error to deploy")
 		return nil, err
 	}
 	startDate := time.Now()
 
 	if err := testType.Start(test.Test, test.Init, mqttClient); err != nil {
-		LOG.WithError(err).Error("Error to start test")
+		loggerManager.WithError(err).Error("Error to start test")
 		return nil, err
 	}
 
@@ -45,8 +47,8 @@ func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mq
 	time.Sleep(test.ShutdownAllLorhammerTime - (test.StopAllLorhammerTime + test.SleepBeforeCheckTime))
 
 	if test.StopAllLorhammerTime > 0 || test.ShutdownAllLorhammerTime > 0 {
-		if err := provisioning.DeProvision(test.Uuid); err != nil {
-			LOG.WithError(err).Error("Couldn't unprovision")
+		if err := provisioning.DeProvision(test.UUID); err != nil {
+			loggerManager.WithError(err).Error("Couldn't unprovision")
 			return nil, err
 		}
 	}
@@ -55,13 +57,13 @@ func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mq
 		command.ShutdownLorhammers(mqttClient)
 	}
 	endDate := time.Now()
-	var snapshotUrl = ""
+	var snapshotURL = ""
 	// TODO add time for grafana snapshot (idem stop and shutdown)
 	if grafanaClient != nil {
-		var err error = nil
-		snapshotUrl, err = grafanaClient.MakeSnapshot(startDate, endDate)
+		var err error
+		snapshotURL, err = grafanaClient.MakeSnapshot(startDate, endDate)
 		if err != nil {
-			LOG.WithError(err).Error("Can't snapshot grafana")
+			loggerManager.WithError(err).Error("Can't snapshot grafana")
 		}
 	}
 	return &TestReport{
@@ -70,23 +72,23 @@ func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mq
 		Input:              test,
 		ChecksSuccess:      success,
 		ChecksError:        errors,
-		GrafanaSnapshotUrl: snapshotUrl,
+		GrafanaSnapshotURL: snapshotURL,
 	}, nil
 }
 
-func checkResults(check checker.Checker) ([]checker.CheckerSuccess, []checker.CheckerError) {
+func checkResults(check checker.Checker) ([]checker.Success, []checker.Error) {
 	ok, errs := check.Check()
 	if len(errs) > 0 {
-		LOG.WithField("nb", len(errs)).Error("Check results errors")
+		loggerManager.WithField("nb", len(errs)).Error("Check results errors")
 		for _, err := range errs {
-			LOG.WithFields(logrus.Fields(err.Details())).Error("Check result error")
+			loggerManager.WithFields(logrus.Fields(err.Details())).Error("Check result error")
 		}
 	}
 
 	if len(ok) > 0 {
-		LOG.WithField("nb", len(ok)).Info("Check results good")
+		loggerManager.WithField("nb", len(ok)).Info("Check results good")
 		for _, o := range ok {
-			LOG.WithFields(logrus.Fields(o.Details())).Info("Check result good")
+			loggerManager.WithFields(logrus.Fields(o.Details())).Info("Check result good")
 		}
 	}
 

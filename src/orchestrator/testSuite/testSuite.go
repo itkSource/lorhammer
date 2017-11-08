@@ -2,18 +2,19 @@ package testSuite
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"lorhammer/src/model"
 	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/deploy"
 	"lorhammer/src/orchestrator/provisioning"
 	"lorhammer/src/orchestrator/testType"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-// Describe a test to execute scenarios
+//TestSuite describe a test to execute scenarios
 type TestSuite struct {
-	Uuid                     string             `json:"uuid"`
+	UUID                     string             `json:"uuid"`
 	Test                     testType.Test      `json:"test"`
 	StopAllLorhammerTime     time.Duration      `json:"stopAllLorhammerTime"`
 	SleepBeforeCheckTime     time.Duration      `json:"sleepBeforeCheckTime"`
@@ -37,6 +38,7 @@ type jsonTestSuite struct {
 	Deploy                   deploy.Model       `json:"deploy"`
 }
 
+//FromFile build []testSuite from a json file
 func FromFile(configFile []byte) ([]TestSuite, error) {
 	var tests = make([]jsonTestSuite, 0)
 	if err := json.Unmarshal(configFile, &tests); err != nil {
@@ -61,7 +63,7 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 			return nil, err
 		}
 		res[i] = TestSuite{
-			Uuid:                     uuid.New().String(),
+			UUID:                     uuid.New().String(),
 			Test:                     test.Test,
 			StopAllLorhammerTime:     stopAllLorhammerTime,
 			SleepBeforeCheckTime:     sleepBeforeCheckTime,

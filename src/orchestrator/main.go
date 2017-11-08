@@ -14,7 +14,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var version string // set at build time
@@ -66,16 +66,16 @@ func main() {
 		if errMqtt := mqttClient.Connect(); errMqtt != nil {
 			logger.WithError(errMqtt).Error("Error while connecting to mqtt")
 		}
-		if errHandleCmd := mqttClient.HandleCmd([]string{tools.MQTT_ORCHESTRATOR_TOPIC}, func(cmd model.CMD) {
+		if errHandleCmd := mqttClient.HandleCmd([]string{tools.MqttOrchestratorTopic}, func(cmd model.CMD) {
 			if errApplyCmd := command.ApplyCmd(cmd, mqttClient, func(register model.Register) error {
-				return provisioning.Provision(currentTestSuite.Uuid, currentTestSuite.Provisioning, register)
+				return provisioning.Provision(currentTestSuite.UUID, currentTestSuite.Provisioning, register)
 			}); errApplyCmd != nil {
 				logger.WithField("cmd", string(cmd.Payload)).WithError(errApplyCmd).Error("ApplyCmd error")
 			}
 		}); errHandleCmd != nil {
 			logger.WithError(errHandleCmd).Error("Error while subscribing to topic")
 		} else {
-			logger.WithField("topic", tools.MQTT_ORCHESTRATOR_TOPIC).Info("Listen mqtt")
+			logger.WithField("topic", tools.MqttOrchestratorTopic).Info("Listen mqtt")
 		}
 	}
 
@@ -95,13 +95,13 @@ func main() {
 		if err != nil {
 			logger.WithError(err).WithField("file", *scenarioFromFile).Panic("Error while parsing test suite file")
 		}
-		checkErrors := make([]checker.CheckerError, 0)
+		checkErrors := make([]checker.Error, 0)
 		for _, test := range tests {
 			currentTestSuite = test
 			testReport, err := test.LaunchTest(consulClient, mqttClient, grafanaClient)
 			if err != nil {
 				logger.WithError(err).Error("Error during test")
-			} else if err := testSuite.WriteFile(testReport, *reportFile); err != nil {
+			} else if err := testReport.WriteFile(*reportFile); err != nil {
 				logger.WithError(err).Error("Can't report test")
 			} else {
 				checkErrors = append(checkErrors, testReport.ChecksError...)

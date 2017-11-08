@@ -3,9 +3,10 @@ package command
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Sirupsen/logrus"
 	"lorhammer/src/model"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
 type mqttTest struct {

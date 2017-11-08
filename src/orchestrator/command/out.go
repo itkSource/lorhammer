@@ -1,43 +1,37 @@
 package command
 
 import (
-	"github.com/Sirupsen/logrus"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
+
+	"github.com/sirupsen/logrus"
 )
 
+var loggerOut = logrus.WithField("logger", "orchestrator/command/out")
+
+//LaunchScenario emit a model.INIT command for lorhammers over mqtt
 func LaunchScenario(mqttClient tools.Mqtt, init model.Init) error {
-	if err := mqttClient.PublishSubCmd(tools.MQTT_INIT_TOPIC, model.INIT, init); err != nil {
+	if err := mqttClient.PublishSubCmd(tools.MqttInitTopic, model.INIT, init); err != nil {
 		return err
 	}
-	LOG.WithField("init", init).WithField("toTopic", tools.MQTT_INIT_TOPIC).Info("Send init message")
+	loggerIn.WithField("init", init).WithField("toTopic", tools.MqttInitTopic).Info("Send init message")
 	return nil
 }
 
+//StopScenario emit a model.STOP command for lorhammers over mqtt
 func StopScenario(mqttClient tools.Mqtt) {
-	if err := mqttClient.PublishCmd(tools.MQTT_INIT_TOPIC, model.STOP); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"ref": "orchestrator/orchestrator:stopScenario()",
-			"err": err,
-		}).Error("Couldn't publish stop command")
+	if err := mqttClient.PublishCmd(tools.MqttInitTopic, model.STOP); err != nil {
+		loggerOut.WithError(err).Error("Couldn't publish stop command")
 	} else {
-		logrus.WithFields(logrus.Fields{
-			"ref":     "orchestrator/orchestrator:stopScenario()",
-			"toTopic": tools.MQTT_INIT_TOPIC,
-		}).Info("Send stop message")
+		loggerOut.WithField("toTopic", tools.MqttInitTopic).Info("Send stop message")
 	}
 }
 
+//ShutdownLorhammers emit a model.SHUTDOWN command for lorhammers over mqtt
 func ShutdownLorhammers(mqttClient tools.Mqtt) {
-	if err := mqttClient.PublishCmd(tools.MQTT_INIT_TOPIC, model.SHUTDOWN); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"ref": "orchestrator/orchestrator:shutdownLorhammers()",
-			"err": err,
-		}).Error("Couldn't publish shutdown command")
+	if err := mqttClient.PublishCmd(tools.MqttInitTopic, model.SHUTDOWN); err != nil {
+		loggerOut.WithError(err).Error("Couldn't publish shutdown command")
 	} else {
-		logrus.WithFields(logrus.Fields{
-			"ref":     "orchestrator/orchestrator:shutdownLorhammers()",
-			"toTopic": tools.MQTT_INIT_TOPIC,
-		}).Info("Send shutdown message")
+		loggerOut.WithField("toTopic", tools.MqttInitTopic).Info("Send shutdown message")
 	}
 }

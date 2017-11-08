@@ -25,8 +25,8 @@ Before implementing a new feature, please open an issue to discuss the impacts a
 
 The continuous-integration will check :
 
-* That the code is well formatted : `gofmt -w -d ./src` or `resources/scripts/gofmt.sh` to format
-* That all tests are green, please add unit tests with your code : `go test -race $(go list ./src/...)` to run them
+* That the code is well formatted : `make lint` return no error
+* That all tests are green, please add unit tests with your code : `make test` to run them
 * That integration tests are also ok : launch some instances with scenarios located at `resources/scenarios/ci` to check performance regressions
 
 Obviously, a merge-request will be accepted only if pipeline is green.

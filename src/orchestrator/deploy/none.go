@@ -5,14 +5,14 @@ import (
 	"lorhammer/src/tools"
 )
 
-const TypeNone = Type("none")
+const typeNone = Type("none")
 
 type none struct{}
 
-func (_ none) RunBefore() error { return nil }
-func (_ none) Deploy() error    { return nil }
-func (_ none) RunAfter() error  { return nil }
+func (none) RunBefore() error { return nil }
+func (none) Deploy() error    { return nil }
+func (none) RunAfter() error  { return nil }
 
-func NewNone(_ json.RawMessage, _ tools.Consul) (Deployer, error) {
+func newNone(json.RawMessage, tools.Consul) (deployer, error) {
 	return none{}, nil
 }

@@ -1,23 +1,26 @@
 package prometheus
 
 import (
+	"lorhammer/src/tools"
+	"time"
+
 	client "github.com/prometheus/client_golang/api"
 	api "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
 	"golang.org/x/net/context"
-	"lorhammer/src/tools"
-	"time"
 )
 
-type ApiClient interface {
+//APIClient permit communication with prometheus rest api
+type APIClient interface {
 	ExecQuery(query string) (float64, error)
 }
 
 type apiClientImpl struct {
-	queryApi api.API
+	queryAPI api.API
 }
 
-func NewApiClient(consulClient tools.Consul) (ApiClient, error) {
+//NewAPIClient return an APIClient of prometheus
+func NewAPIClient(consulClient tools.Consul) (APIClient, error) {
 	address, err := consulClient.ServiceFirst("prometheus", "http://")
 	if err != nil {
 		return nil, err
@@ -27,7 +30,7 @@ func NewApiClient(consulClient tools.Consul) (ApiClient, error) {
 		return nil, err
 	}
 	return &apiClientImpl{
-		queryApi: api.NewAPI(c),
+		queryAPI: api.NewAPI(c),
 	}, nil
 }
 
@@ -35,7 +38,7 @@ func (p *apiClientImpl) ExecQuery(query string) (float64, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	val, err := p.queryApi.Query(ctx, query, time.Now())
+	val, err := p.queryAPI.Query(ctx, query, time.Now())
 	if err != nil {
 		return 0, err
 	}

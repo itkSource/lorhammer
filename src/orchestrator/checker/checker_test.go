@@ -18,7 +18,7 @@ func TestGetFake(t *testing.T) {
 }
 
 func TestGetNone(t *testing.T) {
-	check, err := Get(nil, Model{Type: NoneType})
+	check, err := Get(nil, Model{Type: noneType})
 	if err != nil {
 		t.Fatal("None type should not return error")
 	}
@@ -36,8 +36,8 @@ type other struct {
 	startError error
 }
 
-func (o other) Start() error                              { return o.startError }
-func (_ other) Check() ([]CheckerSuccess, []CheckerError) { return nil, nil }
+func (o other) Start() error              { return o.startError }
+func (other) Check() ([]Success, []Error) { return nil, nil }
 
 func TestOtherError(t *testing.T) {
 	checkers[Type("other")] = func(consulClient tools.Consul, config json.RawMessage) (Checker, error) {

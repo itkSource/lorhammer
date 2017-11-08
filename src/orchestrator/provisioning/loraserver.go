@@ -7,24 +7,25 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"lorhammer/src/model"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
-var log_loraserver = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
+var logLoraserver = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
 
 const loraserverType = Type("loraserver")
 
 type loraserver struct {
-	ApiUrl                string `json:"apiUrl"`
+	APIURL                string `json:"apiUrl"`
 	Abp                   bool   `json:"abp"`
 	Login                 string `json:"login"`
 	Password              string `json:"password"`
-	AppId                 string `json:"appId"`
+	AppID                 string `json:"appId"`
 	NbProvisionerParallel int    `json:"nbProvisionerParallel"`
 
 	doRequest func(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error)
@@ -55,7 +56,7 @@ func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error 
 			return err
 		}
 
-		responseBody, err := loraserver.doRequest(loraserver.ApiUrl+"/api/internal/login", "POST", marshalledLogin, "")
+		responseBody, err := loraserver.doRequest(loraserver.APIURL+"/api/internal/login", "POST", marshalledLogin, "")
 		if err != nil {
 			return err
 		}
@@ -67,7 +68,7 @@ func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error 
 		loraserver.jwtToKen = loginResp.Jwt
 	}
 
-	if loraserver.AppId == "" {
+	if loraserver.AppID == "" {
 		//TODO : create organization before the app for the test to be totally stateless
 		asApp := asApp{
 			Name:           "stress-app",
@@ -78,17 +79,17 @@ func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error 
 			RxWindow:       "RX1",
 			IsABP:          loraserver.Abp,
 			AdrInterval:    0,
-			OrganizationId: "1",
+			OrganizationID: "1",
 		}
 
-		log_loraserver.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
+		logLoraserver.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
 
 		marshalledApp, err := json.Marshal(asApp)
 		if err != nil {
 			return err
 		}
 
-		responseBody, err := loraserver.doRequest(loraserver.ApiUrl+"/api/applications", "POST", marshalledApp, loraserver.jwtToKen)
+		responseBody, err := loraserver.doRequest(loraserver.APIURL+"/api/applications", "POST", marshalledApp, loraserver.jwtToKen)
 		if err != nil {
 			return err
 		}
@@ -97,7 +98,7 @@ func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error 
 		if err != nil {
 			return err
 		}
-		loraserver.AppId = creationResponse.Id
+		loraserver.AppID = creationResponse.ID
 	}
 
 	nbNodeToProvision := 0
@@ -133,9 +134,9 @@ func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error 
 	for i := 0; i < nbNodeToProvision; i++ {
 		select {
 		case err := <-errorChan:
-			log_loraserver.WithError(err).Error("Node not provisioned")
+			logLoraserver.WithError(err).Error("Node not provisioned")
 		case sensor := <-sensorFinishChan:
-			log_loraserver.WithField("node", sensor).Debug("Node provisioned")
+			logLoraserver.WithField("node", sensor).Debug("Node provisioned")
 		}
 	}
 
@@ -156,21 +157,21 @@ func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, 
 					DevEUI:        sensor.DevEUI.String(),
 					AppEUI:        sensor.AppEUI.String(),
 					AppKey:        sensor.AppKey.String(),
-					ApplicationID: loraserver.AppId,
+					ApplicationID: loraserver.AppID,
 					Description:   "stresstool node",
 					Name:          "STRESSNODE_" + sensor.DevEUI.String(),
 					UseApplicationSettings: true,
 				}
 
-				log_loraserver.WithField("name", asnode.Name).Debug("Registering sensor")
+				logLoraserver.WithField("name", asnode.Name).Debug("Registering sensor")
 
 				if marshalledNode, err := json.Marshal(asnode); err != nil {
-					log_loraserver.WithField("asnode", asnode).WithError(err).Error("Can't marshall asnode")
+					logLoraserver.WithField("asnode", asnode).WithError(err).Error("Can't marshall asnode")
 					errorChan <- err
 					break
 				} else {
-					if _, err := loraserver.doRequest(loraserver.ApiUrl+"/api/nodes", "POST", marshalledNode, loraserver.jwtToKen); err != nil {
-						log_loraserver.WithField("marshalledNode", string(marshalledNode)).WithError(err).Error("Can't provision node")
+					if _, err := loraserver.doRequest(loraserver.APIURL+"/api/nodes", "POST", marshalledNode, loraserver.jwtToKen); err != nil {
+						logLoraserver.WithField("marshalledNode", string(marshalledNode)).WithError(err).Error("Can't provision node")
 						errorChan <- err
 						break
 					}
@@ -186,13 +187,13 @@ func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, 
 						DevEUI:   asnode.DevEUI,
 					}
 					if marshalledActivation, err := json.Marshal(activation); err != nil {
-						log_loraserver.WithError(err).Error("Can't marshal abp node")
+						logLoraserver.WithError(err).Error("Can't marshal abp node")
 						errorChan <- err
 						break
 					} else {
-						url := loraserver.ApiUrl + "/api/nodes/" + asnode.DevEUI + "/activation"
+						url := loraserver.APIURL + "/api/nodes/" + asnode.DevEUI + "/activation"
 						if _, errRequest := loraserver.doRequest(url, "POST", marshalledActivation, loraserver.jwtToKen); errRequest != nil {
-							log_loraserver.WithError(errRequest).Error("Can't activate abp node")
+							logLoraserver.WithError(errRequest).Error("Can't activate abp node")
 							errorChan <- errRequest
 							break
 						}
@@ -211,7 +212,7 @@ func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, 
 }
 
 func doRequest(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error) {
-	log_loraserver.WithField("url", url).Debug("Will call")
+	logLoraserver.WithField("url", url).Debug("Will call")
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -222,7 +223,8 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 		},
 		Timeout: 5 * time.Second,
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelCtx := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelCtx()
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalledObject))
 	if err != nil {
@@ -246,10 +248,10 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		log_loraserver.WithField("url", url).Debug("Call succeded")
+		logLoraserver.WithField("url", url).Debug("Call succeded")
 
 	default:
-		log_loraserver.WithFields(logrus.Fields{
+		logLoraserver.WithFields(logrus.Fields{
 			"respStatus":   resp.StatusCode,
 			"responseBody": string(body),
 			"url":          url,
@@ -261,12 +263,12 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 }
 
 func (loraserver *loraserver) DeProvision() error {
-	if loraserver.ApiUrl != "" && loraserver.AppId != "" {
-		if _, err := loraserver.doRequest(loraserver.ApiUrl+"/api/applications/"+loraserver.AppId, "DELETE", nil, loraserver.jwtToKen); err != nil {
+	if loraserver.APIURL != "" && loraserver.AppID != "" {
+		if _, err := loraserver.doRequest(loraserver.APIURL+"/api/applications/"+loraserver.AppID, "DELETE", nil, loraserver.jwtToKen); err != nil {
 			return err
 		}
 	} else {
-		return fmt.Errorf("ApiUrl (%s) and appId (%s) can not be empty", loraserver.ApiUrl, loraserver.AppId)
+		return fmt.Errorf("ApiUrl (%s) and appId (%s) can not be empty", loraserver.APIURL, loraserver.AppID)
 	}
 	return nil
 }
@@ -301,7 +303,7 @@ type asApp struct {
 	RxDelay        int    `json:"rxDelay"`
 	RxWindow       string `json:"rxWindow"`
 	AdrInterval    int    `json:"adrInterval"`
-	OrganizationId string `json:"organizationID"`
+	OrganizationID string `json:"organizationID"`
 }
 
 type requestHeader struct {
@@ -320,5 +322,5 @@ type loginRequest struct {
 }
 
 type creationResponse struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }

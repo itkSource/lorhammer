@@ -5,20 +5,21 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"github.com/Sirupsen/logrus"
-	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
-	"github.com/brocaar/lorawan"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
 	"math"
 	"time"
+
+	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
+	"github.com/brocaar/lorawan"
+	"github.com/sirupsen/logrus"
 )
 
-type Packet struct {
+type packet struct {
 	Rxpk []loraserver_structs.RXPK `json:"rxpk,omitempty"`
 }
 
-func NewRxpk(data []byte, gateway *model.Gateway) loraserver_structs.RXPK {
+func newRxpk(data []byte, gateway *model.Gateway) loraserver_structs.RXPK {
 
 	rxpk := loraserver_structs.RXPK{
 		Tmst: 123456,
@@ -43,7 +44,7 @@ func NewRxpk(data []byte, gateway *model.Gateway) loraserver_structs.RXPK {
 	return rxpk
 }
 
-func (p Packet) Prepare(gateway *model.Gateway) ([]byte, error) {
+func (p packet) prepare(gateway *model.Gateway) ([]byte, error) {
 
 	//payload
 	payload, err := json.Marshal(p)
@@ -65,7 +66,7 @@ func (p Packet) Prepare(gateway *model.Gateway) ([]byte, error) {
 	return packet, nil
 }
 
-func HandlePacket(data []byte) error {
+func handlePacket(data []byte) error {
 
 	pt, err := loraserver_structs.GetPacketType(data)
 	if err != nil {
@@ -86,7 +87,6 @@ func HandlePacket(data []byte) error {
 		}).Error("gateway: unknown packet type")
 		return nil
 	}
-	return nil
 }
 
 func handlePullRespPacket(data []byte) error {

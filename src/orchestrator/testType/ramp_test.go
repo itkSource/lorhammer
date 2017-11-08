@@ -9,14 +9,14 @@ import (
 
 func TestNominal(t *testing.T) {
 	mqtt := &fakeMqtt{mu: sync.Mutex{}}
-	go startRamp(Test{testType: TypeRamp, rampTime: time.Duration(1 * time.Second)}, model.Init{NbGateway: 100}, mqtt)
+	go startRamp(Test{testType: typeRamp, rampTime: time.Duration(1 * time.Second)}, model.Init{NbGateway: 100}, mqtt)
 
 	time.Sleep(1 * time.Second)
 
 	mqtt.mu.Lock()
 	defer mqtt.mu.Unlock()
 	if mqtt.nbCall != 1 {
-		t.Fatalf("Ramp test should call 1 time mqtt instead of %s", mqtt.nbCall)
+		t.Fatalf("Ramp test should call 1 time mqtt instead of %d", mqtt.nbCall)
 	}
 }
 
