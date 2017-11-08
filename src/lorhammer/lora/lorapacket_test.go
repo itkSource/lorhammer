@@ -74,7 +74,7 @@ func TestPacket_Prepare(t *testing.T) {
 	packet, err := packet{Rxpk: rxpks}.prepare(gw)
 
 	if err != nil {
-		t.Fatal("An error occured")
+		t.Fatal("An error occurred")
 	}
 
 	if packet[0] != gateway.ProtocolVersion2 {

@@ -110,5 +110,5 @@ func (grafana *grafanaClientImpl) getDashboard(name string, startTime time.Time,
 	delete(d, "refresh")                                                                   // don't refresh by default
 	d["time"] = []byte(fmt.Sprintf("{\"from\":\"%s\",\"to\":\"%s\"}", startTime, endTime)) // set display time with test time
 	serialized, err := json.Marshal(d)
-	return serialized, nil
+	return serialized, err
 }

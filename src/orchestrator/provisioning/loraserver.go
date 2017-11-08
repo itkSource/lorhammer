@@ -248,7 +248,7 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		logLoraserver.WithField("url", url).Debug("Call succeded")
+		logLoraserver.WithField("url", url).Debug("Call succeeded")
 
 	default:
 		logLoraserver.WithFields(logrus.Fields{
