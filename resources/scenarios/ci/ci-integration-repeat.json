@@ -23,7 +23,7 @@
   "check": {
     "type": "prometheus",
     "config": [
-      {"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 2000, "resultMax": 3000, "description": "nb messages sent"},
+      {"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1000, "resultMax": 3000, "description": "nb messages sent"},
       {"query": "count(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb lorhammer"},
       {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 20, "description": "nb gateways"},
       {"query": "sum(lorhammer_node)", "resultMin": 500, "resultMax": 1000, "description": "nb nodes"}
