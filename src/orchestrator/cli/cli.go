@@ -66,7 +66,7 @@ func fetchAndDisplayNbLorhammer(consulClient tools.Consul) {
 func cleanConsulServices(scanner *bufio.Scanner, consulClient tools.Consul) {
 	for { // block until user enter 0
 		if services, err := consulClient.AllServices(); err != nil {
-			logger.WithError(err).Error("Can't retreive all services")
+			logger.WithError(err).Error("Can't retrieve all services")
 		} else {
 			chooses := make([]string, len(services)+1)
 			logger.Warn("0 - return to main menu")

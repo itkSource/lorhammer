@@ -3,6 +3,8 @@
 ## Version 0.4.0 - UNRELEASED
 
 * **CI** use golint [issues/49](https://gitlab.com/itk.fr/lorhammer/issues/49)
+* **SITE** add badge from [https://goreportcard.com/report/gitlab.com/itk.fr/lorhammer](goreportcard.com)
+* **SITE** fix font url
 
 ## Version 0.3.1 - 2017-10-23 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.3.1)
 

@@ -15,7 +15,7 @@ type Model struct {
 	Config json.RawMessage `json:"config"`
 }
 
-//Success is the interface fo details sucess depending on implementation
+//Success is the interface fo details success depending on implementation
 type Success interface {
 	Details() map[string]interface{}
 }

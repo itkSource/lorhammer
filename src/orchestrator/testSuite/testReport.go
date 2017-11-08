@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-//TestReport is a struct wich encapsulate all information about a test
+//TestReport is a struct which encapsulate all information about a test
 type TestReport struct {
 	StartDate          time.Time         `json:"startDate"`
 	EndDate            time.Time         `json:"endDate"`
