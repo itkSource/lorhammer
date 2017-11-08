@@ -68,7 +68,7 @@ func TestPacket_Prepare(t *testing.T) {
 		NsAddress:  "127.0.0.1",
 		MacAddress: tools.Random8Bytes(),
 	}
-	
+
 	rxpk := newRxpk(data, 0, gw)
 
 	rxpks[0] = rxpk

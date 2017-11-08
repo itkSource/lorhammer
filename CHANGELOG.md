@@ -5,6 +5,7 @@
 * **CI** use golint [issues/49](https://gitlab.com/itk.fr/lorhammer/issues/49)
 * **SITE** add badge from [https://goreportcard.com/report/gitlab.com/itk.fr/lorhammer](goreportcard.com)
 * **SITE** fix font url
+* **SCENARIO** Use 'date' property of payload as Rxpk Date [issues/53](https://gitlab.com/itk.fr/lorhammer/issues/53)
 
 ## Version 0.3.1 - 2017-10-23 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.3.1)
 
@@ -43,7 +44,7 @@
 * **SCENARIO** Specify rxpk date to send [issue/22](https://gitlab.com/itk.fr/lorhammer/issues/22)
 * **CHECKER** Kafka checker allow to check only sub-part of a message [issue/21](https://gitlab.com/itk.fr/lorhammer/issues/21)
 * **SCENARIO** SleepTime between scenario is configurable [issue/2](https://gitlab.com/itk.fr/lorhammer/issues/2)
-* **PROVISIONER** Use existing application to provision [loraserver](https://www.loraserver.io/) [issue/18](https://gitlab.com/itk.fr/lorhammer/issues/18)
+* **PROVISIONER** Use existing appication to provision [loraserver](https://www.loraserver.io/) [issue/18](https://gitlab.com/itk.fr/lorhammer/issues/18)
 * **CHECKER** Checker kafka : listen kafka queue and check message [issue/14](https://gitlab.com/itk.fr/lorhammer/issues/14)
 * **CHECKER** Abstract checker concept [issue/15](https://gitlab.com/itk.fr/lorhammer/issues/15)
 
