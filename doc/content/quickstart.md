@@ -358,7 +358,12 @@ Type : **array(model.Payload)**
 > For more details read the [godoc](/godoc/#type-testsuite) 
 
 
-This array holds the different payloads you want the nodes to send through all their messages. Each node will randomly choose one of the payloads given in the array as the only payload he's going to be sending. The payloads here are hexadecimal string representations
+This array holds the different payloads you want the nodes to send through all their messages. 
+Each node will send one of the payloads at a time (in the array natural order or randomly if the `randomPayloads` property is set to true). 
+The payloads here are hexadecimal string representations. 
+A date property can be added for each payload, and will be used to set the rxpkDate of the frame. 
+This can be helpful if that date is used as an absolute time reference to timestamp the measures. 
+
 
 ### randomPayloads 
 

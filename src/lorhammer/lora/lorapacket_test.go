@@ -68,7 +68,9 @@ func TestPacket_Prepare(t *testing.T) {
 		NsAddress:  "127.0.0.1",
 		MacAddress: tools.Random8Bytes(),
 	}
-	rxpk := newRxpk(data, gw)
+
+	rxpk := newRxpk(data, 0, gw)
+
 	rxpks[0] = rxpk
 
 	packet, err := packet{Rxpk: rxpks}.prepare(gw)
@@ -95,7 +97,7 @@ func TestNewRxpk(t *testing.T) {
 		RxpkDate:   1488931200,
 	}
 
-	rxpk := newRxpk(data, gw)
+	rxpk := newRxpk(data, 0, gw)
 
 	seconds := time.Time(rxpk.Time).UTC().Unix()
 	if seconds != 1488931200 {

@@ -34,9 +34,12 @@ func TestNode_GetPushDataPayload(t *testing.T) {
 	)
 
 	fcnt := uint32(1)
-	dataPayload, err := GetPushDataPayload(node, fcnt)
+	dataPayload, date, err := GetPushDataPayload(node, fcnt)
 	if err != nil {
 		t.Fatal("Couldn't get PushData payload")
+	}
+	if date != 0 {
+		t.Fatal("Date is supposed to be equal to 0 as the payload doesn't have a date property")
 	}
 	if node.PayloadsReplayLap != 0 {
 		t.Fatal("Only one of two payloads has been sent, a complete round is not supposed to be reached")
@@ -80,7 +83,7 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArray(t *testing.T) 
 	)
 	for index := 0; index < len(node.Payloads); index++ {
 		fcnt := uint32(1)
-		dataPayload, err := GetPushDataPayload(node, fcnt)
+		dataPayload, date, err := GetPushDataPayload(node, fcnt)
 		if err != nil {
 			t.Fatal("Couldn't get PushData payload")
 		}
@@ -88,6 +91,10 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArray(t *testing.T) 
 		err = phyPayload.UnmarshalBinary(dataPayload)
 		if err != nil {
 			t.Fatal("Couldn't unmarshall PHYPayload Binary")
+		}
+
+		if date != node.Payloads[index].Date {
+			t.Fatal("Push data messages should be dated with the Date property of the payload")
 		}
 
 		if phyPayload.MHDR.MType != lorawan.MType(lorawan.ConfirmedDataUp) {
@@ -127,7 +134,7 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArrayAndReload(t *te
 	)
 	for index := 0; index < 8; index++ {
 		fcnt := uint32(1)
-		dataPayload, err := GetPushDataPayload(node, fcnt)
+		dataPayload, date, err := GetPushDataPayload(node, fcnt)
 		if err != nil {
 			t.Fatal("Couldn't get PushData payload")
 		}
@@ -135,6 +142,10 @@ func TestNode_GetPushDataPayloadWithoutRandomAccessOnPayloadArrayAndReload(t *te
 		err = phyPayload.UnmarshalBinary(dataPayload)
 		if err != nil {
 			t.Fatal("Couldn't unmarshall PHYPayload Binary")
+		}
+
+		if date != node.Payloads[index%3].Date {
+			t.Fatal("Push data messages should be dated with the Date property of the payload")
 		}
 
 		if phyPayload.MHDR.MType != lorawan.MType(lorawan.ConfirmedDataUp) {
@@ -170,12 +181,15 @@ func TestNode_GetPushDataPayloadWithEmptyPayloadArray(t *testing.T) {
 	)
 
 	fcnt := uint32(1)
-	dataPayload, err := GetPushDataPayload(node, fcnt)
+	dataPayload, date, err := GetPushDataPayload(node, fcnt)
 	if err != nil {
 		t.Fatal("Couldn't get PushData payload")
 	}
 	if node.PayloadsReplayLap != 0 {
 		t.Fatal("The payload tab is empty, a complete round is not supposed to be reached")
+	}
+	if date != 0 {
+		t.Fatal("Date is supposed to be equal to 0 as the payload doesn't have a date property")
 	}
 	phyPayload := lorawan.PHYPayload{}
 	err = phyPayload.UnmarshalBinary(dataPayload)

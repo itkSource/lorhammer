@@ -19,7 +19,7 @@ type packet struct {
 	Rxpk []loraserver_structs.RXPK `json:"rxpk,omitempty"`
 }
 
-func newRxpk(data []byte, gateway *model.Gateway) loraserver_structs.RXPK {
+func newRxpk(data []byte, date int64, gateway *model.Gateway) loraserver_structs.RXPK {
 
 	rxpk := loraserver_structs.RXPK{
 		Tmst: 123456,
@@ -36,9 +36,11 @@ func newRxpk(data []byte, gateway *model.Gateway) loraserver_structs.RXPK {
 		Data: base64.StdEncoding.EncodeToString(data),
 	}
 
-	if gateway.RxpkDate > 0 {
+	if gateway.RxpkDate > 0 { // The date set to the gateway has the priority to set the RxpkDate
 		rxpk.Time = loraserver_structs.CompactTime(time.Unix(gateway.RxpkDate, 0).UTC())
-	} else {
+	} else if date > 0 { // If the date is superior to 0, it is used as RxpkDate
+		rxpk.Time = loraserver_structs.CompactTime(time.Unix(date, 0).UTC())
+	} else { // if the date is equal or inferior to 0, the RxpkDate is set to now
 		rxpk.Time = loraserver_structs.CompactTime(time.Now().UTC())
 	}
 	return rxpk
