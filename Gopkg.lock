@@ -4,14 +4,14 @@
 [[projects]]
   name = "github.com/Shopify/sarama"
   packages = [".","mocks"]
-  revision = "c01858abb625b73a3af51d0798e4ad42c8147093"
-  version = "v1.12.0"
+  revision = "bbdbe644099b7fdc8327d5cc69c030945188b2e9"
+  version = "v1.13.0"
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/xml/xmlutil","service/ec2","service/sts"]
-  revision = "b73b028e599fa9176687c70b8f9cafbe57c27d20"
-  version = "v1.10.11"
+  revision = "e6c5e190452424b404ecdb81d6e3991d46b18e9d"
+  version = "v1.12.26"
 
 [[projects]]
   branch = "master"
@@ -23,19 +23,19 @@
   branch = "master"
   name = "github.com/brocaar/lora-gateway-bridge"
   packages = ["gateway"]
-  revision = "9c86f8d233f5f2491c7364db819e3469928f3b48"
+  revision = "fc3c1829243c7316d4c0f04ba565be21ccbf0843"
 
 [[projects]]
   name = "github.com/brocaar/loraserver"
   packages = ["api/gw"]
-  revision = "0fadb3791f7ac5844527520e9b23b309ff807145"
-  version = "0.19.2"
+  revision = "62edccf0fa78f98e4a1a864d98a0479baa128492"
+  version = "0.22.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/brocaar/lorawan"
   packages = [".","band"]
-  revision = "aa09ef2fd7be6786b853675bb208c26ceeaf9bfd"
+  revision = "4adc321781d02e25ebc1e69e882c3a401d8812cd"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -65,19 +65,19 @@
   branch = "master"
   name = "github.com/eclipse/paho.mqtt.golang"
   packages = [".","packets"]
-  revision = "e9f694b2eba2cc7e1eeec8e488415d00587f508a"
+  revision = "65f43bda5f7edbbf6b7533d3a5a13b2c67cf3545"
 
 [[projects]]
   name = "github.com/go-ini/ini"
   packages = ["."]
-  revision = "d3de07a94d22b4a0972deb4b96d790c2c0ce8333"
-  version = "v1.28.0"
+  revision = "f280b3ba517bf5fc98922624f21fb0e7a92adaec"
+  version = "v1.30.3"
 
 [[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
-  packages = ["proto"]
-  revision = "0a4f71a498b7c4812f64969510bcb4eca251e33a"
+  packages = ["proto","ptypes","ptypes/any","ptypes/duration","ptypes/timestamp"]
+  revision = "1643683e1b54a9e88ad26d98f81400c8c9d9f4f9"
 
 [[projects]]
   branch = "master"
@@ -94,8 +94,8 @@
 [[projects]]
   name = "github.com/hashicorp/consul"
   packages = ["api"]
-  revision = "2c7715154d8d4568524b76d2d4deb7ca6fd1b285"
-  version = "v0.8.5"
+  revision = "51ea240df8476e02215d53fbfad5838bf0d44d21"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -119,13 +119,12 @@
   branch = "master"
   name = "github.com/jacobsa/crypto"
   packages = ["cmac","common"]
-  revision = "293ce0c192fb4f59cd879b46544922b9ed09a13a"
+  revision = "c73681c634de898c869684602cf0c0d2ce938c4d"
 
 [[projects]]
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
-  revision = "3433f3ea46d9f8019119e7dd41274e112a2359a9"
-  version = "0.2.2"
+  revision = "0b12d6b5"
 
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
@@ -142,8 +141,8 @@
 [[projects]]
   name = "github.com/pierrec/lz4"
   packages = ["."]
-  revision = "5c9560bfa9ace2bf86080bf40d46b34ae44604df"
-  version = "v1.0"
+  revision = "08c27939df1bd95e881e2c2367a749964ad1fceb"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/pierrec/xxHash"
@@ -152,10 +151,10 @@
   version = "v0.1.1"
 
 [[projects]]
-  branch = "master"
   name = "github.com/prometheus/client_golang"
   packages = ["api","api/prometheus/v1","prometheus","prometheus/promhttp"]
-  revision = "95b6848b5c5bb71e3f68cd512ae5a8153c35e41f"
+  revision = "967789050ba94deca04a5e84cce8ad472ce313c1"
+  version = "v0.9.0-pre1"
 
 [[projects]]
   branch = "master"
@@ -167,13 +166,13 @@
   branch = "master"
   name = "github.com/prometheus/common"
   packages = ["expfmt","internal/bitbucket.org/ww/goautoneg","model"]
-  revision = "3e6a7635bac6573d43f49f97b47eb9bda195dba8"
+  revision = "e3fb1a1acd7605367a2b378bc2e2f893c05174b7"
 
 [[projects]]
   branch = "master"
   name = "github.com/prometheus/procfs"
   packages = [".","xfs"]
-  revision = "e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2"
+  revision = "a6e9df898b1336106c743392c48ee0b71f5c4efa"
 
 [[projects]]
   branch = "master"
@@ -184,20 +183,44 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "a3f95b5c423586578a4e099b11a46c2479628cac"
-  version = "1.0.2"
+  revision = "f006c2ac4710855cf0f916dd6b77acf6b048dc6e"
+  version = "v1.0.3"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "6a293f2d4b14b8e6d3f0539e383f6d0d30fce3fd"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","proxy","websocket"]
-  revision = "b3756b4b77d7b13260a0a2ec658753cf48922eac"
+  packages = ["context","http2","http2/hpack","idna","internal/timeseries","lex/httplex","proxy","trace","websocket"]
+  revision = "a337091b0525af65de94df2eb7e98bd9962dcbe2"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix"]
-  revision = "4cd6d1a821c7175768725b55ca82f14683a29ea4"
+  packages = ["unix","windows"]
+  revision = "1e2299c37cc91a509f1b12369872d27be0ce98a6"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/text"
+  packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
+  revision = "88f656faf3f37f690df1a32515b479415e1a6769"
+
+[[projects]]
+  branch = "master"
+  name = "google.golang.org/genproto"
+  packages = ["googleapis/rpc/status"]
+  revision = "11c7f9e547da6db876260ce49ea7536985904c9b"
+
+[[projects]]
+  name = "google.golang.org/grpc"
+  packages = [".","balancer","codes","connectivity","credentials","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","resolver","stats","status","tap","transport"]
+  revision = "5ffe3083946d5603a0578721101dc8165b1d5b5f"
+  version = "v1.7.2"
 
 [solve-meta]
   analyzer-name = "dep"

@@ -6,6 +6,8 @@
 * **SITE** add badge from [https://goreportcard.com/report/gitlab.com/itk.fr/lorhammer](goreportcard.com)
 * **SITE** fix font url
 * **SCENARIO** Use 'date' property of payload as Rxpk Date [issues/53](https://gitlab.com/itk.fr/lorhammer/issues/53)
+* **EXAMPLE** Add working example of lorhammer against [loraserver](https://www.loraserver.io/) [issues/52](https://gitlab.com/itk.fr/lorhammer/issues/52)
+* **PROVISIONER** Create [loraserver](https://www.loraserver.io/) organization during lorhammer tests [issues/1](https://gitlab.com/itk.fr/lorhammer/issues/1)
 
 ## Version 0.3.1 - 2017-10-23 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.3.1)
 

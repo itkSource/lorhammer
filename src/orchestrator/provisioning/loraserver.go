@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"lorhammer/src/model"
 	"net"
@@ -18,23 +17,47 @@ import (
 
 var logLoraserver = logrus.WithField("logger", "orchestrator/provisioning/loraserver")
 
-const loraserverType = Type("loraserver")
+const (
+	loraserverType             = Type("loraserver")
+	loraserverOrganisationName = "lorhammer"
+	loraserverApplicationName  = "Lorhammer"
+)
+
+type httpClientSender interface {
+	Do(*http.Request) (*http.Response, error)
+}
 
 type loraserver struct {
 	APIURL                string `json:"apiUrl"`
-	Abp                   bool   `json:"abp"`
 	Login                 string `json:"login"`
 	Password              string `json:"password"`
+	jwtToKen              string
+	OrganizationID        string `json:"organizationId"`
+	NetworkServerID       string `json:"networkServerId"`
+	NetworkServerAddr     string `json:"networkServerAddr"`
+	ServiceProfileID      string `json:"serviceProfileID"`
 	AppID                 string `json:"appId"`
+	DeviceProfileID       string `json:"deviceProfileId"`
+	Abp                   bool   `json:"abp"`
 	NbProvisionerParallel int    `json:"nbProvisionerParallel"`
+	DeleteOrganization    bool   `json:"deleteOrganization"`
+	DeleteApplication     bool   `json:"deleteApplication"`
 
-	doRequest func(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error)
-	jwtToKen  string
+	httpClient httpClientSender
 }
 
 func newLoraserver(rawConfig json.RawMessage) (provisioner, error) {
 	config := &loraserver{
-		doRequest: doRequest,
+		httpClient: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				Dial: (&net.Dialer{
+					Timeout: 5 * time.Second,
+				}).Dial,
+				TLSHandshakeTimeout: 5 * time.Second,
+			},
+			Timeout: 5 * time.Second,
+		},
 	}
 	if err := json.Unmarshal(rawConfig, config); err != nil {
 		return nil, err
@@ -44,61 +67,45 @@ func newLoraserver(rawConfig json.RawMessage) (provisioner, error) {
 }
 
 func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error {
-
 	if loraserver.jwtToKen == "" {
-		loginReq := loginRequest{
+		req := struct {
+			Login    string `json:"username"`
+			Password string `json:"password"`
+		}{
 			Login:    loraserver.Login,
 			Password: loraserver.Password,
 		}
 
-		marshalledLogin, err := json.Marshal(loginReq)
+		resp := struct {
+			Jwt string `json:"jwt"`
+		}{}
+
+		err := loraserver.doRequest(loraserver.APIURL+"/api/internal/login", "POST", req, &resp)
 		if err != nil {
 			return err
 		}
 
-		responseBody, err := loraserver.doRequest(loraserver.APIURL+"/api/internal/login", "POST", marshalledLogin, "")
-		if err != nil {
-			return err
-		}
-		var loginResp = new(loginResponse)
-		err = json.Unmarshal(responseBody, &loginResp)
-		if err != nil {
-			return err
-		}
-		loraserver.jwtToKen = loginResp.Jwt
+		loraserver.jwtToKen = resp.Jwt
 	}
 
-	if loraserver.AppID == "" {
-		//TODO : create organization before the app for the test to be totally stateless
-		asApp := asApp{
-			Name:           "stress-app",
-			Description:    "stress-app",
-			Rx1DROffset:    0,
-			Rx2DR:          0,
-			RxDelay:        0,
-			RxWindow:       "RX1",
-			IsABP:          loraserver.Abp,
-			AdrInterval:    0,
-			OrganizationID: "1",
-		}
+	if err := loraserver.initOrganizationID(); err != nil {
+		return err
+	}
 
-		logLoraserver.WithField("appName", asApp.Name).Info("Creating app in loraserver AS")
+	if err := loraserver.initNetworkServer(); err != nil {
+		return err
+	}
 
-		marshalledApp, err := json.Marshal(asApp)
-		if err != nil {
-			return err
-		}
+	if err := loraserver.initServiceProfile(); err != nil {
+		return err
+	}
 
-		responseBody, err := loraserver.doRequest(loraserver.APIURL+"/api/applications", "POST", marshalledApp, loraserver.jwtToKen)
-		if err != nil {
-			return err
-		}
-		var creationResponse = new(creationResponse)
-		err = json.Unmarshal(responseBody, &creationResponse)
-		if err != nil {
-			return err
-		}
-		loraserver.AppID = creationResponse.ID
+	if err := loraserver.initApplication(); err != nil {
+		return err
+	}
+
+	if err := loraserver.initDeviceProfile(); err != nil {
+		return err
 	}
 
 	nbNodeToProvision := 0
@@ -147,56 +154,330 @@ func (loraserver *loraserver) Provision(sensorsToRegister model.Register) error 
 	return nil
 }
 
+func (loraserver *loraserver) initOrganizationID() error {
+	if loraserver.OrganizationID == "" {
+		// Check if already exist
+		type Organization struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		}
+
+		respExist := struct {
+			Result []Organization `json:"result"`
+		}{}
+
+		err := loraserver.doRequest(loraserver.APIURL+"/api/organizations?limit=100", "GET", nil, &respExist)
+		if err != nil {
+			return err
+		}
+		for _, orga := range respExist.Result {
+			if orga.Name == loraserverOrganisationName {
+				loraserver.OrganizationID = orga.ID
+				break
+			}
+		}
+
+		// Create Organization
+		if loraserver.OrganizationID == "" {
+			req := struct {
+				CanHaveGateways bool   `json:"canHaveGateways"`
+				DisplayName     string `json:"displayName"`
+				Name            string `json:"name"`
+			}{
+				CanHaveGateways: true,
+				DisplayName:     "Lorhammer",
+				Name:            loraserverOrganisationName,
+			}
+
+			resp := struct {
+				ID string `json:"id"`
+			}{}
+
+			err := loraserver.doRequest(loraserver.APIURL+"/api/organizations", "POST", req, &resp)
+			if err != nil {
+				return err
+			}
+
+			loraserver.OrganizationID = resp.ID
+		}
+	}
+	return nil
+}
+
+func (loraserver *loraserver) initNetworkServer() error {
+	if loraserver.NetworkServerID == "" {
+		// Check if already exist
+		type NetworkServer struct {
+			ID     string `json:"id"`
+			Server string `json:"server"`
+		}
+
+		respExist := struct {
+			Result []NetworkServer `json:"result"`
+		}{}
+
+		err := loraserver.doRequest(loraserver.APIURL+"/api/network-servers?limit=100", "GET", nil, &respExist)
+		if err != nil {
+			return err
+		}
+		for _, ns := range respExist.Result {
+			if ns.Server == loraserver.NetworkServerAddr {
+				loraserver.NetworkServerID = ns.ID
+				break
+			}
+		}
+		// Create NS
+		if loraserver.NetworkServerID == "" {
+			req := struct {
+				Server string `json:"server"`
+				Name   string `json:"name"`
+			}{
+				Server: loraserver.NetworkServerAddr,
+				Name:   loraserver.NetworkServerAddr,
+			}
+
+			resp := struct {
+				ID string `json:"id"`
+			}{}
+
+			err = loraserver.doRequest(loraserver.APIURL+"/api/network-servers", "POST", req, &resp)
+			if err != nil {
+				return err
+			}
+
+			loraserver.NetworkServerID = resp.ID
+		}
+	}
+	return nil
+}
+
+func (loraserver *loraserver) initServiceProfile() error {
+	if loraserver.ServiceProfileID == "" {
+		req := struct {
+			Name            string      `json:"name"`
+			NetworkServerID string      `json:"networkServerID"`
+			OrganizationID  string      `json:"organizationID"`
+			ServiceProfile  interface{} `json:"serviceProfile"`
+		}{
+			Name:            "LorhammerServiceProfile",
+			NetworkServerID: loraserver.NetworkServerID,
+			OrganizationID:  loraserver.OrganizationID,
+			ServiceProfile: struct {
+				AddGWMetadata bool `json:"addGWMetadata"`
+				// ChannelMask            string `json:"channelMask"`
+				// DevStatusReqFreq       int    `json:"devStatusReqFreq"`
+				// DlBucketSize           int    `json:"dlBucketSize"`
+				// DlRate                 int    `json:"dlRate"`
+				// DlRatePolicy           string `json:"dlRatePolicy"`
+				// DrMax                  int    `json:"drMax"`
+				// DrMin                  int    `json:"drMin"`
+				// HrAllowed              bool   `json:"hrAllowed"`
+				// MinGWDiversity         int    `json:"minGWDiversity"`
+				// NwkGeoLoc              bool   `json:"nwkGeoLoc"`
+				// PrAllowed              bool   `json:"prAllowed"`
+				// RaAllowed              bool   `json:"raAllowed"`
+				// ReportDevStatusBattery bool   `json:"reportDevStatusBattery"`
+				// ReportDevStatusMargin  bool   `json:"reportDevStatusMargin"`
+				// ServiceProfileID       string `json:"serviceProfileID"`
+				// TargetPER              int    `json:"targetPER"`
+				// UlBucketSize           int    `json:"ulBucketSize"`
+				// UlRate                 int    `json:"ulRate"`
+				// UlRatePolicy           string `json:"ulRatePolicy"`
+			}{
+				AddGWMetadata: true,
+				// TODO find description and meaning of all fields
+			},
+		}
+
+		resp := struct {
+			ID string `json:"serviceProfileID"`
+		}{}
+
+		err := loraserver.doRequest(loraserver.APIURL+"/api/service-profiles", "POST", req, &resp)
+		if err != nil {
+			return err
+		}
+
+		loraserver.ServiceProfileID = resp.ID
+	}
+	return nil
+}
+
+func (loraserver *loraserver) initApplication() error {
+	if loraserver.AppID == "" {
+		// Check if already exist
+		type Application struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		}
+
+		respExist := struct {
+			Result []Application `json:"result"`
+		}{}
+
+		err := loraserver.doRequest(loraserver.APIURL+"/api/applications?limit=100", "GET", nil, &respExist)
+		if err != nil {
+			return err
+		}
+		for _, app := range respExist.Result {
+			if app.Name == loraserverApplicationName {
+				loraserver.AppID = app.ID
+				break
+			}
+		}
+
+		// Create Application
+		if loraserver.AppID == "" {
+			req := struct {
+				Name             string      `json:"name"`
+				Description      string      `json:"description"`
+				OrganizationID   string      `json:"organizationID"`
+				ServiceProfileID interface{} `json:"serviceProfileID"`
+			}{
+				Name:             loraserverApplicationName,
+				Description:      "Lorhammer",
+				OrganizationID:   loraserver.OrganizationID,
+				ServiceProfileID: loraserver.ServiceProfileID,
+			}
+
+			resp := struct {
+				ID string `json:"id"`
+			}{}
+
+			err := loraserver.doRequest(loraserver.APIURL+"/api/applications", "POST", req, &resp)
+			if err != nil {
+				return err
+			}
+
+			loraserver.AppID = resp.ID
+		}
+	}
+	return nil
+}
+
+func (loraserver *loraserver) initDeviceProfile() error {
+	if loraserver.DeviceProfileID == "" {
+		req := struct {
+			Name            string      `json:"name"`
+			OrganizationID  string      `json:"organizationID"`
+			NetworkServerID string      `json:"networkServerID"`
+			DeviceProfile   interface{} `json:"deviceProfile"`
+		}{
+			Name:            "LorhammerDeviceProfile",
+			OrganizationID:  loraserver.OrganizationID,
+			NetworkServerID: loraserver.NetworkServerID,
+			DeviceProfile: struct {
+				// ClassBTimeout           int    `json:"classBTimeout"`
+				// ClassCTimeout           int    `json:"classCTimeout"`
+				// FactoryPresetFreqs      []int  `json:"factoryPresetFreqs"`
+				// MacVersion              string `json:"macVersion"`
+				// MaxDutyCycle            int    `json:"maxDutyCycle"`
+				// MaxEIRP                 int    `json:"maxEIRP"`
+				// PingSlotDR              int    `json:"pingSlotDR"`
+				// PingSlotFreq            int    `json:"pingSlotFreq"`
+				// PingSlotPeriod          int    `json:"pingSlotPeriod"`
+				// RegParamsRevisionstring string `json:"regParamsRevisionstring"`
+				// RfRegionstring          string `json:"rfRegionstring"`
+				RxDROffset1 int `json:"rxDROffset1"`
+				RxDataRate2 int `json:"rxDataRate2"`
+				RxDelay1    int `json:"rxDelay1"`
+				// RxFreq2           int  `json:"rxFreq2"`
+				// Supports32bitFCnt bool `json:"supports32bitFCnt"`
+				// SupportsClassB    bool `json:"supportsClassB"`
+				// SupportsClassC    bool `json:"supportsClassC"`
+				// SupportsJoin      bool `json:"supportsJoin"`
+			}{
+				RxDROffset1: 0,
+				RxDataRate2: 0,
+				RxDelay1:    0,
+				// TODO find description and meaning of all fields
+			},
+		}
+
+		resp := struct {
+			ID string `json:"deviceProfileID"`
+		}{}
+
+		err := loraserver.doRequest(loraserver.APIURL+"/api/device-profiles", "POST", req, &resp)
+		if err != nil {
+			return err
+		}
+
+		loraserver.DeviceProfileID = resp.ID
+	}
+	return nil
+}
+
 func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, poison chan bool, errorChan chan error, sensorFinishChan chan *model.Node) {
 	exit := false
 	for {
 		select {
 		case sensor := <-sensorChan:
-			if sensor != nil { // Why i received nil sometimes !?
-				asnode := asNode{
-					DevEUI:        sensor.DevEUI.String(),
-					AppEUI:        sensor.AppEUI.String(),
-					AppKey:        sensor.AppKey.String(),
-					ApplicationID: loraserver.AppID,
-					Description:   "stresstool node",
-					Name:          "STRESSNODE_" + sensor.DevEUI.String(),
-					UseApplicationSettings: true,
+			if sensor != nil { // Why sensor is nil sometimes !?
+				req := struct {
+					Name            string `json:"name"`
+					Description     string `json:"description"`
+					ApplicationID   string `json:"applicationID"`
+					DeviceProfileID string `json:"deviceProfileID"`
+					DevEUI          string `json:"devEUI"`
+				}{
+					Name:            "STRESSNODE_" + sensor.DevEUI.String(),
+					Description:     sensor.Description,
+					ApplicationID:   loraserver.AppID,
+					DeviceProfileID: loraserver.DeviceProfileID,
+					DevEUI:          sensor.DevEUI.String(),
 				}
 
-				logLoraserver.WithField("name", asnode.Name).Debug("Registering sensor")
-
-				if marshalledNode, err := json.Marshal(asnode); err != nil {
-					logLoraserver.WithField("asnode", asnode).WithError(err).Error("Can't marshall asnode")
+				err := loraserver.doRequest(loraserver.APIURL+"/api/devices", "POST", req, nil)
+				if err != nil {
+					logLoraserver.WithField("req", req).WithError(err).Error("Can't register device")
 					errorChan <- err
 					break
-				} else {
-					if _, err := loraserver.doRequest(loraserver.APIURL+"/api/nodes", "POST", marshalledNode, loraserver.jwtToKen); err != nil {
-						logLoraserver.WithField("marshalledNode", string(marshalledNode)).WithError(err).Error("Can't provision node")
-						errorChan <- err
-						break
-					}
+				}
+
+				reqKeys := struct {
+					DevEUI     string      `json:"devEUI"`
+					DeviceKeys interface{} `json:"deviceKeys"`
+				}{
+					DevEUI: sensor.DevEUI.String(),
+					DeviceKeys: struct {
+						AppKey string `json:"appKey"`
+					}{
+						AppKey: sensor.AppKey.String(),
+					},
+				}
+
+				err = loraserver.doRequest(loraserver.APIURL+"/api/devices/"+sensor.DevEUI.String()+"/keys", "POST", reqKeys, nil)
+				if err != nil {
+					logLoraserver.WithField("reqKeys", reqKeys).WithError(err).Error("Can't register keys device")
+					errorChan <- err
+					break
 				}
 
 				if loraserver.Abp {
-					activation := nodeActivation{
-						DevAddr:  sensor.DevAddr.String(),
-						AppSKey:  sensor.AppSKey.String(),
-						NwkSKey:  sensor.NwSKey.String(),
-						FCntUp:   0,
-						FCntDown: 0,
-						DevEUI:   asnode.DevEUI,
+					req := struct {
+						AppSKeystring string `json:"appSKey"`
+						DevAddrstring string `json:"devAddr"`
+						DevEUIstring  string `json:"devEUI"`
+						FCntDown      int    `json:"fCntDown"`
+						FCntUp        int    `json:"fCntUp"`
+						NwkSKeystring string `json:"nwkSKey"`
+						SkipFCntCheck bool   `json:"skipFCntCheck"`
+					}{
+						AppSKeystring: sensor.AppSKey.String(),
+						DevAddrstring: sensor.DevAddr.String(),
+						DevEUIstring:  sensor.DevEUI.String(),
+						FCntDown:      0,
+						FCntUp:        0,
+						NwkSKeystring: sensor.NwSKey.String(),
+						SkipFCntCheck: false,
 					}
-					if marshalledActivation, err := json.Marshal(activation); err != nil {
-						logLoraserver.WithError(err).Error("Can't marshal abp node")
+					url := loraserver.APIURL + "/api/devices/" + sensor.DevEUI.String() + "/activate"
+					err := loraserver.doRequest(url, "POST", req, nil)
+					if err != nil {
+						logLoraserver.WithError(err).Error("Can't activate abp device")
 						errorChan <- err
 						break
-					} else {
-						url := loraserver.APIURL + "/api/nodes/" + asnode.DevEUI + "/activation"
-						if _, errRequest := loraserver.doRequest(url, "POST", marshalledActivation, loraserver.jwtToKen); errRequest != nil {
-							logLoraserver.WithError(errRequest).Error("Can't activate abp node")
-							errorChan <- errRequest
-							break
-						}
 					}
 				}
 				sensorFinishChan <- sensor
@@ -208,39 +489,49 @@ func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, 
 			break
 		}
 	}
-
 }
 
-func doRequest(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error) {
-	logLoraserver.WithField("url", url).Debug("Will call")
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			Dial: (&net.Dialer{
-				Timeout: 5 * time.Second,
-			}).Dial,
-			TLSHandshakeTimeout: 5 * time.Second,
-		},
-		Timeout: 5 * time.Second,
+func (loraserver *loraserver) DeProvision() error {
+	if loraserver.DeleteApplication && loraserver.AppID != "" {
+		if err := loraserver.doRequest(loraserver.APIURL+"/api/applications/"+loraserver.AppID, "DELETE", nil, nil); err != nil {
+			return err
+		}
 	}
+
+	if loraserver.DeleteOrganization && loraserver.OrganizationID != "" {
+		if err := loraserver.doRequest(loraserver.APIURL+"/api/organizations/"+loraserver.OrganizationID, "DELETE", nil, nil); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (loraserver *loraserver) doRequest(url string, method string, bodyRequest interface{}, bodyResult interface{}) error {
+	logLoraserver.WithField("url", url).Debug("Will call")
 	ctx, cancelCtx := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelCtx()
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalledObject))
+	marshalledBodyRequest, err := json.Marshal(bodyRequest)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if jwtToken != "" {
-		req.Header.Set("Grpc-Metadata-Authorization", jwtToken)
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(marshalledBodyRequest))
+	if err != nil {
+		return err
+	}
+
+	if loraserver.jwtToKen != "" {
+		req.Header.Set("Grpc-Metadata-Authorization", loraserver.jwtToKen)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Close = true
 	req.WithContext(ctx)
 
-	resp, err := httpClient.Do(req)
+	resp, err := loraserver.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -254,73 +545,14 @@ func doRequest(url string, method string, marshalledObject []byte, jwtToken stri
 		logLoraserver.WithFields(logrus.Fields{
 			"respStatus":   resp.StatusCode,
 			"responseBody": string(body),
+			"requestBody":  string(marshalledBodyRequest),
 			"url":          url,
 		}).Warn("Couldn't proceed with request")
-		return nil, errors.New("Couldn't proceed with request")
+		return errors.New("Couldn't proceed with request")
 	}
 
-	return body, nil
-}
-
-func (loraserver *loraserver) DeProvision() error {
-	if loraserver.APIURL != "" && loraserver.AppID != "" {
-		if _, err := loraserver.doRequest(loraserver.APIURL+"/api/applications/"+loraserver.AppID, "DELETE", nil, loraserver.jwtToKen); err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("ApiUrl (%s) and appId (%s) can not be empty", loraserver.APIURL, loraserver.AppID)
+	if body != nil && bodyResult != nil {
+		return json.Unmarshal(body, bodyResult)
 	}
 	return nil
-}
-
-type asNode struct {
-	DevEUI                 string `json:"devEUI"`
-	AppEUI                 string `json:"appEUI"`
-	AppKey                 string `json:"appKey"`
-	AppsKey                string `json:"appsKey"`
-	NWsKey                 string `json:"NWsKey"`
-	ApplicationID          string `json:"applicationID"`
-	Description            string `json:"description"`
-	Name                   string `json:"name"`
-	UseApplicationSettings bool   `json:"useApplicationSettings"`
-}
-
-type nodeActivation struct {
-	AppSKey  string `json:"appSKey"`
-	DevAddr  string `json:"devAddr"`
-	DevEUI   string `json:"devEUI"`
-	FCntDown int    `json:"fCntDown"`
-	FCntUp   int    `json:"fCntUp"`
-	NwkSKey  string `json:"nwkSKey"`
-}
-
-type asApp struct {
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	IsABP          bool   `json:"isABP"`
-	Rx1DROffset    int    `json:"rx1DROffset"`
-	Rx2DR          int    `json:"rx2DR"`
-	RxDelay        int    `json:"rxDelay"`
-	RxWindow       string `json:"rxWindow"`
-	AdrInterval    int    `json:"adrInterval"`
-	OrganizationID string `json:"organizationID"`
-}
-
-type requestHeader struct {
-	Alg string `json:"alg"`
-	Typ string `json:"typ"`
-}
-
-// Claims defines the struct containing the token claims.
-type loginResponse struct {
-	Jwt string `json:"jwt"`
-}
-
-type loginRequest struct {
-	Login    string `json:"username"`
-	Password string `json:"password"`
-}
-
-type creationResponse struct {
-	ID string `json:"id"`
 }

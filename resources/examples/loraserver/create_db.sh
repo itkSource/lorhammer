@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+
+POSTGRES="psql --username ${POSTGRES_USER}"
+
+echo "Creating databases: ${DB_LORA_NS_NAME}, ${DB_LORA_AS_NAME}"
+
+$POSTGRES <<EOSQL
+CREATE DATABASE ${DB_LORA_NS_NAME} OWNER ${DB_LORA_NS_USER};
+CREATE DATABASE ${DB_LORA_AS_NAME} OWNER ${DB_LORA_AS_USER};
+EOSQL
