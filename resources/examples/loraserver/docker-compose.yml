@@ -1,0 +1,96 @@
+version: '3'
+
+services:
+
+  lora-gateway-bridge:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-loragatewaybridge
+    depends_on:
+      - mqtt
+    environment:
+      - MQTT_SERVER=tcp://mqtt:1883
+    ports:
+      - 1700:1700/udp
+
+  loraserver:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-loraserver
+    depends_on:
+      - redis
+      - mqtt
+      - db
+    environment:
+      - DB_AUTOMIGRATE=true
+      - POSTGRES_DSN=postgres://lora_ns:lora_ns@db/lora_ns?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - GW_MQTT_SERVER=tcp://mqtt:1883
+      - APP_MQTT_SERVER=tcp://mqtt:1883
+      - NET_ID=010203
+      - BAND=EU_863_870
+      - AS_SERVER=lora-app-server:8001
+      - AS_TLS_CERT=/etc/ssl/certs/loraserver.crt
+      - AS_TLS_KEY=/etc/ssl/private/loraserver.key
+      - AS_CA_CERT=/etc/ssl/certs/ca.crt
+      - CA_CERT=/etc/ssl/certs/ca.crt
+      - LOG_NODE_FRAMES=true
+      - GW_CREATE_ON_STATS=true
+      - GW_SERVER_JWT_SECRET=lora
+      - JS_SERVER=http://lora-app-server:8003
+
+  lora-app-server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-loraappserver
+    depends_on:
+      - redis
+      - mqtt
+      - db
+      - loraserver
+    environment:
+      - DB_AUTOMIGRATE=true
+      - POSTGRES_DSN=postgres://lora_as:lora_as@db/lora_as?sslmode=disable
+      - MQTT_SERVER=tcp://mqtt:1883
+      - REDIS_URL=redis://redis:6379
+      - HTTP_BIND=0.0.0.0:9999
+      - JWT_SECRET=lora
+      - NS_SERVER=loraserver:8000
+      - HTTP_TLS_CERT=/etc/ssl/certs/lora-app-server.crt
+      - HTTP_TLS_KEY=/etc/ssl/private/lora-app-server.key
+      - TLS_CERT=/etc/ssl/certs/lora-app-server.crt
+      - TLS_KEY=/etc/ssl/private/lora-app-server.key
+      - CA_CERT=/etc/ssl/certs/ca.crt
+      - AS_PUBLIC_SERVER=lora-app-server:8001
+    ports:
+      - 9999:9999
+
+  mqtt:
+    image: eclipse-mosquitto:1.4.12
+    ports:
+      - 1883:1883
+
+  redis:
+    image: redis:4.0.1-alpine
+    expose:
+      - "6379"
+
+  db:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - DB_LORA_NS_USER=lora_ns
+      - DB_LORA_AS_USER=lora_as
+      - DB_LORA_NS_PASS=lora_ns
+      - DB_LORA_AS_PASS=lora_as
+      - DB_LORA_NS_NAME=lora_ns
+      - DB_LORA_AS_NAME=lora_as
+    healthcheck:
+      test: ["CMD", "psql", "postgresql://postgres:postgres@localhost:5432/postgres", "-c", "\\l"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

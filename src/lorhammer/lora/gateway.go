@@ -134,7 +134,7 @@ func sendJoinRequestPackets(gateway *model.Gateway, Conn net.Conn) {
 func sendPushPackets(gateway *model.Gateway, Conn net.Conn, fcnt uint32) {
 	rxpk := make([]loraserver_structs.RXPK, 1)
 	for _, node := range gateway.Nodes {
-		if node.PayloadsReplayLap < gateway.PayloadsReplayMaxLaps {
+		if node.PayloadsReplayLap < gateway.PayloadsReplayMaxLaps || gateway.PayloadsReplayMaxLaps == 0 {
 			buf, date, err := GetPushDataPayload(node, fcnt)
 			if err != nil {
 				loggerGateway.WithError(err).Error("Can't get next lora packet to send")

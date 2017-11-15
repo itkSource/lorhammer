@@ -73,21 +73,14 @@ func getJoinRequestDataPayload(node *model.Node) []byte {
 
 // GetPushDataPayload return the nextbyte arraypush data
 func GetPushDataPayload(node *model.Node, fcnt uint32) ([]byte, int64, error) {
-
 	fport := uint8(1)
 
-	if len(node.Payloads) == 0 {
-
-		loggerNode.WithFields(logrus.Fields{
-			"DevEui": node.DevEUI.String(),
-		}).Warn("The payload sent for node is empty, please specify a correct payload on the json scenario file")
-	}
 	var frmPayloadByteArray []byte
 	var date int64
 	if len(node.Payloads) == 0 {
 		loggerNode.WithFields(logrus.Fields{
 			"DevEui": node.DevEUI.String(),
-		}).Warn("empty payload array given. So it send \"LorHammer\"")
+		}).Warn("empty payload array given. So it send `LorHammer`")
 		frmPayloadByteArray, _ = hex.DecodeString("LorHammer")
 	} else {
 		var i int

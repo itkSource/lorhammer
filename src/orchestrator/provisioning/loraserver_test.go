@@ -1,13 +1,24 @@
 package provisioning
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
+	"net/http"
+	"regexp"
 	"testing"
 	"time"
 )
+
+type nopCloser struct {
+	io.Reader
+}
+
+func (nopCloser) Close() error { return nil }
 
 func newDefautlLoraserver() *loraserver {
 	j := `{
@@ -15,8 +26,8 @@ func newDefautlLoraserver() *loraserver {
 	  "abp" : true,
       "login" : "admin",
       "password" : "admin",
-      "appId": "19",
-      "nbProvisionerParallel": 1
+	  "nbProvisionerParallel": 1,
+	  "networkServerAddr": "0.0.0.0:8000"
 	}`
 	raw := json.RawMessage([]byte(j))
 	l, _ := newLoraserver(raw)
@@ -56,24 +67,188 @@ func newGateways(nbNodes int, nbGateway int) []model.Gateway {
 	return gateways
 }
 
-func newDoRequest(loginError bool, nodeCreationError bool, nodeAbpError bool, deprovisionError bool) func(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error) {
-	return func(url string, method string, marshalledObject []byte, jwtToken string) ([]byte, error) {
-		if url == "/api/internal/login" && !loginError {
-			return []byte(`{"jwt":"1"}`), nil
-		} else if url == "/api/internal/login" && loginError {
-			return nil, errors.New("Fake error login")
-		} else if url == "/api/nodes" && nodeCreationError {
-			return nil, errors.New("Fake error nodeCreation")
-		} else if url == "/api/nodes" && !nodeCreationError {
-			return []byte(`{}`), nil
-		} else if nodeAbpError {
-			return nil, errors.New("Fake error abp")
-		} else if method == "DELETE" && deprovisionError {
-			return nil, errors.New("Fake error deprovision")
-		} else {
-			return []byte(`{}`), nil
+type fakeHTTPClient struct {
+	data []fakeHTTPClientData
+}
+
+type testLoraserver struct {
+	name    string
+	inError bool
+	data    []fakeHTTPClientData
+}
+
+type fakeHTTPClientData struct {
+	url    *regexp.Regexp
+	method string
+	status int
+	err    error
+	body   string
+}
+
+var data = []testLoraserver{
+	{
+		name:    "all exist",
+		inError: false,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[{"id":"1","name":"` + loraserverOrganisationName + `"}]}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: nil, body: `{"result":[{"id":"1","server":"0.0.0.0:8000"}]}`},
+			{url: regexp.MustCompile(`/api/service-profiles`), method: "POST", err: nil, body: `{"serviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/applications\?limit=100`), method: "GET", err: nil, body: `{"result":[{"id":"1","name":"` + loraserverApplicationName + `"}]}`},
+			{url: regexp.MustCompile(`/api/device-profiles`), method: "POST", err: nil, body: `{"deviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/devices`), method: "POST", err: nil, body: ``},
+			{url: regexp.MustCompile(`/api/devices/[^/]+/keys`), method: "POST", err: nil, body: ``},
+		},
+	}, {
+		name:    "must create all",
+		inError: false,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/network-servers`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/service-profiles`), method: "POST", err: nil, body: `{"serviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/applications\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/applications`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/device-profiles`), method: "POST", err: nil, body: `{"deviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/devices`), method: "POST", err: nil, body: ``},
+			{url: regexp.MustCompile(`/api/devices/[^/]+/keys`), method: "POST", err: nil, body: ``},
+		},
+	}, {
+		name:    "error login",
+		inError: true,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: errors.New("fake error login"), body: `{"jwt":"1"}`},
+		},
+	}, {
+		name:    "error organization get",
+		inError: true,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: errors.New("fake error get organization"), body: `{"result":[]}`},
+		},
+	}, {
+		name:    "error organization post",
+		inError: true,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: errors.New("fake error post organization"), body: `{"id":"1"}`},
+		},
+	}, {
+		name:    "error network-servers get",
+		inError: true,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: errors.New("fake error get network-servers"), body: `{"result":[]}`},
+		},
+	}, {
+		name:    "error network-servers post",
+		inError: true,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/network-servers`), method: "POST", err: errors.New("fake error post network-servers"), body: `{"id":"1"}`},
+		},
+	}, {
+		name:    "error service-profiles",
+		inError: true,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/network-servers`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/service-profiles`), method: "POST", err: errors.New("fake error post service-profile"), body: `{"serviceProfileID":"1"}`},
+		},
+	}, {
+		name:    "error application get",
+		inError: true,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/network-servers`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/service-profiles`), method: "POST", err: nil, body: `{"serviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/applications\?limit=100`), method: "GET", err: errors.New("fake error get applications"), body: `{"result":[]}`},
+		},
+	}, {
+		name:    "error application post",
+		inError: true,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/network-servers`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/service-profiles`), method: "POST", err: nil, body: `{"serviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/applications\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/applications`), method: "POST", err: errors.New("fake error post application"), body: `{"id":"1"}`},
+		},
+	}, {
+		name:    "error post devices-profiles",
+		inError: true,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/network-servers`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/service-profiles`), method: "POST", err: nil, body: `{"serviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/applications\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/applications`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/device-profiles`), method: "POST", err: errors.New("fake error post device-profiles"), body: `{"deviceProfileID":"1"}`},
+		},
+	}, {
+		name:    "error post device must not return error (because lot of devices)",
+		inError: false,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/network-servers`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/service-profiles`), method: "POST", err: nil, body: `{"serviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/applications\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/applications`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/device-profiles`), method: "POST", err: nil, body: `{"deviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/devices`), method: "POST", err: errors.New("fake error post devices"), body: ``},
+		},
+	}, {
+		name:    "error post device keys must not return error (because lot of devices)",
+		inError: false,
+		data: []fakeHTTPClientData{
+			{url: regexp.MustCompile(`/api/internal/login`), method: "POST", err: nil, body: `{"jwt":"1"}`},
+			{url: regexp.MustCompile(`/api/organizations\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/organizations`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/network-servers\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/network-servers`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/service-profiles`), method: "POST", err: nil, body: `{"serviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/applications\?limit=100`), method: "GET", err: nil, body: `{"result":[]}`},
+			{url: regexp.MustCompile(`/api/applications`), method: "POST", err: nil, body: `{"id":"1"}`},
+			{url: regexp.MustCompile(`/api/device-profiles`), method: "POST", err: nil, body: `{"deviceProfileID":"1"}`},
+			{url: regexp.MustCompile(`/api/devices`), method: "POST", err: nil, body: ``},
+			{url: regexp.MustCompile(`/api/devices/[^/]+/keys`), method: "POST", err: errors.New("fake error post devices keys"), body: ``},
+		},
+	},
+}
+
+func (f fakeHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	for _, d := range f.data {
+		if d.url.Match([]byte(req.URL.String())) && d.method == req.Method {
+			return &http.Response{
+				Body:       nopCloser{bytes.NewReader([]byte(d.body))},
+				StatusCode: 200,
+			}, d.err
 		}
 	}
+	return nil, fmt.Errorf("Unknown response for url %s", req.URL.String())
 }
 
 func TestNewLoraserverError(t *testing.T) {
@@ -94,79 +269,26 @@ func TestNewLoraserver(t *testing.T) {
 	}
 }
 
-func TestNewLoraserverLoginError(t *testing.T) {
-	l := newDefautlLoraserver()
-	l.doRequest = newDoRequest(true, false, false, false)
-
-	for i := 0; i < 5; i++ {
-		err := l.Provision(model.Register{ScenarioUUID: "", Gateways: newGateways(5, 2)})
-		if err == nil {
-			t.Fatal("Login error return err")
-		}
-	}
-}
-
-func TestNewLoraserverProvision(t *testing.T) {
-	l := newDefautlLoraserver()
-	l.doRequest = newDoRequest(false, false, false, false)
-
-	for i := 0; i < 5; i++ {
-		err := l.Provision(model.Register{ScenarioUUID: "", Gateways: newGateways(50, 100)})
-		if err != nil {
-			t.Fatal("Good scenario should not return err", err)
-		}
-	}
-}
-
-func TestNewLoraserverProvisionErrorNodeCreation(t *testing.T) {
-	l := newDefautlLoraserver()
-	l.doRequest = newDoRequest(false, true, false, false)
-
-	for i := 0; i < 5; i++ {
-		err := l.Provision(model.Register{ScenarioUUID: "", Gateways: newGateways(2, 1)})
-		if err != nil {
-			t.Fatal("Good scenario should not return err", err)
-		}
-	}
-}
-
-func TestNewLoraserverProvisionErrorNodeAbp(t *testing.T) {
-	l := newDefautlLoraserver()
-	l.doRequest = newDoRequest(false, false, true, false)
-
-	for i := 0; i < 5; i++ {
-		err := l.Provision(model.Register{ScenarioUUID: "", Gateways: newGateways(2, 1)})
-		if err != nil {
-			t.Fatal("Good scenario should not return err", err)
-		}
-	}
-}
-
-func TestDeprovisioningLoraserverWithtouUrl(t *testing.T) {
-	l := newDefautlLoraserver()
-	l.doRequest = newDoRequest(false, false, false, false)
-
-	err := l.DeProvision()
-	if err == nil {
-		t.Fatal("Deprovsion should throw error when url is empty")
-	}
-}
-
-func TestDeprovisioningLoraserverError(t *testing.T) {
-	l := newDefautlLoraserver()
-	l.APIURL = "/"
-	l.doRequest = newDoRequest(false, false, false, true)
-
-	err := l.DeProvision()
-	if err == nil {
-		t.Fatal("Deprovision should throw error when loraserver respond error")
+func TestProvisioning(t *testing.T) {
+	t.Parallel()
+	for _, d := range data {
+		t.Run(d.name, func(t *testing.T) {
+			l := newDefautlLoraserver()
+			l.httpClient = fakeHTTPClient{data: d.data}
+			err := l.Provision(model.Register{ScenarioUUID: "", Gateways: newGateways(5, 2)})
+			if !d.inError && err != nil {
+				t.Fatalf("Provisioining return %s", err.Error())
+			} else if d.inError && err == nil {
+				t.Fatal("Should return error")
+			}
+		})
 	}
 }
 
 func TestDeprovisioningLoraserver(t *testing.T) {
 	l := newDefautlLoraserver()
 	l.APIURL = "/"
-	l.doRequest = newDoRequest(false, false, false, false)
+	l.httpClient = fakeHTTPClient{}
 
 	err := l.DeProvision()
 	if err != nil {

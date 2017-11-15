@@ -136,6 +136,10 @@ This scenario will incrementally launch 10 gateways (going from 0 to 10 in 5 min
 
 Don't forget to open grafana dashboard to see what happens.
 
+# Full example
+
+A working example is accessible in `resources/examples/loraserver`. After cloning lorhammer go inside and read the [https://gitlab.com/itk.fr/lorhammer/tree/master/resources/examples/loraserver/README.md](README.md).
+
 # First scenario
 
 A scenario is an array of tests. A test is the description needed by the orchestrator (and the lorhammers) to stress a network server. All parameters are :
@@ -172,7 +176,13 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "abp": true,
       "login": "admin",
       "password": "admin",
+      "organizationId": "",
+      "networkServerId": "",
+      "networkServerAddr": "",
+      "serviceProfileID": "",
       "appId": "",
+      "deleteOrganization": false,
+      "deleteApplication": false,
       "nbProvisionerParallel": 10
     },
     "config": {
@@ -437,11 +447,47 @@ Type : **optional(string)**
  
 The provided application server password.
 
+#### organizationId
+
+Type : **optional(string)**
+
+if empty create new `lorhammer` organization in loraserver or use define organizationId.
+
+#### networkServerId
+
+Type : **optional(string)**
+
+if empty create new networkServerId in loraserver or use define networkServerId.
+
+#### networkServerAddr
+
+Type : **optional(string)**
+
+if empty you need to have set `networkServerId`, lorhammer create the networkServer with this networkServerAddr if not already created.
+
+#### serviceProfileID
+
+Type : **optional(string)**
+
+if empty create new serviceProfileID in loraserver or use define serviceProfileID.
+
 #### appId
 
 Type : **optional(string)**
 
 if empty create new app in loraserver or use define appId.
+
+#### deleteOrganization
+
+Type : **bool**
+
+Delete organization at the end of test.
+
+#### deleteApplication
+
+Type : **bool**
+
+Delete application at the end of test.
 
 #### nbProvisionerParallel
 
