@@ -8,6 +8,7 @@
 * **SCENARIO** Use 'date' property of payload as Rxpk Date [issues/53](https://gitlab.com/itk.fr/lorhammer/issues/53)
 * **EXAMPLE** Add working example of lorhammer against [loraserver](https://www.loraserver.io/) [issues/52](https://gitlab.com/itk.fr/lorhammer/issues/52)
 * **PROVISIONER** Create [loraserver](https://www.loraserver.io/) organization during lorhammer tests [issues/1](https://gitlab.com/itk.fr/lorhammer/issues/1)
+* **CLEAN** Delete unwanted `.vscode` directory [issues/54](https://gitlab.com/itk.fr/lorhammer/issues/54)
 
 ## Version 0.3.1 - 2017-10-23 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.3.1)
 
