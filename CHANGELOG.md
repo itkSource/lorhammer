@@ -1,6 +1,8 @@
 # Changelog
 
-## Version 0.4.0 - UNRELEASED
+## Version 0.5.0 - UNRELEASED
+
+## Version 0.4.0 - 2017-11-17 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.4.0)
 
 * **CI** use golint [issues/49](https://gitlab.com/itk.fr/lorhammer/issues/49)
 * **SITE** add badge from [https://goreportcard.com/report/gitlab.com/itk.fr/lorhammer](goreportcard.com)
