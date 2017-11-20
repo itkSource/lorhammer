@@ -27,7 +27,6 @@ var instances = sync.Map{}
 func init() {
 	provisioners[noneType] = newNone
 	provisioners[loraserverType] = newLoraserver
-	provisioners[semtechV4Type] = newSemtechV4
 	provisioners[httpType] = newHTTPProvisioner
 }
 

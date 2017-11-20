@@ -170,7 +170,7 @@ A scenario is an array of tests. A test is the description needed by the orchest
     ]
   },
   "provisioning": {
-    "type": "none | loraserver | semtechv4 | http",
+    "type": "none | loraserver | http",
     "config": {
       "apiUrl": "127.0.0.1:9999",
       "abp": true,
@@ -184,12 +184,6 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "deleteOrganization": false,
       "deleteApplication": false,
       "nbProvisionerParallel": 10
-    },
-    "config": {
-      "nsAddress": "127.0.0.1:1701",
-      "asAddress": "127.0.0.1:4000",
-      "csAddress": "127.0.0.1:5000",
-      "ncAddress": "127.0.0.1:6000"
     },
     "config": {
       "creationApiUrl": "http://127.0.0.1:1080",
@@ -423,11 +417,10 @@ Describes the provisioning of your sensors on the network-server system
 
 ### type 
 
-Type : **string/enum** : Can be `none`, `loraserver`, `semtechv4` or `http`
+Type : **string/enum** : Can be `none`, `loraserver` or `http`
 
 * `none` no provisioning is required
 * `loraserver` call the api of [loraserver application server](https://docs.loraserver.io/loraserver/application-server/) and add sensors
-* `semtechv4` send tcp order to add gateways and sensors
 * `http` send HTTP post, have a look at [model godoc](/godoc/#model) for body JSON format
 
 ### config
@@ -508,30 +501,6 @@ Delete application at the end of test.
 Type : **int**
 
 Number of parallel request will access loraserver to provision.
-
-#### nsAddress 
-
-Type : **optional(string)**
- 
-ip:port to reach semtechv4 network-server
-
-#### asAddress 
-
-Type : **optional(string)**
-
-ip:port to reach semtechv4 application-server
-
-#### csAddress 
-
-Type : **optional(string)**
-
-ip:port to reach semtechv4 customer-server
-
-#### ncAddress 
-
-Type : **optional(string)**
-
-ip:port to contact semtechv4 network-controller
 
 #### creationApiUrl 
 
