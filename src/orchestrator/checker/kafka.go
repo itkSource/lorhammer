@@ -2,7 +2,6 @@ package checker
 
 import (
 	"encoding/json"
-	"lorhammer/src/tools"
 	"regexp"
 	"sync"
 
@@ -59,7 +58,7 @@ type kafkaCheck struct {
 	Text        string   `json:"text"`
 }
 
-func newKafka(_ tools.Consul, rawConfig json.RawMessage) (Checker, error) {
+func newKafka(rawConfig json.RawMessage) (Checker, error) {
 	var kafkaConfig = kafkaConfig{}
 	if err := json.Unmarshal(rawConfig, &kafkaConfig); err != nil {
 		return nil, err

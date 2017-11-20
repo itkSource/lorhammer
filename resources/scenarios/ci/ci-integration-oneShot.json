@@ -22,12 +22,15 @@
   },
   "check": {
     "type": "prometheus",
-    "config": [
-      {"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1500, "resultMax": 2400, "description": "nb messages"},
-      {"query": "count(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb lorhammer"},
-      {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"},
-      {"query": "sum(lorhammer_node)", "resultMin": 500, "resultMax": 500, "description": "nb nodes"}
-    ]
+    "config": {
+      "address": "http://prometheus:9090",
+        "checks": [
+        {"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1500, "resultMax": 2400, "description": "nb messages"},
+        {"query": "count(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb lorhammer"},
+        {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"},
+        {"query": "sum(lorhammer_node)", "resultMin": 500, "resultMax": 500, "description": "nb nodes"}
+      ]
+    }
   },
   "deploy": {
     "type": "none"

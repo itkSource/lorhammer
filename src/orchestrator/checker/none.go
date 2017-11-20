@@ -2,14 +2,13 @@ package checker
 
 import (
 	"encoding/json"
-	"lorhammer/src/tools"
 )
 
 const noneType = Type("none")
 
 type none struct{}
 
-func newNone(_ tools.Consul, _ json.RawMessage) (Checker, error) {
+func newNone(_ json.RawMessage) (Checker, error) {
 	return none{}, nil
 }
 

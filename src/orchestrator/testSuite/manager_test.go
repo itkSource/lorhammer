@@ -115,7 +115,7 @@ var testsLaunch = []testLaunch{
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
-		check:            `{"type": "prometheus", "config": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb messages"}]}`,
+		check:            `{"type": "prometheus", "config": {"checks": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb messages"}]}}`,
 		deploy:           `{"type": "none"}`,
 		grafana:          nil,
 	},
@@ -130,7 +130,7 @@ var testsLaunch = []testLaunch{
 		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
-		check:            `{"type": "prometheus", "config": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"}]}`,
+		check:            `{"type": "prometheus", "config": {"checks": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"}]}}`,
 		deploy:           `{"type": "none"}`,
 		grafana:          nil,
 	},
@@ -169,30 +169,32 @@ var testsLaunch = []testLaunch{
 var templateLaunch = `[{"test": %s,"rampTime": "%s","repeatTime": "%s","stopAllLorhammerTime": "%s","sleepBeforeCheckTime": "%s","shutdownAllLorhammerTime": "%s","sleepAtEndTime": "%s","init": %s,"provisioning": %s,"check": %s, "deploy": %s}]`
 
 func TestLaunchTest(t *testing.T) {
+	t.Parallel()
 	for _, test := range testsLaunch {
-		var ct = test
-		data := []byte(fmt.Sprintf(templateLaunch, ct.test, ct.rampTime, ct.repeatTime, ct.stopAll, ct.beforeCheck, ct.shutdownAll, ct.sleep, ct.init, ct.provisioning, ct.check, ct.deploy))
-		tests, err := FromFile(data)
-		if err != nil {
-			t.Fatalf(`valid scenario should not return err %s for : "%s"`, err, ct.description)
-		}
-		if len(tests) != 1 {
-			t.Fatalf(`1 valid scenario should return 1 valid testSuite for : "%s"`, ct.description)
-		}
-		if test.needProvisioning {
-			provisioning.Provision(tests[0].UUID, tests[0].Provisioning, model.Register{})
-		}
-		report, err := tests[0].LaunchTest(fakeConsul{}, &fakeMqtt{}, ct.grafana)
-		if ct.testValid && err != nil {
-			t.Fatalf("valid test should not throw err %s", ct.description)
-		} else if ct.testValid && report == nil {
-			t.Fatalf("valid test should return report %s", ct.description)
-		} else if !ct.testValid && err == nil {
-			t.Fatalf("not valid test should throw err %s", ct.description)
-		} else if !ct.testValid && report != nil {
-			t.Fatalf("not valid test should not return report %s", ct.description)
-		}
-
+		t.Run(test.description, func(t *testing.T) {
+			var ct = test
+			data := []byte(fmt.Sprintf(templateLaunch, ct.test, ct.rampTime, ct.repeatTime, ct.stopAll, ct.beforeCheck, ct.shutdownAll, ct.sleep, ct.init, ct.provisioning, ct.check, ct.deploy))
+			tests, err := FromFile(data)
+			if err != nil {
+				t.Fatalf(`valid scenario should not return err %s for : "%s"`, err, ct.description)
+			}
+			if len(tests) != 1 {
+				t.Fatalf(`1 valid scenario should return 1 valid testSuite for : "%s"`, ct.description)
+			}
+			if test.needProvisioning {
+				provisioning.Provision(tests[0].UUID, tests[0].Provisioning, model.Register{})
+			}
+			report, err := tests[0].LaunchTest(fakeConsul{}, &fakeMqtt{}, ct.grafana)
+			if ct.testValid && err != nil {
+				t.Fatalf("valid test should not throw err %s", ct.description)
+			} else if ct.testValid && report == nil {
+				t.Fatalf("valid test should return report %s", ct.description)
+			} else if !ct.testValid && err == nil {
+				t.Fatalf("not valid test should throw err %s", ct.description)
+			} else if !ct.testValid && report != nil {
+				t.Fatalf("not valid test should not return report %s", ct.description)
+			}
+		})
 	}
 }
 

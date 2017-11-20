@@ -3,14 +3,15 @@ package checker
 import (
 	"encoding/json"
 	"lorhammer/src/orchestrator/prometheus"
-	"lorhammer/src/tools"
 )
 
 const prometheusType = Type("prometheus")
 
 type prometheusChecker struct {
-	apiClient prometheus.APIClient
-	checks    []prometheusCheck
+	Address                 string            `json:"address"`
+	Checks                  []prometheusCheck `json:"checks"`
+	prometheusClientFactory func(string) (prometheus.APIClient, error)
+	apiClient               prometheus.APIClient
 }
 
 type prometheusCheck struct {
@@ -52,29 +53,30 @@ func (err prometheusCheckError) Details() map[string]interface{} {
 	return details
 }
 
-func newPrometheus(consulClient tools.Consul, rawConfig json.RawMessage) (Checker, error) {
-	var checks = new([]prometheusCheck)
-	if err := json.Unmarshal(rawConfig, checks); err != nil {
+func newPrometheus(rawConfig json.RawMessage) (Checker, error) {
+	var checker = &prometheusChecker{
+		prometheusClientFactory: prometheus.NewAPIClient,
+	}
+	if err := json.Unmarshal(rawConfig, checker); err != nil {
 		return nil, err
 	}
-	prometheusAPIClient, err := prometheus.NewAPIClient(consulClient)
-	if err != nil {
-		return nil, err
-	}
-	return prometheusChecker{
-		apiClient: prometheusAPIClient,
-		checks:    *checks,
-	}, nil
+
+	return checker, nil
 }
 
-func (prometheusChecker) Start() error {
+func (prom *prometheusChecker) Start() error {
+	prometheusAPIClient, err := prom.prometheusClientFactory(prom.Address)
+	if err != nil {
+		return err
+	}
+	prom.apiClient = prometheusAPIClient
 	return nil
 }
 
-func (prom prometheusChecker) Check() ([]Success, []Error) {
+func (prom *prometheusChecker) Check() ([]Success, []Error) {
 	success := make([]Success, 0)
 	errs := make([]Error, 0)
-	for _, query := range prom.checks {
+	for _, query := range prom.Checks {
 		if val, err := prom.apiClient.ExecQuery(query.Query); err != nil {
 			errs = append(errs, prometheusCheckError{
 				Query:  query,
