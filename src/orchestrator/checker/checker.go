@@ -37,6 +37,7 @@ func init() {
 	checkers[noneType] = newNone
 	checkers[prometheusType] = newPrometheus
 	checkers[kafkaType] = newKafka
+	checkers[mqttType] = newMqtt
 }
 
 //Get return a checker if the Model is an implementation of Checker

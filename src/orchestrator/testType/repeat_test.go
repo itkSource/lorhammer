@@ -13,6 +13,8 @@ type fakeMqtt struct {
 }
 
 func (*fakeMqtt) Connect() error                                              { return nil }
+func (*fakeMqtt) Disconnect()                                                 {}
+func (*fakeMqtt) Handle(topics []string, handle func(message []byte)) error   { return nil }
 func (*fakeMqtt) HandleCmd(topics []string, handle func(cmd model.CMD)) error { return nil }
 func (f *fakeMqtt) PublishCmd(topic string, cmdName model.CommandName) error {
 	f.mu.Lock()
