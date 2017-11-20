@@ -2,10 +2,12 @@ package provisioning
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io"
 	"lorhammer/src/model"
+	"net"
 	"net/http"
 	"time"
 
@@ -14,7 +16,10 @@ import (
 
 var logHTTPProvisioner = logrus.WithField("logger", "orchestrator/provisioning/http")
 
-const httpType = Type("http")
+const (
+	httpType    = Type("http")
+	httpTimeout = 1 * time.Minute
+)
 
 type httpProvisoner struct {
 	CreationAPIURL    string `json:"creationApiUrl"`
@@ -24,9 +29,15 @@ type httpProvisoner struct {
 }
 
 func newHTTPProvisioner(rawConfig json.RawMessage) (provisioner, error) {
-	timeout := time.Duration(5 * time.Second)
 	client := http.Client{
-		Timeout: timeout,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Dial: (&net.Dialer{
+				Timeout: httpTimeout,
+			}).Dial,
+			TLSHandshakeTimeout: httpTimeout,
+		},
+		Timeout: httpTimeout,
 	}
 	config := &httpProvisoner{
 		post: client.Post,

@@ -2,6 +2,8 @@
 
 ## Version 0.5.0 - UNRELEASED
 
+* **PROVISIONER** increase timeout for http requests [57](https://gitlab.com/itk.fr/lorhammer/issues/57)
+
 ## Version 0.4.0 - 2017-11-17 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.4.0)
 
 * **CI** use golint [issues/49](https://gitlab.com/itk.fr/lorhammer/issues/49)

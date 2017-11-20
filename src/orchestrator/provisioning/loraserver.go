@@ -21,6 +21,7 @@ const (
 	loraserverType             = Type("loraserver")
 	loraserverOrganisationName = "lorhammer"
 	loraserverApplicationName  = "Lorhammer"
+	httpLoraserverTimeout      = 1 * time.Minute
 )
 
 type httpClientSender interface {
@@ -52,11 +53,11 @@ func newLoraserver(rawConfig json.RawMessage) (provisioner, error) {
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 				Dial: (&net.Dialer{
-					Timeout: 5 * time.Second,
+					Timeout: httpLoraserverTimeout,
 				}).Dial,
-				TLSHandshakeTimeout: 5 * time.Second,
+				TLSHandshakeTimeout: httpLoraserverTimeout,
 			},
-			Timeout: 5 * time.Second,
+			Timeout: httpLoraserverTimeout,
 		},
 	}
 	if err := json.Unmarshal(rawConfig, config); err != nil {
