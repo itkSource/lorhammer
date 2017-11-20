@@ -197,13 +197,24 @@ A scenario is an array of tests. A test is the description needed by the orchest
     }
   },
   "check": {
-    "type": "none | prometheus | kafka",
+    "type": "none | prometheus | kafka | mqtt",
     "config": [
       {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"}
     ],
     "config": {
       "address": ["127.0.0.1:9092"],
       "topic": "test",
+      "checks": [
+        {
+          "description": "MY_DATA",
+          "remove": ["\"time\":[^,]+,","\"applicationID\":[^,]+,"],
+          "text": "DATA"
+        }
+      ]
+    },
+    "config": {
+      "address": "127.0.0.1:1883",
+      "channel": "test",
       "checks": [
         {
           "description": "MY_DATA",
@@ -539,11 +550,12 @@ Describes the check orchestrator must do at the end of scenario
 
 ### type 
 
-Type : **string/enum** : Can be `none`, `prometheus` or `kafka`
+Type : **string/enum** : Can be `none`, `prometheus`, `kafka` ot `mqtt`
 
 * `none` no check is required
 * `prometheus` call the api of prometheus and compare results
 * `kafka` listen kafka queue and check if messages are good
+* `mqtt` listen mqtt brocker and check if messages are good
 
 ### prometheus config 
 
@@ -562,6 +574,17 @@ Type : **object/struct**
 
 * address **array(string)** : the kafka ip:port of brokers
 * topic **string** : the kafka topic to listen
+* checks **array(object)** : A logic `or` will be executed on each checks described bellow
+    * description **string** : the description logged if check fail
+    * remove **array(string)** : An array of regexp to clean random/dynamic data produced by the test (timestamp...)
+    * text **string** : The text to check
+
+### mqtt config 
+
+Type : **object/struct**
+
+* address **string** : the mqtt ip:port of broker
+* channel **string** : the mqtt channel to listen
 * checks **array(object)** : A logic `or` will be executed on each checks described bellow
     * description **string** : the description logged if check fail
     * remove **array(string)** : An array of regexp to clean random/dynamic data produced by the test (timestamp...)
