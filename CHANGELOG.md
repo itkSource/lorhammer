@@ -3,6 +3,7 @@
 ## Version 0.6.0 - UNRELEASED
 
 * **MAKE** `make help` display all tasks available with description
+* **PROVISIONER** delete semtech v4 [issues/58](https://gitlab.com/itk.fr/lorhammer/issues/58)
 
 ## Version 0.5.0 - 2017-11-23 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.5.0)
 
