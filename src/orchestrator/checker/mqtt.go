@@ -54,7 +54,7 @@ func (m mqttError) Details() map[string]interface{} {
 	return details
 }
 
-func newMqtt(consulClient tools.Consul, rawConfig json.RawMessage) (Checker, error) {
+func newMqtt(rawConfig json.RawMessage) (Checker, error) {
 	conf := mqttConfig{}
 	if err := json.Unmarshal(rawConfig, &conf); err != nil {
 		return nil, err
