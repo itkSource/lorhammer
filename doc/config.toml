@@ -51,10 +51,12 @@ favicons = [
     mainColor = "#680764"
     gradient_1 = "#d84394"
     gradient_2 = "#3c0445"
+    logoColor = "#680764"
+    siteNameBorder = true
     textColor = "#222"
+    headerPadding = "40px"
 
     bgColor = "#fff"
     textColorOnMainColor = "#fff"
 
     alertColor = "#B90822"
-    siteNameBorder = true
