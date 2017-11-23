@@ -1,7 +1,8 @@
 theme = "hugorha"
 baseurl = "http://lorhammer.itk.fr/"
 title = "Lorhammer"
-PygmentsCodeFences = true
+pygmentsUseClasses=true
+pygmentsCodeFences=true
 relativeURLs = true
 enableGitInfo = true
 
@@ -49,12 +50,15 @@ favicons = [
     specialFontName = "font/minspsw"
 
     mainColor = "#680764"
-    gradient_1 = "#d84394"
-    gradient_2 = "#3c0445"
+    logoColor = "#680764"
+    siteNameBorder = true
     textColor = "#222"
+    headerTextColor = "#222"
+    headerBg = "#fff"
+    
+    headerPadding = "40px"
 
     bgColor = "#fff"
     textColorOnMainColor = "#fff"
 
     alertColor = "#B90822"
-    siteNameBorder = true

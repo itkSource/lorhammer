@@ -39,17 +39,14 @@ Lorhammer is here to do that. You can launch as much lorhammers as you want to s
 
 ### Libs
 
-* [Logrus](https://github.com/Sirupsen/logrus) // [MIT](https://github.com/sirupsen/logrus/blob/master/LICENSE)
+* [Logrus](https://github.com/sirupsen/logrus) // [MIT](https://github.com/sirupsen/logrus/blob/master/LICENSE)
 * [Prometheus](https://github.com/prometheus/client_golang/prometheus) // [APACHE2](https://github.com/prometheus/client_golang/blob/master/LICENSE)
-* [Crypto](https://github.com/jacobsa/crypto) // [APACHE2](https://github.com/jacobsa/crypto/blob/master/LICENSE)
 * [Consul](https://github.com/hashicorp/consul/api) // [MOZILLA2](https://github.com/hashicorp/consul/blob/master/LICENSE)
 * [Paho Mqtt](https://github.com/eclipse/paho.mqtt.golang) // [ECLIPSE](https://github.com/eclipse/paho.mqtt.golang/blob/master/LICENSE)
 * [Uuid](https://github.com/google/uuid) // [BSD3](https://github.com/google/uuid/blob/master/LICENSE)
-* [Concurrent-map](https://github.com/orcaman/concurrent-map) // [MIT](https://github.com/orcaman/concurrent-map/blob/master/LICENSE)
-* [Websocket](https://golang.org/x/net/websocket) // [BSD](https://golang.org/LICENSE)
-* [sys/windows](https://golang.org/x/sys/windows) // [BSD](https://golang.org/LICENSE)
-* [lorawan](https://github.com/brocaar/lorawan) // [MIT](https://github.com/brocaar/lorawan/blob/master/LICENSE)
-* [aws-sdk](https://github.com/aws/aws-sdk-go) // [APACHE2](https://github.com/aws/aws-sdk-go/blob/master/LICENSE.txt)
+* [Lorawan](https://github.com/brocaar/lorawan) // [MIT](https://github.com/brocaar/lorawan/blob/master/LICENSE)
+* [Aws-sdk](https://github.com/aws/aws-sdk-go) // [APACHE2](https://github.com/aws/aws-sdk-go/blob/master/LICENSE.txt)
+* [Sarama](https://github.com/Shopify/sarama) // [MIT](https://github.com/Shopify/sarama/blob/master/LICENSE)
 
 ## Inspiration
 
@@ -69,7 +66,7 @@ We use SemVer for versioning. For the versions available, see the tags on this r
 
 ## Powered by ITK
 
-[![itk_logo](doc/static/images/ITK_PredictandDecide.png)](doc/static/images/ITK_PredictandDecide.png)
+[![itk_logo](doc/static/images/ITK_PredictandDecide.png?width=50%)](doc/static/images/ITK_PredictandDecide.png)
 
 itk is globally recognized as being an innovation leader in scientific knowledge and software for a more sustainable agriculture in general.
 
