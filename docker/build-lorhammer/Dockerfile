@@ -24,16 +24,9 @@ RUN curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOS
     && docker-compose -v
 
 ##
-# Doc pygments
-##
-RUN wget https://bootstrap.pypa.io/get-pip.py \
-	&& python get-pip.py \
-	&& pip install Pygments
-
-##
 # Doc hugo
 ##
-RUN curl -L "https://github.com/gohugoio/hugo/releases/download/v0.26/hugo_0.26_Linux-64bit.tar.gz" -o /tmp/hugo.tar.gz \
+RUN curl -L "https://github.com/gohugoio/hugo/releases/download/v0.31/hugo_0.31_Linux-64bit.tar.gz" -o /tmp/hugo.tar.gz \
 	&& mkdir /tmp/hugo && tar xf /tmp/hugo.tar.gz -C /tmp/hugo \
 	&& mv /tmp/hugo/hugo /usr/local/bin/hugo \
     && rm /tmp/hugo.tar.gz && rm -rf /tmp/hugo \

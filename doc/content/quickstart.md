@@ -12,7 +12,7 @@ For details let's go to next section.
 
 ## build (optional)
 
-```shell
+```bash
 make
 
 ```
