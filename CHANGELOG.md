@@ -4,6 +4,7 @@
 
 * **PROVISIONER** increase timeout for http requests [57](https://gitlab.com/itk.fr/lorhammer/issues/57)
 * **CHECKER** add mqtt checker [issues/50](https://gitlab.com/itk.fr/lorhammer/issues/50)
+* **MQTT** fix bug : mosquitto refuse to talk to a client with clientId containing a / [issues/59](https://gitlab.com/itk.fr/lorhammer/issues/59)
 
 ## Version 0.4.0 - 2017-11-17 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.4.0)
 
