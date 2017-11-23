@@ -39,7 +39,8 @@ func NewMqtt(hostname string, consulClient Consul) (Mqtt, error) {
 		return nil, err
 	}
 
-	return NewMqttBasic(url, MqttStartTopic+"/"+hostname)
+	clientID := hostname + "_" + string(RandomBytes(8))
+	return NewMqttBasic(url, clientID)
 }
 
 //NewMqttBasic return a Mqtt client
