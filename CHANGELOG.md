@@ -1,6 +1,8 @@
 # Changelog
 
-## Version 0.5.0 - UNRELEASED
+## Version 0.6.0 - UNRELEASED
+
+## Version 0.5.0 - 2017-11-23 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.5.0)
 
 * **PROVISIONER** increase timeout for http requests [57](https://gitlab.com/itk.fr/lorhammer/issues/57)
 * **CHECKER** add mqtt checker [issues/50](https://gitlab.com/itk.fr/lorhammer/issues/50)
