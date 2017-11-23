@@ -36,11 +36,14 @@
   },
   "check": {
     "type": "prometheus",
-    "config": [
-      {"query": "count(lorhammer_durations_count)", "resultMin": 5, "resultMax": 5, "description": "nb lorhammer"},
-      {"query": "sum(lorhammer_gateway)", "resultMin": 50, "resultMax": 50, "description": "nb gateways"},
-      {"query": "sum(lorhammer_node)", "resultMin": 500, "resultMax": 500, "description": "nb nodes"}
-    ]
+    "config": {
+      "address": "http://127.0.0.1:9090",
+      "checks": [
+        {"query": "count(lorhammer_durations_count)", "resultMin": 5, "resultMax": 5, "description": "nb lorhammer"},
+        {"query": "sum(lorhammer_gateway)", "resultMin": 50, "resultMax": 50, "description": "nb gateways"},
+        {"query": "sum(lorhammer_node)", "resultMin": 500, "resultMax": 500, "description": "nb nodes"}
+      ]
+    }
   },
   "deploy": {
     "type": "local",

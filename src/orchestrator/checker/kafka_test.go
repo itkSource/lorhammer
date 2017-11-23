@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewKafka(t *testing.T) {
-	k, err := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"]}`)))
+	k, err := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"]}`)))
 	if err != nil {
 		t.Fatalf("Good config should not return err : %s", err.Error())
 	}
@@ -21,7 +21,7 @@ func TestNewKafka(t *testing.T) {
 }
 
 func TestNewKafkaError(t *testing.T) {
-	k, err := newKafka(nil, json.RawMessage([]byte(`{`)))
+	k, err := newKafka(json.RawMessage([]byte(`{`)))
 	if err == nil {
 		t.Fatal("Bad config should return err")
 	}
@@ -31,7 +31,7 @@ func TestNewKafkaError(t *testing.T) {
 }
 
 func TestKafka_StartNewConsumerError(t *testing.T) {
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test"}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test"}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		return nil, errors.New("error")
 	}
@@ -45,7 +45,7 @@ type fakeErrorReporter struct{}
 func (fakeErrorReporter) Errorf(string, ...interface{}) {}
 
 func TestKafka_StartTopicError(t *testing.T) {
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test"}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test"}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		return mocks.NewConsumer(fakeErrorReporter{}, nil), nil
 	}
@@ -55,7 +55,7 @@ func TestKafka_StartTopicError(t *testing.T) {
 }
 
 func TestKafka_StartConsumePartitionError(t *testing.T) {
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test"}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test"}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		mock := mocks.NewConsumer(fakeErrorReporter{}, nil)
 		metadata := make(map[string][]int32)
@@ -69,7 +69,7 @@ func TestKafka_StartConsumePartitionError(t *testing.T) {
 }
 
 func TestKafka_CheckNoCheck(t *testing.T) {
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test"}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test"}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		mock := mocks.NewConsumer(t, nil)
 		metadata := make(map[string][]int32)
@@ -91,7 +91,7 @@ func TestKafka_CheckNoCheck(t *testing.T) {
 }
 
 func TestKafka_CheckGood(t *testing.T) {
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":[""],"text":"data"}]}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":[""],"text":"data"}]}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		mock := mocks.NewConsumer(t, nil)
 		metadata := make(map[string][]int32)
@@ -113,7 +113,7 @@ func TestKafka_CheckGood(t *testing.T) {
 }
 
 func TestKafka_CheckBad(t *testing.T) {
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":[""],"text":"data"}]}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":[""],"text":"data"}]}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		mock := mocks.NewConsumer(t, nil)
 		metadata := make(map[string][]int32)
@@ -138,7 +138,7 @@ func TestKafka_CheckBad(t *testing.T) {
 }
 
 func TestKafka_CheckGoodWithReplace(t *testing.T) {
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":["_toRemove_"],"text":"data"}]}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":["_toRemove_"],"text":"data"}]}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		mock := mocks.NewConsumer(t, nil)
 		metadata := make(map[string][]int32)
@@ -163,7 +163,7 @@ func TestKafka_CheckGoodWithReplace(t *testing.T) {
 }
 
 func TestKafka_CheckBadNoMessage(t *testing.T) {
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":[""],"text":"data"}]}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":[""],"text":"data"}]}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		mock := mocks.NewConsumer(t, nil)
 		metadata := make(map[string][]int32)
@@ -184,7 +184,7 @@ func TestKafka_CheckBadNoMessage(t *testing.T) {
 }
 
 func TestKafka_CheckSimpleRemovalOfDynamicValues(t *testing.T) {
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":["\"applicationID\":[^,]+,","\"applicationName\":[^,]+\""],"text":"{\"devEUI\":\"3c0a1f3811e5c56b\",}"}]}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":["\"applicationID\":[^,]+,","\"applicationName\":[^,]+\""],"text":"{\"devEUI\":\"3c0a1f3811e5c56b\",}"}]}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		mock := mocks.NewConsumer(t, nil)
 		metadata := make(map[string][]int32)
@@ -214,7 +214,7 @@ func TestKafka_MultiplePartitions(t *testing.T) {
 			t.Errorf("When the consumer and the partition are closed, try to send another message must panic")
 		}
 	}()
-	k, _ := newKafka(nil, json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":["\"applicationID\":[^,]+,","\"applicationName\":[^,]+\""],"text":"{\"devEUI\":\"3c0a1f3811e5c56b\",}"}]}`)))
+	k, _ := newKafka(json.RawMessage([]byte(`{"address": ["127.0.0.1:9092"], "topic": "test", "checks": [{"description": "1","remove":["\"applicationID\":[^,]+,","\"applicationName\":[^,]+\""],"text":"{\"devEUI\":\"3c0a1f3811e5c56b\",}"}]}`)))
 	k.(*kafka).newConsumer = func(addrs []string, config *sarama.Config) (sarama.Consumer, error) {
 		mock := mocks.NewConsumer(t, nil)
 		metadata := make(map[string][]int32)

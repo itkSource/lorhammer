@@ -16,7 +16,7 @@ var loggerManager = logrus.WithField("logger", "orchestrator/testSuite/test")
 
 //LaunchTest manage life cycle of a test (start, stop, check, report...)
 func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, grafanaClient tools.GrafanaClient) (*TestReport, error) {
-	check, err := checker.Get(consulClient, test.Check) //build checker here because no need to start test if checker is bad configured
+	check, err := checker.Get(test.Check) //build checker here because no need to start test if checker is bad configured
 	if err != nil {
 		loggerManager.WithError(err).Error("Error to get checker")
 		return nil, err

@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewMqtt(t *testing.T) {
-	k, err := newMqtt(nil, json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)))
+	k, err := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)))
 	if err != nil {
 		t.Fatalf("Good config should not return err : %s", err.Error())
 	}
@@ -19,7 +19,7 @@ func TestNewMqtt(t *testing.T) {
 }
 
 func TestNewMqttError(t *testing.T) {
-	k, err := newMqtt(nil, json.RawMessage([]byte(`{`)))
+	k, err := newMqtt(json.RawMessage([]byte(`{`)))
 	if err == nil {
 		t.Fatal("Bad config should return err")
 	}
@@ -29,7 +29,7 @@ func TestNewMqttError(t *testing.T) {
 }
 
 func TestStartMqttError(t *testing.T) {
-	k, _ := newMqtt(nil, json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)))
+	k, _ := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)))
 	k.(*mqttChecker).clientFactory = func(url string, clientID string) (tools.Mqtt, error) {
 		return nil, errors.New("error mqtt")
 	}
@@ -61,7 +61,7 @@ func (m *fakeMqtt) PublishSubCmd(topic string, cmdName model.CommandName, subCmd
 }
 
 func TestStartMqttHandleError(t *testing.T) {
-	k, _ := newMqtt(nil, json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)))
+	k, _ := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)))
 	k.(*mqttChecker).clientFactory = func(url string, clientID string) (tools.Mqtt, error) {
 		return &fakeMqtt{t: t, errorHandle: errors.New("fake error")}, nil
 	}
@@ -72,7 +72,7 @@ func TestStartMqttHandleError(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	k, err := newMqtt(nil, json.RawMessage([]byte(`{"address": "127.0.0.1:1883", "checks": [{"description": "test", "text": "hi", "remove": [" from test"]}]}`)))
+	k, err := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883", "checks": [{"description": "test", "text": "hi", "remove": [" from test"]}]}`)))
 	if err != nil {
 		t.Fatal("Good conf should not return err", err)
 	}

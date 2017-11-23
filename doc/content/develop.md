@@ -209,7 +209,7 @@ We can image adding new deployer like [DigitalOcean](https://www.digitalocean.co
 A checker is a way to verify that what have been sent by lorhammers have been correctly received by the IOT plateform. It aims to count the messages sent by lorhammers and check if result is equal to the expected value.
 Checkers also allow to test if platform has accepted x messages (and not only received them). Useful for continious integration, orchestrator will exit(1) if all checks don't pass.
  
-Today we have 2 kinds of checkers : 'none' for no checker and 'prometheus' to check number of messages sent againt the ones recieved by lorhammers .
+Today we have 3 kinds of checkers : 'none' for no checker, 'prometheus' to check number of messages sent againt the ones recieved by lorhammers and 'kafka' to check the content of messages.
 
 To add a checker you need to have a factory function that takes a config json.RawMessage and a consul client as parameters and returns an implementation of `Checker` interface : 
 
@@ -232,7 +232,7 @@ The 'none' implementation example :
 ```go
 type none struct{}
 
-func newNone(_ tools.Consul, _ json.RawMessage) (Checker, error) {
+func newNone(_ json.RawMessage) (Checker, error) {
 	return none{}, nil
 }
 
@@ -250,11 +250,12 @@ const NoneType = Type("none")
 A registration is needed for your implementation in the map hosted by `src/orchestrator/checker/checker.go` :
 
 ```go
-var checkers = make(map[Type]func(consulClient tools.Consul, config json.RawMessage) (Checker, error))
+var checkers = make(map[Type]func(config json.RawMessage) (Checker, error))
 
 func init() {
 	checkers[NoneType] = newNone
 	checkers[PrometheusType] = newPrometheus
+	checkers[kafkaType] = newKafka
 }
 ```
 

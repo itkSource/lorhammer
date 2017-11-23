@@ -3,12 +3,11 @@ package checker
 import (
 	"encoding/json"
 	"errors"
-	"lorhammer/src/tools"
 	"testing"
 )
 
 func TestGetFake(t *testing.T) {
-	check, err := Get(nil, Model{Type: "Fake"})
+	check, err := Get(Model{Type: "Fake"})
 	if err == nil {
 		t.Fatal("Fake type should return error")
 	}
@@ -18,7 +17,7 @@ func TestGetFake(t *testing.T) {
 }
 
 func TestGetNone(t *testing.T) {
-	check, err := Get(nil, Model{Type: noneType})
+	check, err := Get(Model{Type: noneType})
 	if err != nil {
 		t.Fatal("None type should not return error")
 	}
@@ -40,10 +39,10 @@ func (o other) Start() error              { return o.startError }
 func (other) Check() ([]Success, []Error) { return nil, nil }
 
 func TestOtherError(t *testing.T) {
-	checkers[Type("other")] = func(consulClient tools.Consul, config json.RawMessage) (Checker, error) {
+	checkers[Type("other")] = func(config json.RawMessage) (Checker, error) {
 		return nil, errors.New("error")
 	}
-	check, err := Get(nil, Model{Type: "other"})
+	check, err := Get(Model{Type: "other"})
 	if err == nil {
 		t.Fatal("other type should return error")
 	}
@@ -53,10 +52,10 @@ func TestOtherError(t *testing.T) {
 }
 
 func TestOtherStartError(t *testing.T) {
-	checkers[Type("other")] = func(consulClient tools.Consul, config json.RawMessage) (Checker, error) {
+	checkers[Type("other")] = func(config json.RawMessage) (Checker, error) {
 		return other{startError: errors.New("error")}, nil
 	}
-	check, err := Get(nil, Model{Type: "other"})
+	check, err := Get(Model{Type: "other"})
 	if err == nil {
 		t.Fatal("other type should return error on start")
 	}

@@ -45,7 +45,7 @@ func (f fakePrometheusAPI) LabelValues(ctx context.Context, label string) (model
 }
 
 func TestNewApiClient(t *testing.T) {
-	c, err := NewAPIClient(fakeConsul{})
+	c, err := NewAPIClientFromConsul(fakeConsul{})
 	if err != nil {
 		t.Fatal("Valid prometheus config should not return error")
 	}
@@ -55,7 +55,7 @@ func TestNewApiClient(t *testing.T) {
 }
 
 func TestNewApiClientErrorConsul(t *testing.T) {
-	c, err := NewAPIClient(fakeConsul{serviceFirstError: errors.New("error")})
+	c, err := NewAPIClientFromConsul(fakeConsul{serviceFirstError: errors.New("error")})
 	if err == nil {
 		t.Fatal("No prometheus found in consul should return error")
 	}
@@ -65,7 +65,7 @@ func TestNewApiClientErrorConsul(t *testing.T) {
 }
 
 func TestNewApiClientErrorBadConsulUrl(t *testing.T) {
-	c, err := NewAPIClient(fakeConsul{serviceFirstURL: ":"})
+	c, err := NewAPIClientFromConsul(fakeConsul{serviceFirstURL: ":"})
 	if err == nil {
 		t.Fatal("Bad url for prometheus in consul should return error")
 	}
@@ -75,7 +75,7 @@ func TestNewApiClientErrorBadConsulUrl(t *testing.T) {
 }
 
 func TestApiClientImpl_ExecQuery(t *testing.T) {
-	c, _ := NewAPIClient(fakeConsul{})
+	c, _ := NewAPIClientFromConsul(fakeConsul{})
 	c.(*apiClientImpl).queryAPI = fakePrometheusAPI{results: []float64{255.0}}
 	res, err := c.ExecQuery("")
 	if err != nil {
@@ -88,7 +88,7 @@ func TestApiClientImpl_ExecQuery(t *testing.T) {
 }
 
 func TestApiClientImpl_ExecQueryZero(t *testing.T) {
-	c, _ := NewAPIClient(fakeConsul{})
+	c, _ := NewAPIClientFromConsul(fakeConsul{})
 	c.(*apiClientImpl).queryAPI = fakePrometheusAPI{results: []float64{}}
 	res, err := c.ExecQuery("")
 	if err != nil {
@@ -100,7 +100,7 @@ func TestApiClientImpl_ExecQueryZero(t *testing.T) {
 }
 
 func TestApiClientImpl_ExecQueryError(t *testing.T) {
-	c, _ := NewAPIClient(fakeConsul{})
+	c, _ := NewAPIClientFromConsul(fakeConsul{})
 	c.(*apiClientImpl).queryAPI = fakePrometheusAPI{results: []float64{}, resultsError: errors.New("error")}
 	_, err := c.ExecQuery("")
 	if err == nil {

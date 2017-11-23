@@ -198,9 +198,12 @@ A scenario is an array of tests. A test is the description needed by the orchest
   },
   "check": {
     "type": "none | prometheus | kafka | mqtt",
-    "config": [
-      {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"}
-    ],
+    "config": {
+      "address": "http://127.0.0.1:9090",
+      "checks": [
+        {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"}
+      ]
+    },
     "config": {
       "address": ["127.0.0.1:9092"],
       "topic": "test",
@@ -559,14 +562,16 @@ Type : **string/enum** : Can be `none`, `prometheus`, `kafka` ot `mqtt`
 
 ### prometheus config 
 
-Type : **array(object/struct)**
+Type : **object/struct**
 
 Allows to check, at the end of a test, if the results are good or not depending on what you want, useful for ci check (exit 1 if check fail)
 
-* query **string** : the prometheus query to execute
-* resultMin **int** : the result min you want (put min == max when you expect an exact value )
-* resultMax **int** : the result max you want (put min == max when you expect an exact value)
-* description **string** : the description logged if check fail
+* address **string** : the prometheus address scheme://ip:port
+* checks **array(object)** : A logic `and` will be executed on each checks described bellow
+    * query **string** : the prometheus query to execute
+    * resultMin **int** : the result min you want (put min == max when you expect an exact value )
+    * resultMax **int** : the result max you want (put min == max when you expect an exact value)
+    * description **string** : the description logged if check fail
 
 ### kafka config 
 
