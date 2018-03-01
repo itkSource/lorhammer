@@ -23,6 +23,7 @@ var logger = logrus.WithField("logger", "lorhammer/main")
 func main() {
 	showVersion := flag.Bool("version", false, "Show current version and build time")
 	localIP := flag.String("local-ip", "", "The address used by others tools to access lorhammer instance")
+	port := flag.Int("port", 0, "The port to use to expose prometheus metrics, default 0 means random")
 	consulAddr := flag.String("consul", "", "The ip:port of consul")
 	nbGateway := flag.Int("nb-gateway", 0, "The number of gateway to launch")
 	minNbNode := flag.Int("min-nb-node", 1, "The minimal number of node by gateway")
@@ -52,11 +53,17 @@ func main() {
 	}
 
 	// PORT
-	httpPort, err := tools.FreeTCPPort()
-	if err != nil {
-		logger.WithError(err).Error("Free tcp port error")
+	var httpPort int
+	if *port == 0 {
+		p, err := tools.FreeTCPPort()
+		if err != nil {
+			logger.WithError(err).Error("Free tcp port error")
+		} else {
+			logger.WithField("port", p).Info("Tcp port reserved")
+			httpPort = p
+		}
 	} else {
-		logger.WithField("port", httpPort).Info("Tcp port reserved")
+		httpPort = *port
 	}
 
 	// IP

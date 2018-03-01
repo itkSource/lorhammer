@@ -5,7 +5,6 @@ menu:
         weight: 2
 subnav: "true"
 ---
-
 # Very Quickstart
 
 For details let's go to next section.
@@ -100,11 +99,11 @@ Will launch :
 
 [![lorhammer-schema](/images/Tools-schema.png)](/images/Tools-schema.png)
 
-When all the tools are launched, open a web browser on [127.0.0.1:3000](http://127.0.0.1:3000/). By default login is `admin` and password is `pass`. 
+When all the tools are launched, open a web browser on [127.0.0.1:3000](http://127.0.0.1:3000/). By default login is `admin` and password is `pass`.
 Add a data source with name `prometheus`, type `Prometheus`, url `lorhammer_prometheus_1:9090` and let other params with their default values.
 Load default dashboard, you can find it here :  `resources/grafana/DashboardLora.json`.
 
-Go to the `Lora` dashboard, if all is ok then start a lorhammer 
+Go to the `Lora` dashboard, if all is ok then start a lorhammer
 
 ```shell
 lorhammer -nb-gateway 10 -min-nb-node 5 -max-nb-node 5 -ns-address 127.0.0.1:1700 -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
@@ -227,7 +226,8 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "pathFile": "./build/lorhammer",
       "cleanPreviousInstances": true,
       "nbInstanceToLaunch": 1,
-      "localIp": "127.0.0.1"
+      "localIp": "127.0.0.1",
+      "port": 1234
     },
     "config": {
       "sshKeyPath": "",
@@ -277,20 +277,20 @@ Can be `none`, `oneShot`, `repeat` or `ramp`
 * `oneShot` starts init.nbGatewayPerLorhammer with init.nbNodePerGateway[0] >= nbNode <= init.nbNodePerGateway[1]
 * `repeat` starts init.nbGatewayPerLorhammer every `repeatTime`
 * `ramp` starts init.nbGatewayPerLorhammer / rampTime every minute during `rampTime`
-    
+
 ### rampTime
-    
+
 Type : **string/duration**
- 
+
 If `testType` == `ramp` then init.nbGatewayPerLorhammer reached incrementally throughout the duration of the scenario
 
-### repeatTime 
+### repeatTime
 
 Type : **string/duration**
 
 If `testType` == `repeat` used to create init.nbGatewayPerLorhammer every time
 
-## stopAllLorhammerTime 
+## stopAllLorhammerTime
 
 Type : **string/duration**
 
@@ -302,7 +302,7 @@ Type : **string/duration**
 
 When this period is over, the  orchestrator will check if results are good defined in the check property.
 
-## shutdownAllLorhammerTime 
+## shutdownAllLorhammerTime
 
 Type : **string/duration**
 
@@ -314,13 +314,13 @@ Type : **string/duration**
 
 After the current test (including time to stress, stop and shutdown), this duration will be used to make the orchestrator sleep. Could be Useful to make a pause between tests.
 
-## init 
+## init
 
 Type : **object/struct**
 
-Represents the lorawan protocol 
+Represents the lorawan protocol
 
-### nsAddress 
+### nsAddress
 
 Type : **string/address**
 
@@ -330,7 +330,7 @@ The ip:port of network-server to stress
 
 Type : **int** : The number of gateways to create per lorhammer
 
-### nbNodePerGateway 
+### nbNodePerGateway
 
 Type : **int,int**
 
@@ -338,9 +338,9 @@ The minimum and maximum number of nodes to instantiate per gateway. A random num
 
 ### nbScenarioReplayLaps
 
-Type : **int** : The number of times the entire set of payloads will be sent. "Zero" means infinite, all the scenario will be stopped regarding the temporal settings. 
+Type : **int** : The number of times the entire set of payloads will be sent. "Zero" means infinite, all the scenario will be stopped regarding the temporal settings.
 
-### scenarioSleepTime 
+### scenarioSleepTime
 
 Type : **string/duration, string/duration**
 
@@ -350,72 +350,68 @@ This represents the time interval between every data sent from all simulated gat
 
 Type : **string/duration**
 
-This represents the timeout period for Lora Server ack time. 
+This represents the timeout period for Lora Server ack time.
 
-### gatewaySleepTime 
+### gatewaySleepTime
 
 Type : **string/duration, string/duration**
 
 This represents the time interval between every data sent of each gateway to network server, an array value allow you to randomize (min, max)
 
-### appskey 
+### appskey
 
 Type : **optional(string)**
 
 This parameter should be present when using an activation by personalization (see: **abp**) with the application server.
 
-### nwskey 
+### nwskey
 
 Type : **optional(string)**
 
 This parameter should be present when using an activation by personalization (see: **abp**) with the application server. This key is used to encrypt all push data payloads
 
-### payloads 
+### payloads
 
-Type : **array(model.Payload)**     
-> For more details read the [godoc](/godoc/#type-testsuite) 
+Type : **array(model.Payload)**
+> For more details read the [godoc](/godoc/#type-testsuite)
 
+This array holds the different payloads you want the nodes to send through all their messages.
+Each node will send one of the payloads at a time (in the array natural order or randomly if the `randomPayloads` property is set to true).
+The payloads here are hexadecimal string representations.
+A date property can be added for each payload, and will be used to set the rxpkDate of the frame.
+This can be helpful if that date is used as an absolute time reference to timestamp the measures.
 
-This array holds the different payloads you want the nodes to send through all their messages. 
-Each node will send one of the payloads at a time (in the array natural order or randomly if the `randomPayloads` property is set to true). 
-The payloads here are hexadecimal string representations. 
-A date property can be added for each payload, and will be used to set the rxpkDate of the frame. 
-This can be helpful if that date is used as an absolute time reference to timestamp the measures. 
-
-
-### randomPayloads 
+### randomPayloads
 
 Type : **boolean**
 
-If 'true', take randomly content from payload array. If 'false' take successivly content from payload array 
- 
-### withJoin 
- 
+If 'true', take randomly content from payload array. If 'false' take successivly content from payload array
+
+### withJoin
+
 Type : **boolean**
 
 This is used when provisioning is "true" active. If 'true', all nodes will join the network with a join request. (TODO : For now, the JoinAccept message still need to be processed. )
-  
-### rxpkDate 
- 
+
+### rxpkDate
+
 Type : **long** epoch time in seconds
 
-This is used when for the dates sent with rxpk messages. It's useful when we want to have control over dates, especially when using a specific checker to validate a dates...   
+This is used when for the dates sent with rxpk messages. It's useful when we want to have control over dates, especially when using a specific checker to validate a dates...
 
-### Description 
- 
+### Description
+
 Type : **optional(string)**
 
-Description sended with node provisioning   
+Description sended with node provisioning
 
-
-
-## provisioning 
+## provisioning
 
 Type : **object/struct**
 
 Describes the provisioning of your sensors on the network-server system
 
-### type 
+### type
 
 Type : **string/enum** : Can be `none`, `loraserver` or `http`
 
@@ -427,31 +423,30 @@ Type : **string/enum** : Can be `none`, `loraserver` or `http`
 
 Type : **object/struct**
 
-Depending on the provisioner you chose, these are the optional fields : 
+Depending on the provisioner you chose, these are the optional fields :
 
-#### apiUrl 
+#### apiUrl
 
 Type : **optional(string)**
- 
+
 Api url for lorawanserver.
 
-#### abp 
+#### abp
 
 Type : **optional(boolean)**
- 
+
 When this flag is at 'true', the activation by personalization is activated for the provisioning. Note that in this case, the **appskey** and **nwskey** are mandatory on the 'init' descriptor
 
-#### login 
+#### login
 
 Type : **optional(string)**
- 
+
 The provided application server username.
 
-
-#### Password 
+#### Password
 
 Type : **optional(string)**
- 
+
 The provided application server password.
 
 #### organizationId
@@ -502,25 +497,25 @@ Type : **int**
 
 Number of parallel request will access loraserver to provision.
 
-#### creationApiUrl 
+#### creationApiUrl
 
 Type : **optional(string)**
 
 API URL to call by HTTP provisioner for creation
 
-#### deletionApiUrl 
+#### deletionApiUrl
 
 Type : **optional(string)**
 
 API URL to call by HTTP provisioner for deletion
 
-## check 
+## check
 
 Type : **object/struct**
 
 Describes the check orchestrator must do at the end of scenario
 
-### type 
+### type
 
 Type : **string/enum** : Can be `none`, `prometheus`, `kafka` ot `mqtt`
 
@@ -529,7 +524,7 @@ Type : **string/enum** : Can be `none`, `prometheus`, `kafka` ot `mqtt`
 * `kafka` listen kafka queue and check if messages are good
 * `mqtt` listen mqtt brocker and check if messages are good
 
-### prometheus config 
+### prometheus config
 
 Type : **object/struct**
 
@@ -537,40 +532,40 @@ Allows to check, at the end of a test, if the results are good or not depending 
 
 * address **string** : the prometheus address scheme://ip:port
 * checks **array(object)** : A logic `and` will be executed on each checks described bellow
-    * query **string** : the prometheus query to execute
-    * resultMin **int** : the result min you want (put min == max when you expect an exact value )
-    * resultMax **int** : the result max you want (put min == max when you expect an exact value)
-    * description **string** : the description logged if check fail
+  * query **string** : the prometheus query to execute
+  * resultMin **int** : the result min you want (put min == max when you expect an exact value )
+  * resultMax **int** : the result max you want (put min == max when you expect an exact value)
+  * description **string** : the description logged if check fail
 
-### kafka config 
+### kafka config
 
 Type : **object/struct**
 
 * address **array(string)** : the kafka ip:port of brokers
 * topic **string** : the kafka topic to listen
 * checks **array(object)** : A logic `or` will be executed on each checks described bellow
-    * description **string** : the description logged if check fail
-    * remove **array(string)** : An array of regexp to clean random/dynamic data produced by the test (timestamp...)
-    * text **string** : The text to check
+  * description **string** : the description logged if check fail
+  * remove **array(string)** : An array of regexp to clean random/dynamic data produced by the test (timestamp...)
+  * text **string** : The text to check
 
-### mqtt config 
+### mqtt config
 
 Type : **object/struct**
 
 * address **string** : the mqtt ip:port of broker
 * channel **string** : the mqtt channel to listen
 * checks **array(object)** : A logic `or` will be executed on each checks described bellow
-    * description **string** : the description logged if check fail
-    * remove **array(string)** : An array of regexp to clean random/dynamic data produced by the test (timestamp...)
-    * text **string** : The text to check
+  * description **string** : the description logged if check fail
+  * remove **array(string)** : An array of regexp to clean random/dynamic data produced by the test (timestamp...)
+  * text **string** : The text to check
 
-## deploy 
+## deploy
 
 Type : **object/struct**
 
 Allows to deploy a lorhammer before launching the tests
 
-### type 
+### type
 
 Type : **string/enum**
 
@@ -580,10 +575,10 @@ Can be `none`, `local`, `distant` or `amazon`
 * `local` runs a sub-process with lorhammer on the same consul that has the current orchestrator
 * `distant` performs an scp to send `deploy.config.pathFile` to a distant server and runs ssh to start it
 * `amazon` uses amazon api to create aws instances and run lorhammers on the go
-    
+
 ### config
-    
-> For more details read the [godoc](/godoc/#type-testsuite) 
+
+> For more details read the [godoc](/godoc/#type-testsuite)
 
 # Tips
 
@@ -611,4 +606,3 @@ You can launch orchestrator in cli mode to have some utilities (stop current sce
 ```shell
 ochestrator -consul 127.0.0.1:8500 -cli
 ```
-

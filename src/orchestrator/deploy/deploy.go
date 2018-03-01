@@ -82,7 +82,7 @@ func Start(model Model, consulClient tools.Consul) error {
 	if err := d.RunAfter(); err != nil {
 		return err
 	}
-	logDeploy.WithField("duration", model.SleepAfterDeployTime).Info("Sleep to lets prometheus discover new lorhammer")
+	logDeploy.WithField("duration", model.SleepAfterDeployTime).Info("Sleep to lets new lorhammer start")
 	time.Sleep(model.SleepAfterDeployTime)
 	return nil
 }
