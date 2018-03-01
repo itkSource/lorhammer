@@ -2,12 +2,17 @@
 
 ## Version 0.6.0 - UNRELEASED
 
+* **DEP** Update :
+  * dependencies
+  * golang to 1.10
+  * dep to 0.4.1
+  * gitlab-ci to use artifact for vendor
 * **MAKE** `make help` display all tasks available with description
 * **PROVISIONER** delete semtech v4 [issues/58](https://gitlab.com/itk.fr/lorhammer/issues/58)
 
 ## Version 0.5.0 - 2017-11-23 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.5.0)
 
-* **PROVISIONER** increase timeout for http requests [57](https://gitlab.com/itk.fr/lorhammer/issues/57)
+* **PROVISIONER** increase timeout for http requests [issues/57](https://gitlab.com/itk.fr/lorhammer/issues/57)
 * **CHECKER** add mqtt checker [issues/50](https://gitlab.com/itk.fr/lorhammer/issues/50)
 * **MQTT** fix bug : mosquitto refuse to talk to a client with clientId containing a / [issues/59](https://gitlab.com/itk.fr/lorhammer/issues/59)
 * **CHECKER** Remove consulClient in checker interface [issues/55](https://gitlab.com/itk.fr/lorhammer/issues/55)
@@ -47,11 +52,11 @@
 
 ## Version 0.2.0 - 2017-07-21 - [binaries](https://gitlab.com/itk.fr/lorhammer/tags/0.2.0)
 
-> Scenario file format has changed, please update it before use new lorhammer version! 
+> Scenario file format has changed, please update it before use new lorhammer version!
 
 * **CI** Use [goreleaser](https://github.com/goreleaser/goreleaser) to have better deployment management [issues/32](https://gitlab.com/itk.fr/lorhammer/issues/32)
 * **SCENARIO** A payload can have a specific date [issues/37](https://gitlab.com/itk.fr/lorhammer/issues/37)
-* **SCENARIO** Specify time before considering a no ack received in error [issues/31](https://gitlab.com/itk.fr/lorhammer/issues/31)  
+* **SCENARIO** Specify time before considering a no ack received in error [issues/31](https://gitlab.com/itk.fr/lorhammer/issues/31)
 * **CI** Deploy lorhammer docker version [issue/26](https://gitlab.com/itk.fr/lorhammer/issues/26)
 * **CODE** Use [golang/dep](https://github.com/golang/dep) to manage dependencies [issue/36](https://gitlab.com/itk.fr/lorhammer/issues/36)
 * **DEPLOYER** Local deployer can set local-ip for deployed lorhammers [issue/23](https://gitlab.com/itk.fr/lorhammer/issues/23)

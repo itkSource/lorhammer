@@ -1,44 +1,51 @@
 image: registry.gitlab.com/itk.fr/lorhammer/build
 
 before_script:
-    - ln -s /builds/$CI_PROJECT_PATH /go/src/lorhammer
-    - cd /go/src/lorhammer
+  - ln -s /builds/$CI_PROJECT_PATH /go/src/lorhammer
+  - cd /go/src/lorhammer
 
 stages:
-    - lint
-    - test
-    - integration
-    - compile
-    - doc
+  - lint
+  - vendor
+  - test
+  - integration
+  - compile
+  - doc
 
-lint:code:
-    stage: lint
-    script:
-        - make lint
+lint:
+  stage: lint
+  script:
+    - make lint
 
-lint:vendor:
-    stage: lint
-    script:
-        - make vendor
-        - git diff --exit-code
+vendor:
+  stage: vendor
+  script:
+    - make vendor
+  artifacts:
+    paths:
+      - vendor
+    expire_in: 1 week
 
 test:unit:
-    stage: test
-    script:
-        - make test
+  stage: test
+  script:
+    - make test
+  dependencies:
+    - vendor
 
 test:coverage:
-    stage: test
-    coverage: /total[^\d]+(\d+.\d+\%)/
-    script:
-        - make cover
+  stage: test
+  coverage: /total[^\d]+(\d+.\d+\%)/
+  script:
+    - make cover
+  dependencies:
+    - vendor
 
 test:docker:
   stage: test
   services:
     - docker:dind
   script:
-    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light --snapshot
     - docker build -t "${CI_REGISTRY_IMAGE}/lorhammer:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-lorhammer .
     - docker build -t "${CI_REGISTRY_IMAGE}/orchestrator:${CI_PIPELINE_ID}" -f docker/lorhammer/Dockerfile-orchestrator .
@@ -47,6 +54,8 @@ test:docker:
     - docker push "${CI_REGISTRY_IMAGE}/orchestrator:${CI_PIPELINE_ID}"
   variables:
     DOCKER_HOST: "tcp://docker:2375"
+  dependencies:
+    - vendor
 
 .integration: &integration
   stage: integration
@@ -112,7 +121,6 @@ compile:all:
   services:
     - docker:dind
   script:
-    - make vendor
     - ./resources/scripts/buildAllEnv.sh -full --snapshot
   only:
     - master@itk.fr/lorhammer
@@ -120,6 +128,8 @@ compile:all:
     paths:
       - dist
     expire_in: 1 week
+  dependencies:
+    - vendor
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 
@@ -128,13 +138,14 @@ compile:docker:lorhammer:
   services:
     - docker:dind
   script:
-    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light --snapshot
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY_IMAGE/lorhammer -f docker/lorhammer/Dockerfile-lorhammer .
     - docker push $CI_REGISTRY_IMAGE/lorhammer
   only:
     - master@itk.fr/lorhammer
+  dependencies:
+    - vendor
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 
@@ -143,13 +154,14 @@ compile:docker:orchestrator:
   services:
     - docker:dind
   script:
-    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light --snapshot
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY_IMAGE/orchestrator -f docker/lorhammer/Dockerfile-orchestrator .
     - docker push $CI_REGISTRY_IMAGE/orchestrator
   only:
     - master@itk.fr/lorhammer
+  dependencies:
+    - vendor
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 
@@ -158,10 +170,11 @@ compile:tag:
   services:
     - docker:dind
   script:
-    - make vendor
     - ./resources/scripts/buildAllEnv.sh -full
   only:
     - tags
+  dependencies:
+    - vendor
   artifacts:
     paths:
       - dist
@@ -173,13 +186,14 @@ compile:docker-tag:lorhammer:
   services:
     - docker:dind
   script:
-    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-lorhammer .
     - docker push "$CI_REGISTRY_IMAGE/lorhammer:${CI_COMMIT_REF_NAME}"
   only:
     - tags
+  dependencies:
+    - vendor
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 
@@ -188,13 +202,14 @@ compile:docker-tag:orchestrator:
   services:
     - docker:dind
   script:
-    - make vendor
     - ./resources/scripts/buildAllEnv.sh -light
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}" -f docker/lorhammer/Dockerfile-orchestrator .
     - docker push "$CI_REGISTRY_IMAGE/orchestrator:${CI_COMMIT_REF_NAME}"
   only:
     - tags
+  dependencies:
+    - vendor
   variables:
     DOCKER_HOST: "tcp://docker:2375"
 

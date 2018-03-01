@@ -1,4 +1,4 @@
-FROM golang:1.9
+FROM golang:1.10
 
 # Used to build lorhammer project, from golang and add docker-compose (docker is a service in gitlab-ci.yml)
 # Push a new version :
@@ -24,9 +24,16 @@ RUN curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOS
     && docker-compose -v
 
 ##
+# Golang dep
+##
+RUN curl -L "https://github.com/golang/dep/releases/download/v0.4.1/dep-linux-amd64" -o ${GOPATH}/bin/dep \
+	&& chmod +x ${GOPATH}/bin/dep \
+	&& dep version
+
+##
 # Doc hugo
 ##
-RUN curl -L "https://github.com/gohugoio/hugo/releases/download/v0.31/hugo_0.31_Linux-64bit.tar.gz" -o /tmp/hugo.tar.gz \
+RUN curl -L "https://github.com/gohugoio/hugo/releases/download/v0.34/hugo_0.34_Linux-64bit.tar.gz" -o /tmp/hugo.tar.gz \
 	&& mkdir /tmp/hugo && tar xf /tmp/hugo.tar.gz -C /tmp/hugo \
 	&& mv /tmp/hugo/hugo /usr/local/bin/hugo \
     && rm /tmp/hugo.tar.gz && rm -rf /tmp/hugo \
