@@ -31,7 +31,7 @@ func ApplyCmd(command model.CMD, mqtt tools.Mqtt, hostname string, prometheus to
 		logger.WithField("cmd", command.CmdName).Error("Unknown command")
 	}
 	if err != nil {
-		logger.WithError(err).WithField("cmd", command).Error("Apply cmd fail")
+		logger.WithError(err).WithField("cmd", command.CmdName).WithField("body", string(command.Payload)).Error("Apply cmd fail")
 	}
 }
 

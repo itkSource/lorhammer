@@ -2,6 +2,7 @@
 
 ## Version 0.6.0 - UNRELEASED
 
+* **ORCHESTRATOR** exit(1) if an error occur during scenario (previously exit > 0 only when checker fail) [issues/67](https://gitlab.com/itk.fr/lorhammer/issues/67)
 * **CHECKER** fix bug mqtt checker not working [issues/62](https://gitlab.com/itk.fr/lorhammer/issues/62)
 * **DEP** Update :
   * dependencies
