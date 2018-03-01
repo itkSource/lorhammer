@@ -26,7 +26,7 @@ type distantImpl struct {
 	cmdFabric func(name string, arg ...string) *exec.Cmd
 }
 
-func newDistantFromJSON(serialized json.RawMessage, _ tools.Consul) (deployer, error) {
+func newDistantFromJSON(serialized json.RawMessage, _ tools.Mqtt) (deployer, error) {
 	d, err := newDistantImpl(serialized)
 	if err != nil {
 		return nil, err

@@ -27,11 +27,11 @@ type amazonImpl struct {
 
 	ec2Client       *ec2.EC2
 	distantDeployer *distantImpl
-	consulAddress   string
+	mqttAddress     string
 	instancesID     []*string
 }
 
-func newAmazonFromJSON(serialized json.RawMessage, consulClient tools.Consul) (deployer, error) {
+func newAmazonFromJSON(serialized json.RawMessage, mqttClient tools.Mqtt) (deployer, error) {
 	client := &amazonImpl{}
 	if err := json.Unmarshal(serialized, client); err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func newAmazonFromJSON(serialized json.RawMessage, consulClient tools.Consul) (d
 	if client.distantDeployer, err = newDistantImpl(client.DistantConfig); err != nil {
 		return nil, err
 	}
-	client.consulAddress = consulClient.GetAddress()
+	client.mqttAddress = mqttClient.GetAddress()
 	return client, nil
 }
 
@@ -104,7 +104,7 @@ func (client *amazonImpl) RunAfter() error {
 	for _, reservation := range res.Reservations {
 		for _, instance := range reservation.Instances {
 			client.distantDeployer.IPServer = *instance.PublicDnsName
-			client.distantDeployer.AfterCmd = fmt.Sprintf("nohup %s/lorhammer -consul %s -local-ip %s > lorahmmer.log 2>&1 &", client.distantDeployer.PathWhereScp, client.consulAddress, *instance.PublicDnsName)
+			client.distantDeployer.AfterCmd = fmt.Sprintf("nohup %s/lorhammer -mqtt %s -local-ip %s > lorahmmer.log 2>&1 &", client.distantDeployer.PathWhereScp, client.mqttAddress, *instance.PublicDnsName)
 			err := client.distantDeployer.Deploy()
 			if err != nil {
 				logAmazon.WithError(err).Error("Lorhammer not deployed")

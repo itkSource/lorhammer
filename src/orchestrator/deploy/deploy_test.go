@@ -94,7 +94,7 @@ func TestOther(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	other := func(json.RawMessage, tools.Consul) (deployer, error) {
+	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {
 		return otherDeploy{}, nil
 	}
 
@@ -113,7 +113,7 @@ func TestOtherErr(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	other := func(json.RawMessage, tools.Consul) (deployer, error) {
+	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {
 		return nil, errors.New("error creating func")
 	}
 
@@ -132,7 +132,7 @@ func TestOtherErrBefore(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	other := func(json.RawMessage, tools.Consul) (deployer, error) {
+	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {
 		return otherDeploy{errBefore: errors.New("before")}, nil
 	}
 
@@ -151,7 +151,7 @@ func TestOtherErrDeploy(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	other := func(json.RawMessage, tools.Consul) (deployer, error) {
+	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {
 		return otherDeploy{errDeploy: errors.New("deploy")}, nil
 	}
 
@@ -170,7 +170,7 @@ func TestOtherErrAfter(t *testing.T) {
 		SleepAfterDeployTime: 0,
 	}
 
-	other := func(json.RawMessage, tools.Consul) (deployer, error) {
+	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {
 		return otherDeploy{errAfter: errors.New("after")}, nil
 	}
 

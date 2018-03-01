@@ -1,13 +1,10 @@
 package testsuite
 
 import (
-	"errors"
 	"fmt"
 	"lorhammer/src/model"
 	"lorhammer/src/orchestrator/provisioning"
-	"lorhammer/src/tools"
 	"testing"
-	"time"
 )
 
 type testLaunch struct {
@@ -25,7 +22,6 @@ type testLaunch struct {
 	needProvisioning bool
 	check            string
 	deploy           string
-	grafana          tools.GrafanaClient
 }
 
 var testsLaunch = []testLaunch{
@@ -42,7 +38,6 @@ var testsLaunch = []testLaunch{
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
-		grafana:          nil,
 	},
 	{
 		testValid:        false,
@@ -57,7 +52,6 @@ var testsLaunch = []testLaunch{
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "fake"}`,
-		grafana:          nil,
 	},
 	{
 		testValid:        false,
@@ -72,7 +66,6 @@ var testsLaunch = []testLaunch{
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
-		grafana:          nil,
 	},
 	{
 		testValid:        true,
@@ -87,7 +80,6 @@ var testsLaunch = []testLaunch{
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
-		grafana:          nil,
 	},
 	{
 		testValid:        false,
@@ -102,7 +94,6 @@ var testsLaunch = []testLaunch{
 		needProvisioning: false,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
-		grafana:          nil,
 	},
 	{
 		testValid:        true,
@@ -117,7 +108,6 @@ var testsLaunch = []testLaunch{
 		needProvisioning: false,
 		check:            `{"type": "prometheus", "config": {"checks": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb messages"}]}}`,
 		deploy:           `{"type": "none"}`,
-		grafana:          nil,
 	},
 	{
 		testValid:        true,
@@ -132,7 +122,6 @@ var testsLaunch = []testLaunch{
 		needProvisioning: false,
 		check:            `{"type": "prometheus", "config": {"checks": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"}]}}`,
 		deploy:           `{"type": "none"}`,
-		grafana:          nil,
 	},
 	{
 		testValid:        false,
@@ -147,7 +136,6 @@ var testsLaunch = []testLaunch{
 		needProvisioning: false,
 		check:            `{"type": "fake"}`,
 		deploy:           `{"type": "none"}`,
-		grafana:          nil,
 	},
 	{
 		testValid:        true,
@@ -162,7 +150,6 @@ var testsLaunch = []testLaunch{
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
 		deploy:           `{"type": "none"}`,
-		grafana:          fakeGrafana{err: errors.New("error grafana")},
 	},
 }
 
@@ -184,7 +171,7 @@ func TestLaunchTest(t *testing.T) {
 			if test.needProvisioning {
 				provisioning.Provision(tests[0].UUID, tests[0].Provisioning, model.Register{})
 			}
-			report, err := tests[0].LaunchTest(fakeConsul{}, &fakeMqtt{}, ct.grafana)
+			report, err := tests[0].LaunchTest(&fakeMqtt{})
 			if ct.testValid && err != nil {
 				t.Fatalf("valid test should not throw err %s", ct.description)
 			} else if ct.testValid && report == nil {
@@ -201,6 +188,7 @@ func TestLaunchTest(t *testing.T) {
 type fakeMqtt struct {
 }
 
+func (m *fakeMqtt) GetAddress() string                                          { return "" }
 func (m *fakeMqtt) Connect() error                                              { return nil }
 func (m *fakeMqtt) Disconnect()                                                 {}
 func (m *fakeMqtt) Handle(topics []string, handle func(message []byte)) error   { return nil }
@@ -208,24 +196,4 @@ func (m *fakeMqtt) HandleCmd(topics []string, handle func(cmd model.CMD)) error 
 func (m *fakeMqtt) PublishCmd(topic string, cmdName model.CommandName) error    { return nil }
 func (m *fakeMqtt) PublishSubCmd(topic string, cmdName model.CommandName, subCmd interface{}) error {
 	return nil
-}
-
-type fakeConsul struct {
-	serviceFirstError error
-}
-
-func (fakeConsul) GetAddress() string                                      { return "" }
-func (fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
-func (f fakeConsul) ServiceFirst(name string, prefix string) (string, error) {
-	return "prometheusUrl", f.serviceFirstError
-}
-func (fakeConsul) DeRegister(string) error                     { return nil }
-func (fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }
-
-type fakeGrafana struct {
-	err error
-}
-
-func (g fakeGrafana) MakeSnapshot(startTime time.Time, endTime time.Time) (string, error) {
-	return "", g.err
 }

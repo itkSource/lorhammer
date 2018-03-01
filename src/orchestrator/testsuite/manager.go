@@ -15,14 +15,14 @@ import (
 var loggerManager = logrus.WithField("logger", "orchestrator/testsuite/manager")
 
 //LaunchTest manage life cycle of a test (start, stop, check, report...)
-func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, grafanaClient tools.GrafanaClient) (*TestReport, error) {
+func (test *TestSuite) LaunchTest(mqttClient tools.Mqtt) (*TestReport, error) {
 	check, err := checker.Get(test.Check) //build checker here because no need to start test if checker is bad configured
 	if err != nil {
 		loggerManager.WithError(err).Error("Error to get checker")
 		return nil, err
 	}
 
-	if err := deploy.Start(test.Deploy, consulClient); err != nil {
+	if err := deploy.Start(test.Deploy, mqttClient); err != nil {
 		loggerManager.WithError(err).Error("Error to deploy")
 		return nil, err
 	}
@@ -57,22 +57,13 @@ func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mq
 		command.ShutdownLorhammers(mqttClient)
 	}
 	endDate := time.Now()
-	var snapshotURL = ""
-	// TODO add time for grafana snapshot (idem stop and shutdown)
-	if grafanaClient != nil {
-		var err error
-		snapshotURL, err = grafanaClient.MakeSnapshot(startDate, endDate)
-		if err != nil {
-			loggerManager.WithError(err).Error("Can't snapshot grafana")
-		}
-	}
+
 	return &TestReport{
-		StartDate:          startDate,
-		EndDate:            endDate,
-		Input:              test,
-		ChecksSuccess:      success,
-		ChecksError:        errors,
-		GrafanaSnapshotURL: snapshotURL,
+		StartDate:     startDate,
+		EndDate:       endDate,
+		Input:         test,
+		ChecksSuccess: success,
+		ChecksError:   errors,
 	}, nil
 }
 

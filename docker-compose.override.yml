@@ -2,36 +2,9 @@ version: '2'
 
 services:
 
-  consul:
-    ports:
-      - "8400:8400"
-      - "8500:8500"
-      - "8600:53"
-
-  prometheus:
-    ports:
-      - "9090:9090"
-    volumes:
-       - "./data/prometheus:/prometheus"
-
-  grafana:
-    ports:
-      - "3000:3000"
-    volumes:
-      - "./data/grafana:/var/lib/grafana"
-
   mqtt:
     ports:
       - "1884:1883"
       - "9001:9001"
     volumes:
       - "./data/mqtt/data:/mqtt/data"
-
-  cadvisor:
-    ports:
-      - "8085:8080"
-    volumes:
-      - "/:/rootfs:ro"
-      - "/var/run:/var/run:rw"
-      - "/sys:/sys:ro"
-      - "/var/lib/docker/:/var/lib/docker:ro"

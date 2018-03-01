@@ -9,7 +9,7 @@ import (
 
 func newDistantFromJSONTest(j string) (deployer, error) {
 	raw := json.RawMessage([]byte(j))
-	return newDistantFromJSON(raw, fakeConsul{})
+	return newDistantFromJSON(raw, &fakeMqtt{})
 }
 
 func TestNewDistantFromJson(t *testing.T) {

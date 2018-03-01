@@ -45,8 +45,9 @@ type fakeMqtt struct {
 	handlers    []func(message []byte)
 }
 
-func (m *fakeMqtt) Connect() error { return nil }
-func (m *fakeMqtt) Disconnect()    {}
+func (m *fakeMqtt) GetAddress() string { return "" }
+func (m *fakeMqtt) Connect() error     { return nil }
+func (m *fakeMqtt) Disconnect()        {}
 func (m *fakeMqtt) Handle(topics []string, handle func(message []byte)) error {
 	if m.errorHandle != nil {
 		return m.errorHandle

@@ -20,16 +20,16 @@ type localImpl struct {
 	LocalIP                string `json:"localIp"`
 	Port                   int    `json:"port"`
 
-	consulAddress string
-	cmdFabric     func(name string, arg ...string) *exec.Cmd
+	mqttAddress string
+	cmdFabric   func(name string, arg ...string) *exec.Cmd
 }
 
-func newLocalFromJSON(serialized json.RawMessage, consulClient tools.Consul) (deployer, error) {
+func newLocalFromJSON(serialized json.RawMessage, mqttClient tools.Mqtt) (deployer, error) {
 	d := &localImpl{}
 	if err := json.Unmarshal(serialized, d); err != nil {
 		return nil, err
 	}
-	d.consulAddress = consulClient.GetAddress()
+	d.mqttAddress = mqttClient.GetAddress()
 	d.cmdFabric = exec.Command
 	return d, nil
 }
@@ -49,7 +49,7 @@ func (local *localImpl) Deploy() error {
 
 	for i := 0; i < local.NbInstanceToLaunch; i++ {
 		go func() {
-			args := []string{"-consul", local.consulAddress}
+			args := []string{"-mqtt", local.mqttAddress}
 			if local.LocalIP != "" {
 				args = append(args, "-local-ip", local.LocalIP)
 			}

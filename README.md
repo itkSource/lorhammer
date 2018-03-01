@@ -20,7 +20,7 @@ Lorhammer is here to do that. You can launch as much lorhammers as you want to s
 ## Built with
 
 ### Language
- 
+
 * [Golang](https://golang.org/)
 
 ### Infra
@@ -31,9 +31,6 @@ Lorhammer is here to do that. You can launch as much lorhammers as you want to s
 
 ### Tools
 
-* [Prometheus](https://prometheus.io/)
-* [Grafana](https://grafana.com/)
-* [Consul](https://www.consul.io/)
 * [Mosquitto](https://mosquitto.org/)
 * [Hugo](https://gohugo.io/)
 
@@ -41,7 +38,6 @@ Lorhammer is here to do that. You can launch as much lorhammers as you want to s
 
 * [Logrus](https://github.com/sirupsen/logrus) // [MIT](https://github.com/sirupsen/logrus/blob/master/LICENSE)
 * [Prometheus](https://github.com/prometheus/client_golang/prometheus) // [APACHE2](https://github.com/prometheus/client_golang/blob/master/LICENSE)
-* [Consul](https://github.com/hashicorp/consul/api) // [MOZILLA2](https://github.com/hashicorp/consul/blob/master/LICENSE)
 * [Paho Mqtt](https://github.com/eclipse/paho.mqtt.golang) // [ECLIPSE](https://github.com/eclipse/paho.mqtt.golang/blob/master/LICENSE)
 * [Uuid](https://github.com/google/uuid) // [BSD3](https://github.com/google/uuid/blob/master/LICENSE)
 * [Lorawan](https://github.com/brocaar/lorawan) // [MIT](https://github.com/brocaar/lorawan/blob/master/LICENSE)
@@ -51,7 +47,7 @@ Lorhammer is here to do that. You can launch as much lorhammers as you want to s
 ## Inspiration
 
 Lorhammer has been inspired by [Gatling](http://gatling.io/) but for lorawan networks and with distribution in mind. One day, lorhammer will become hammer with flavours like lorhammer and resthammer...
- 
+
 We want to thank [brocaar](https://github.com/brocaar) for his great job on opensourcing his projects, we have been inspired by [brocaar/loraserver](https://github.com/brocaar/loraserver) and particularly [brocaar/lorawan](https://github.com/brocaar/lorawan) which we use in lorhammer.
 
 ## Links
@@ -70,8 +66,8 @@ We use SemVer for versioning. For the versions available, see the tags on this r
 
 itk is globally recognized as being an innovation leader in scientific knowledge and software for a more sustainable agriculture in general.
 
-Lorhammer is a project powered by [itk](http://www.itk.fr/). We use it internally to choose the right network-server for our IoT infrastructure. 
-Furthermore, we use it to run integration tests every time we accept merge-request (same thing as a pull-request but in the gitlab world). 
+Lorhammer is a project powered by [itk](http://www.itk.fr/). We use it internally to choose the right network-server for our IoT infrastructure.
+Furthermore, we use it to run integration tests every time we accept merge-request (same thing as a pull-request but in the gitlab world).
 Indeed, for every new update, a stress test is launched over our IoT plateform and checkers check if all is ok, taking in consideration response time delays and data processing.
 
 ## License

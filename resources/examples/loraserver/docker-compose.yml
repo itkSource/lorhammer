@@ -94,3 +94,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+
+  prometheus:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-prometheus
+    extra_hosts:
+      - lorhammer:$ADVERTIZED_HOST
+    ports:
+      - 9090:9090
