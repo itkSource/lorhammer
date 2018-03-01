@@ -1,4 +1,4 @@
-package testType
+package testtype
 
 import (
 	"lorhammer/src/model"
@@ -10,7 +10,7 @@ import (
 
 const typeOneShot Type = "oneShot"
 
-var logOneShot = logrus.WithField("logger", "orchestrator/testType/oneShot")
+var logOneShot = logrus.WithField("logger", "orchestrator/testtype/oneShot")
 
 func startOneShot(_ Test, init model.Init, mqtt tools.Mqtt) {
 	if err := command.LaunchScenario(mqtt, init); err != nil {

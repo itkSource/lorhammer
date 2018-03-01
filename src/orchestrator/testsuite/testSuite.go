@@ -1,4 +1,4 @@
-package testSuite
+package testsuite
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/deploy"
 	"lorhammer/src/orchestrator/provisioning"
-	"lorhammer/src/orchestrator/testType"
+	"lorhammer/src/orchestrator/testtype"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,7 +15,7 @@ import (
 //TestSuite describe a test to execute scenarios
 type TestSuite struct {
 	UUID                     string             `json:"uuid"`
-	Test                     testType.Test      `json:"test"`
+	Test                     testtype.Test      `json:"test"`
 	StopAllLorhammerTime     time.Duration      `json:"stopAllLorhammerTime"`
 	SleepBeforeCheckTime     time.Duration      `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime time.Duration      `json:"shutdownAllLorhammerTime"`
@@ -27,7 +27,7 @@ type TestSuite struct {
 }
 
 type jsonTestSuite struct {
-	Test                     testType.Test      `json:"test"`
+	Test                     testtype.Test      `json:"test"`
 	StopAllLorhammerTime     string             `json:"stopAllLorhammerTime"`
 	SleepBeforeCheckTime     string             `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime string             `json:"shutdownAllLorhammerTime"`

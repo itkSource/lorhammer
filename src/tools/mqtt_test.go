@@ -26,6 +26,8 @@ func (fakeSubMqtt) Unsubscribe(topics ...string) mqttLib.Token {
 }
 func (fakeSubMqtt) AddRoute(topic string, callback mqttLib.MessageHandler) {}
 
+func (fakeSubMqtt) OptionsReader() mqttLib.ClientOptionsReader { return mqttLib.ClientOptionsReader{} }
+
 func newMqtt(t *testing.T) Mqtt {
 	mqtt, err := NewMqtt("", fakeConsul{})
 	if err != nil {

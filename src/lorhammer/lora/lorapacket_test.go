@@ -99,7 +99,7 @@ func TestNewRxpk(t *testing.T) {
 
 	rxpk := newRxpk(data, 0, gw)
 
-	seconds := time.Time(rxpk.Time).UTC().Unix()
+	seconds := time.Time(*rxpk.Time).UTC().Unix()
 	if seconds != 1488931200 {
 		t.Fatal("The time assigned to the rxpk should be the one present in the gateway object when set")
 	}

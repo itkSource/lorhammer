@@ -8,7 +8,7 @@ import (
 	"lorhammer/src/orchestrator/cli"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/provisioning"
-	"lorhammer/src/orchestrator/testSuite"
+	"lorhammer/src/orchestrator/testsuite"
 	"lorhammer/src/tools"
 	"os"
 	"runtime"
@@ -56,7 +56,7 @@ func main() {
 
 	logrus.Warn("Welcome to the Lorhammer's Orchestrator")
 
-	var currentTestSuite testSuite.TestSuite
+	var currentTestSuite testsuite.TestSuite
 
 	// MQTT PART
 	mqttClient, err := tools.NewMqtt(host, consulClient)
@@ -91,7 +91,7 @@ func main() {
 		if err != nil {
 			logger.WithError(err).Panic("Error while reading test suite file")
 		}
-		tests, err := testSuite.FromFile(configFile)
+		tests, err := testsuite.FromFile(configFile)
 		if err != nil {
 			logger.WithError(err).WithField("file", *scenarioFromFile).Panic("Error while parsing test suite file")
 		}
