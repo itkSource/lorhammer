@@ -74,11 +74,11 @@ func (mqtt *mqttChecker) Start() error {
 		return err
 	}
 	mqtt.client = client
-	err = client.Handle([]string{mqtt.config.Channel}, mqtt.handle)
+	err = mqtt.client.Connect()
 	if err != nil {
 		return err
 	}
-	return mqtt.client.Connect()
+	return client.Handle([]string{mqtt.config.Channel}, mqtt.handle)
 }
 
 func (mqtt *mqttChecker) handle(message []byte) {

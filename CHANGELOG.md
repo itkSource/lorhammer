@@ -2,6 +2,7 @@
 
 ## Version 0.6.0 - UNRELEASED
 
+* **CHECKER** fix bug mqtt checker not working [issues/62](https://gitlab.com/itk.fr/lorhammer/issues/62)
 * **DEP** Update :
   * dependencies
   * golang to 1.10
