@@ -1,4 +1,4 @@
-package testSuite
+package testsuite
 
 import (
 	"io/ioutil"

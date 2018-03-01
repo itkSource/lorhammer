@@ -1,18 +1,18 @@
-package testSuite
+package testsuite
 
 import (
 	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/deploy"
 	"lorhammer/src/orchestrator/provisioning"
-	"lorhammer/src/orchestrator/testType"
+	"lorhammer/src/orchestrator/testtype"
 	"lorhammer/src/tools"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
-var loggerManager = logrus.WithField("logger", "orchestrator/testSuite/test")
+var loggerManager = logrus.WithField("logger", "orchestrator/testsuite/manager")
 
 //LaunchTest manage life cycle of a test (start, stop, check, report...)
 func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mqtt, grafanaClient tools.GrafanaClient) (*TestReport, error) {
@@ -28,7 +28,7 @@ func (test *TestSuite) LaunchTest(consulClient tools.Consul, mqttClient tools.Mq
 	}
 	startDate := time.Now()
 
-	if err := testType.Start(test.Test, test.Init, mqttClient); err != nil {
+	if err := testtype.Start(test.Test, test.Init, mqttClient); err != nil {
 		loggerManager.WithError(err).Error("Error to start test")
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package testType
+package testtype
 
 import (
 	"lorhammer/src/model"

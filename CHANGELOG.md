@@ -7,6 +7,7 @@
   * golang to 1.10
   * dep to 0.4.1
   * gitlab-ci to use artifact for vendor
+  * rename packages **testType** and **testSuite** into **testype** and **testsuite** for lint
 * **MAKE** `make help` display all tasks available with description
 * **PROVISIONER** delete semtech v4 [issues/58](https://gitlab.com/itk.fr/lorhammer/issues/58)
 
