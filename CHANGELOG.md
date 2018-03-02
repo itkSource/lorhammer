@@ -2,6 +2,7 @@
 
 ## Version 0.6.0 - UNRELEASED
 
+* **LORHAMMER** allow to set port used to be scrapped by prometheus [issues/64](https://gitlab.com/itk.fr/lorhammer/issues/64)
 * **ORCHESTRATOR** exit(1) if an error occur during scenario (previously exit > 0 only when checker fail) [issues/67](https://gitlab.com/itk.fr/lorhammer/issues/67) + repair bug on ramp type test
 * **CHECKER** fix bug mqtt checker not working [issues/62](https://gitlab.com/itk.fr/lorhammer/issues/62)
 * **DEP** Update :

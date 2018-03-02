@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"lorhammer/src/tools"
 	"os/exec"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 )
@@ -17,6 +18,7 @@ type localImpl struct {
 	NbInstanceToLaunch     int    `json:"nbInstanceToLaunch"`
 	CleanPreviousInstances bool   `json:"cleanPreviousInstances"`
 	LocalIP                string `json:"localIp"`
+	Port                   int    `json:"port"`
 
 	consulAddress string
 	cmdFabric     func(name string, arg ...string) *exec.Cmd
@@ -50,6 +52,9 @@ func (local *localImpl) Deploy() error {
 			args := []string{"-consul", local.consulAddress}
 			if local.LocalIP != "" {
 				args = append(args, "-local-ip", local.LocalIP)
+			}
+			if local.Port != 0 {
+				args = append(args, "-port", strconv.Itoa(local.Port))
 			}
 			logLocal.WithField("cmd", local.PathFile).WithField("args", args).WithField("nb", local.NbInstanceToLaunch).Debug("Will exec cmd")
 			var cmd = local.cmdFabric(local.PathFile, args...)
