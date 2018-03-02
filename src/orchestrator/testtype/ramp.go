@@ -49,11 +49,20 @@ func (r *ramp) launch(mqttClient tools.Mqtt, init model.Init) bool {
 	logRamp.WithField("nbGateway", nbGatewayToLaunch).Info("Launch ramp")
 	if nbGatewayToLaunch > 0 {
 		init := model.Init{
-			NbGateway:         nbGatewayToLaunch,
-			NbNode:            init.NbNode,
-			NsAddress:         init.NsAddress,
-			ScenarioSleepTime: init.ScenarioSleepTime,
-			GatewaySleepTime:  init.GatewaySleepTime,
+			NbGateway:            nbGatewayToLaunch,
+			NbNode:               init.NbNode,
+			NsAddress:            init.NsAddress,
+			ScenarioSleepTime:    init.ScenarioSleepTime,
+			GatewaySleepTime:     init.GatewaySleepTime,
+			NbScenarioReplayLaps: init.NbScenarioReplayLaps,
+			AppsKey:              init.AppsKey,
+			Nwskey:               init.Nwskey,
+			WithJoin:             init.WithJoin,
+			Payloads:             init.Payloads,
+			RxpkDate:             init.RxpkDate,
+			ReceiveTimeoutTime:   init.ReceiveTimeoutTime,
+			Description:          init.Description,
+			RandomPayloads:       init.RandomPayloads,
 		}
 		if err := command.LaunchScenario(mqttClient, init); err != nil {
 			logRamp.WithError(err).Error("Can't launch scenario")
