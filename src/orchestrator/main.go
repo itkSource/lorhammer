@@ -96,19 +96,22 @@ func main() {
 			logger.WithError(err).WithField("file", *scenarioFromFile).Panic("Error while parsing test suite file")
 		}
 		checkErrors := make([]checker.Error, 0)
+		nbErr := 0
 		for _, test := range tests {
 			currentTestSuite = test
 			testReport, err := test.LaunchTest(consulClient, mqttClient, grafanaClient)
 			if err != nil {
 				logger.WithError(err).Error("Error during test")
+				nbErr++
 			} else if err := testReport.WriteFile(*reportFile); err != nil {
 				logger.WithError(err).Error("Can't report test")
+				nbErr++
 			} else {
 				checkErrors = append(checkErrors, testReport.ChecksError...)
 			}
 			time.Sleep(test.SleepAtEndTime)
 		}
-		os.Exit(len(checkErrors))
+		os.Exit(len(checkErrors) + nbErr)
 	}
 	if *startCli {
 		cli.Start(mqttClient, consulClient)

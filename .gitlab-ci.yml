@@ -70,6 +70,9 @@ test:docker:
     - echo "Start orchestrator to launch scenario and check all is ok"
     - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_JOB_ID} run orchestrator
   after_script:
+    - docker ps -a
+    - docker-compose ps
+    - docker logs ${CI_JOB_ID}_lorhammer_1
     - docker-compose -p ${CI_JOB_ID} down --remove-orphans
   tags:
     - docker
