@@ -12,6 +12,7 @@ type fakeMqtt struct {
 	nbCall int
 }
 
+func (*fakeMqtt) GetAddress() string                                          { return "" }
 func (*fakeMqtt) Connect() error                                              { return nil }
 func (*fakeMqtt) Disconnect()                                                 {}
 func (*fakeMqtt) Handle(topics []string, handle func(message []byte)) error   { return nil }

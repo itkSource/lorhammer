@@ -4,23 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"lorhammer/src/orchestrator/prometheus"
-	"lorhammer/src/tools"
 	"testing"
 )
 
 var nbCall int
-
-type fakeConsul struct {
-	serviceFirstError error
-}
-
-func (fakeConsul) GetAddress() string                                      { return "" }
-func (fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
-func (f fakeConsul) ServiceFirst(name string, prefix string) (string, error) {
-	return "prometheusUrl", f.serviceFirstError
-}
-func (fakeConsul) DeRegister(string) error                     { return nil }
-func (fakeConsul) AllServices() ([]tools.ConsulService, error) { return nil, nil }
 
 type prometheusAPIClientFake struct {
 	returnFloat []float64

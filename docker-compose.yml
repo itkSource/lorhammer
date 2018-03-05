@@ -2,47 +2,5 @@ version: '2'
 
 services:
 
-  consul:
-    image: "progrium/consul:latest"
-    command: "-server -bootstrap"
-
-  prometheus:
-    build:
-      context: .
-      dockerfile: ./docker/prometheus/Dockerfile
-    command: "-config.file=/resources/prometheus-conf.yml"
-    depends_on:
-      - consul
-
-  grafana:
-    image: grafana/grafana:4.1.1-1484211277
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=pass
-      - GF_SERVER_ROOT_URL=http://127.0.0.1:3000
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
-    depends_on:
-      - prometheus
-
   mqtt:
-      image: toke/mosquitto
-
-  cadvisor:
-    image: google/cadvisor:latest
-
-  consul-register:
-    build:
-      context: .
-      dockerfile: ./docker/bash-curl/Dockerfile
-    environment:
-      - LORHAMMER_MQTT_IP
-      - LORHAMMER_MQTT_PORT
-      - LORHAMMER_PROMETHEUS_IP
-      - LORHAMMER_PROMETHEUS_PORT
-      - LORHAMMER_CONSUL_IP
-      - LORHAMMER_CONSUL_PORT
-      - LORHAMMER_GRAFANA_IP
-      - LORHAMMER_GRAFANA_PORT
-    command: "sh /lorhammer/scripts/consulRegister.sh"
-    depends_on:
-      - consul
+      image: eclipse-mosquitto:1.4.12

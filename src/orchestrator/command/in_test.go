@@ -48,6 +48,7 @@ type fakeMqtt struct {
 	test mqttTest
 }
 
+func (m *fakeMqtt) GetAddress() string                                          { return "" }
 func (m *fakeMqtt) Connect() error                                              { return nil }
 func (m *fakeMqtt) Disconnect()                                                 {}
 func (m *fakeMqtt) Handle(topics []string, handle func(messgae []byte)) error   { return nil }

@@ -22,9 +22,8 @@ var logger = logrus.WithField("logger", "lorhammer/main")
 
 func main() {
 	showVersion := flag.Bool("version", false, "Show current version and build time")
-	localIP := flag.String("local-ip", "", "The address used by others tools to access lorhammer instance")
 	port := flag.Int("port", 0, "The port to use to expose prometheus metrics, default 0 means random")
-	consulAddr := flag.String("consul", "", "The ip:port of consul")
+	mqttAddr := flag.String("mqtt", "", "The protocol://ip:port of mqtt")
 	nbGateway := flag.Int("nb-gateway", 0, "The number of gateway to launch")
 	minNbNode := flag.Int("min-nb-node", 1, "The minimal number of node by gateway")
 	maxNbNode := flag.Int("max-nb-node", 1, "The maximal number of node by gateway")
@@ -66,16 +65,8 @@ func main() {
 		httpPort = *port
 	}
 
-	// IP
-	ip, err := tools.DetectIP(*localIP)
-	if err != nil {
-		logger.WithError(err).Error("Ip error")
-	} else {
-		logger.WithField("ip", ip).Info("Ip discovered")
-	}
-
 	// HOSTNAME
-	hostname, err := tools.Hostname(ip, httpPort)
+	hostname, err := tools.Hostname(httpPort)
 	if err != nil {
 		logger.WithError(err).Error("Hostname error")
 	} else {
@@ -85,28 +76,19 @@ func main() {
 	// PROMETHEUS
 	prometheus := tools.NewPrometheus()
 
-	// CONSUL/MQTT
-	if *consulAddr == "" && *nbGateway <= 0 {
-		logger.Error("You need to specify at least -consul with ip:port")
+	// MQTT
+	if *mqttAddr == "" && *nbGateway <= 0 {
+		logger.Error("You need to specify at least -mqtt with protocol://ip:port")
 		return
 	}
-	consulClient, err := tools.NewConsul(*consulAddr)
+	mqttClient, err := tools.NewMqtt(hostname, *mqttAddr)
 	if err != nil {
-		logger.WithError(err).Warn("Consul not found, lorhammer is in standalone mode")
+		logger.WithError(err).Warn("Mqtt not found, lorhammer is in standalone mode")
 	} else {
-		if err := consulClient.Register(ip, hostname, httpPort); err != nil {
-			logger.WithError(err).Warn("Consul register error, lorhammer is in standalone mode")
-		} else {
-			mqttClient, err := tools.NewMqtt(hostname, consulClient)
-			if err != nil {
-				logger.WithError(err).Warn("Mqtt not found, lorhammer is in standalone mode")
-			} else {
-				if err := mqttClient.Connect(); err != nil {
-					logger.WithError(err).Warn("Can't connect to mqtt, lorhammer is in standalone mode")
-				}
-				listenMqtt(mqttClient, []string{tools.MqttInitTopic, tools.MqttStartTopic + "/" + hostname}, hostname, prometheus)
-			}
+		if err := mqttClient.Connect(); err != nil {
+			logger.WithError(err).Warn("Can't connect to mqtt, lorhammer is in standalone mode")
 		}
+		listenMqtt(mqttClient, []string{tools.MqttInitTopic, tools.MqttStartTopic + "/" + hostname}, hostname, prometheus)
 	}
 
 	// SCENARIO

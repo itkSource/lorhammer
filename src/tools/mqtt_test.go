@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"errors"
 	"testing"
 
 	mqttLib "github.com/eclipse/paho.mqtt.golang"
@@ -29,7 +28,7 @@ func (fakeSubMqtt) AddRoute(topic string, callback mqttLib.MessageHandler) {}
 func (fakeSubMqtt) OptionsReader() mqttLib.ClientOptionsReader { return mqttLib.ClientOptionsReader{} }
 
 func newMqtt(t *testing.T) Mqtt {
-	mqtt, err := NewMqtt("", fakeConsul{})
+	mqtt, err := NewMqtt("", "")
 	if err != nil {
 		t.Fatal("Valid mqtt config should not throw error")
 	}
@@ -42,14 +41,4 @@ func newMqtt(t *testing.T) Mqtt {
 
 func TestNewMqtt(t *testing.T) {
 	newMqtt(t)
-}
-
-func TestNewMqttNotFound(t *testing.T) {
-	mqtt, err := NewMqtt("", fakeConsul{serviceFirstError: errors.New("error")})
-	if err == nil {
-		t.Fatal("If consul not return mqtt url, mqtt should throw error")
-	}
-	if mqtt != nil {
-		t.Fatal("If consul not return mqtt url, mqtt should not return client")
-	}
 }

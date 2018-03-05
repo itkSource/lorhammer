@@ -2,7 +2,7 @@ package deploy
 
 import (
 	"encoding/json"
-	"lorhammer/src/tools"
+	"lorhammer/src/model"
 	"os/exec"
 	"strings"
 	"testing"
@@ -13,17 +13,22 @@ type sharedCounter struct {
 	count int
 }
 
-type fakeConsul struct{}
+type fakeMqtt struct {
+}
 
-func (fakeConsul) GetAddress() string                                      { return "" }
-func (fakeConsul) Register(ip string, hostname string, httpPort int) error { return nil }
-func (fakeConsul) ServiceFirst(name string, prefix string) (string, error) { return "", nil }
-func (fakeConsul) DeRegister(string) error                                 { return nil }
-func (fakeConsul) AllServices() ([]tools.ConsulService, error)             { return nil, nil }
+func (m *fakeMqtt) GetAddress() string                                          { return "" }
+func (m *fakeMqtt) Connect() error                                              { return nil }
+func (m *fakeMqtt) Disconnect()                                                 {}
+func (m *fakeMqtt) Handle(topics []string, handle func(messgae []byte)) error   { return nil }
+func (m *fakeMqtt) HandleCmd(topics []string, handle func(cmd model.CMD)) error { return nil }
+func (m *fakeMqtt) PublishCmd(topic string, cmdName model.CommandName) error    { return nil }
+func (m *fakeMqtt) PublishSubCmd(topic string, cmdName model.CommandName, subCmd interface{}) error {
+	return nil
+}
 
 func newLocalFromJSONTest(j string) (deployer, error) {
 	raw := json.RawMessage([]byte(j))
-	return newLocalFromJSON(raw, fakeConsul{})
+	return newLocalFromJSON(raw, &fakeMqtt{})
 }
 
 func testCall(countChan chan bool, nbRequired int, t *testing.T) {
@@ -117,27 +122,6 @@ func TestLocalImpl_Deploy(t *testing.T) {
 	d.(*localImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
 		go func() {
 			countChan <- true
-		}()
-		return exec.Command("ls")
-	}
-	if err := d.Deploy(); err != nil {
-		t.Fatal("LocalDeploy Deploy() should not return error")
-	}
-	testCall(countChan, 3, t)
-}
-
-func TestLocalImpl_DeployWithLocalIp(t *testing.T) {
-	d, err := newLocalFromJSONTest(`{"pathFile": "/", "nbInstanceToLaunch": 3, "cleanPreviousInstances": false, "localIp": "0.0.0.0"}`)
-	if err != nil {
-		t.Fatal("good local deployer json should not throw error")
-	}
-	countChan := make(chan bool)
-	defer close(countChan)
-	d.(*localImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
-		go func() {
-			if len(arg) == 4 && arg[3] == "0.0.0.0" {
-				countChan <- true
-			}
 		}()
 		return exec.Command("ls")
 	}

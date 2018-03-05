@@ -62,10 +62,10 @@ test:docker:
   services:
     - docker:dind
   script:
-    - LORHAMMER_PROMETHEUS_IP="prometheus" LORHAMMER_MQTT_IP="mqtt" LORHAMMER_CONSUL_IP="consul" LORHAMMER_GRAFANA_IP="grafana" ./resources/scripts/launchTools.sh
+    - LORHAMMER_MQTT_IP="mqtt" ./resources/scripts/launchTools.sh
     - sleep 10
     - echo "Start 1 lorhammer"
-    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_JOB_ID} up -d lorhammer
+    - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_JOB_ID} up -d lorhammer prometheus
     - sleep 30
     - echo "Start orchestrator to launch scenario and check all is ok"
     - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_JOB_ID} run orchestrator

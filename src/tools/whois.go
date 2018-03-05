@@ -9,23 +9,12 @@ import (
 )
 
 //Hostname return unique hostname_ip:port string
-func Hostname(ip string, port int) (string, error) {
+func Hostname(port int) (string, error) {
 	name, err := os.Hostname()
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s_%s:%d", name, ip, port), err
-}
-
-//DetectIP return IP v4
-//If an ip withtout "127" (local) and withtout "172" (docker) is found
-//If multiple ip is found return an error
-//If no ip ip conresponding is found return an error
-func DetectIP(localIP string) (string, error) {
-	if strings.Compare("", localIP) == 0 {
-		return foundIP()
-	}
-	return localIP, nil
+	return fmt.Sprintf("%s_%d", name, port), err
 }
 
 //FreeTCPPort return free tcp port on host

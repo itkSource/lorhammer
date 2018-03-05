@@ -5,20 +5,19 @@ menu:
         weight: 3
 subnav: "true"
 ---
-
 # Develop
 
 This page describes the development environment installation of lorhammer and gives some architecture explanations.
 
-# Install
+## Install
 
-## Requirement
+### Requirement
 
 * [Go](https://golang.org/doc/install) >= 1.9
 * [Docker](https://docs.docker.com/engine/installation/) & [Docker-compose](https://docs.docker.com/compose/install/).
 * [make command](http://www.tutorialspoint.com/unix_commands/make.htm)
 
-## Steps
+### Steps
 
 ```shell
 cd $GOPATH/src
@@ -29,28 +28,28 @@ make
 
 The binaries of lorhammers are created in `./build` directory.
 
-## First start
+### First start
 
 Follow the [quickstart](../quickstart) and be sure to have lorhammer, orchestrator and tools working.
 
-# Documentation
+## Documentation
 
-## Engine
+### Engine
 
 We use [hugo](https://gohugo.io/) to generate static html from markdown.
-You can find documentation files in multiple directory. 
+You can find documentation files in multiple directory.
 All `.md` files at root path (README, CHANGELOG...) are used. We also use `doc/content/*.md`.
 The theme can be find in `doc/themes/hugorha` after the first call to the `make doc` (see below).
 
-## Generate doc
+### Generate doc
 
 ```shell
 make doc
 ```
 
-This script will install all requirements and generate the doc. 
+This script will install all requirements and generate the doc.
 
-## Develop doc
+### Develop doc
 
 ```shell
 make doc-dev
@@ -59,9 +58,9 @@ make doc-dev
 To launch a standalone web browser add `-dev` flag and open [http://localhost:1313/](http://localhost:1313/).
 Each time you modify a doc file, the doc will be refresh in your browser.
 
-# Architecture points
+## Architecture points
 
-## Add a test type
+### Add a test type
 
 A test type is a launcher of gateways. It describes how the orchestrator will build gateways to trigger the scenario.
 
@@ -73,7 +72,7 @@ The 'none' implementation is the most simple :
 
 ```go
 func startNone(_ Test, _ model.Init, _ tools.Mqtt) {
-	LOG_NONE.WithField("type", "none").Warn("Nothing to test")
+    LOG_NONE.WithField("type", "none").Warn("Nothing to test")
 }
 ```
 
@@ -91,7 +90,7 @@ To finish you need to add your implementation in the map hosted by `src/orchestr
 var testers = make(map[Type]func(test Test, init model.Init, mqttClient tools.Mqtt))
 
 func init() {
-	testers[TypeNone] = startNone
+    testers[TypeNone] = startNone
 }
 ```
 
@@ -99,20 +98,20 @@ Test it by creating a scenario file with your test type.
 
 We can imagine make `pic` test with creation and deletion of gateways over the time. Or a ramp node test which build node in existing gateway over the time.
 
-## Add a provisioner
+### Add a provisioner
 
 A provisioner permit to register sensors and gateways to a network-server. Like that the network-server can accept messages from sensors and gateways.
 
 Today we have 3 kind of provisioner : none to not provision, loraserver to provision a [loraserver](https://docs.loraserver.io) network server and a generic HTTP provisioner.
 
 The HTTP provisioner send an http post to the *creationApiUrl*, its body is the [model godoc](/godoc/#model) in JSON format.
- 
+
 A provisioner must have a fabric function which take config json.RawMessage in parameters and return an implementation of `Provisioner` interface :
 
 ```go
 type provisioner interface {
-	Provision(sensorsToRegister model.Register) error
-	DeProvision() error
+    Provision(sensorsToRegister model.Register) error
+    DeProvision() error
 }
 ```
 
@@ -140,29 +139,29 @@ And you need to register your implementation in the map hosted by `src/orchestra
 var provisioners = make(map[Type]func(config json.RawMessage) (provisioner, error))
 
 func init() {
-	provisioners[NoneType] = NewNone
-	provisioners[LoraserverType] = NewLoraserver
-	provisioners[HttpType] = NewHttpProvisioner
+    provisioners[NoneType] = NewNone
+    provisioners[LoraserverType] = NewLoraserver
+    provisioners[HttpType] = NewHttpProvisioner
 }
 ```
 
 Test it by creating a scenario file with your provisioning type and the configuration required by it.
 
-We will happy to see lot of implementations of provisioner for different network-server open-source or proprietary. 
+We will happy to see lot of implementations of provisioner for different network-server open-source or proprietary.
 
-## Add a deployer
+### Add a deployer
 
-A deployer permit to the orchestrator to deploy and instantiate lorhammers. 
+A deployer permit to the orchestrator to deploy and instantiate lorhammers.
 
-Today we have 5 kind of deployer. None to do nothing. Local to launch a local (sub-process) instance of lorhammer. Distant to scp and start over ssh lorhammers on other server. And amazon to provision server on [aws](https://aws.amazon.com/), deploy and launch lorhammers. 
+Today we have 5 kind of deployer. None to do nothing. Local to launch a local (sub-process) instance of lorhammer. Distant to scp and start over ssh lorhammers on other server. And amazon to provision server on [aws](https://aws.amazon.com/), deploy and launch lorhammers.
 
-To add a deployer you need to have a fabric function which take config json.RawMessage and a consul client in parameters and return an implementation of `Deployer` interface :
+To add a deployer you need to have a fabric function which take config json.RawMessage and a mqtt client in parameters and return an implementation of `Deployer` interface :
 
 ```go
 type Deployer interface {
-	RunBefore() error
-	Deploy() error
-	RunAfter() error
+    RunBefore() error
+    Deploy() error
+    RunAfter() error
 }
 ```
 
@@ -175,8 +174,8 @@ func (_ none) RunBefore() error { return nil }
 func (_ none) Deploy() error    { return nil }
 func (_ none) RunAfter() error  { return nil }
 
-func NewNone(_ json.RawMessage, _ tools.Consul) (Deployer, error) {
-	return none{}, nil
+func NewNone(_ json.RawMessage, _ tools.Mqtt) (Deployer, error) {
+    return none{}, nil
 }
 ```
 
@@ -189,38 +188,38 @@ const TypeNone = Type("none")
 And you need to register your implementation in the map hosted by `src/orchestrator/deploy/deploy.go` :
 
 ```go
-var deployers = make(map[Type]func(config json.RawMessage, consulClient tools.Consul) (Deployer, error))
+var deployers = make(map[Type]func(config json.RawMessage, mqttClient tools.Mqtt) (Deployer, error))
 
 func init() {
-	deployers[TypeNone] = NewNone
-	deployers[TypeDistant] = NewDistantFromJson
-	deployers[TypeAmazon] = NewAmazonFromJson
-	deployers[TypeLocal] = NewLocalFromJson
+    deployers[TypeNone] = NewNone
+    deployers[TypeDistant] = NewDistantFromJson
+    deployers[TypeAmazon] = NewAmazonFromJson
+    deployers[TypeLocal] = NewLocalFromJson
 }
 ```
 
 We can image adding new deployer like [DigitalOcean](https://www.digitalocean.com/), [Kubernetes](https://kubernetes.io/) or [Swarm](https://docs.docker.com/engine/swarm/)...
 
-## Add a checker
+### Add a checker
 
 A checker is a way to verify that what have been sent by lorhammers have been correctly received by the IOT plateform. It aims to count the messages sent by lorhammers and check if result is equal to the expected value.
 Checkers also allow to test if platform has accepted x messages (and not only received them). Useful for continious integration, orchestrator will exit(1) if all checks don't pass.
- 
+
 Today we have 3 kinds of checkers : 'none' for no checker, 'prometheus' to check number of messages sent againt the ones recieved by lorhammers and 'kafka' to check the content of messages.
 
-To add a checker you need to have a factory function that takes a config json.RawMessage and a consul client as parameters and returns an implementation of `Checker` interface : 
+To add a checker you need to have a factory function that takes a config json.RawMessage as parameter and returns an implementation of `Checker` interface :
 
 ```go
 type CheckerSuccess interface {
-	Details() map[string]interface{}
+    Details() map[string]interface{}
 }
 
 type CheckerError interface {
-	Details() map[string]interface{}
+    Details() map[string]interface{}
 }
 
 type Checker interface {
-	Check() ([]CheckerSuccess, []CheckerError)
+    Check() ([]CheckerSuccess, []CheckerError)
 }
 ```
 
@@ -230,11 +229,11 @@ The 'none' implementation example :
 type none struct{}
 
 func newNone(_ json.RawMessage) (Checker, error) {
-	return none{}, nil
+    return none{}, nil
 }
 
 func (_ none) Check() ([]CheckerSuccess, []CheckerError) {
-	return make([]CheckerSuccess, 0), make([]CheckerError, 0)
+    return make([]CheckerSuccess, 0), make([]CheckerError, 0)
 }
 ```
 
@@ -250,9 +249,9 @@ A registration is needed for your implementation in the map hosted by `src/orche
 var checkers = make(map[Type]func(config json.RawMessage) (Checker, error))
 
 func init() {
-	checkers[NoneType] = newNone
-	checkers[PrometheusType] = newPrometheus
-	checkers[kafkaType] = newKafka
+    checkers[NoneType] = newNone
+    checkers[PrometheusType] = newPrometheus
+    checkers[kafkaType] = newKafka
 }
 ```
 

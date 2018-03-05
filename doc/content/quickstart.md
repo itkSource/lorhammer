@@ -19,19 +19,19 @@ make
 ## start mandatory tools
 
 ```shell
-LORHAMMER_PROMETHEUS_IP="ADVERTISED_HOST" LORHAMMER_MQTT_IP="ADVERTISED_HOST" LORHAMMER_MQTT_PORT="1884" LORHAMMER_CONSUL_IP="ADVERTISED_HOST" LORHAMMER_GRAFANA_IP="ADVERTISED_HOST" ./resources/scripts/launchTools.sh
+./resources/scripts/launchTools.sh
 ```
 
 ## start 1 lorhammer worker
 
 ```shell
-lorhammer -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
+lorhammer -mqtt tcp://ADVERTISED_HOST:1884
 ```
 
 ## launch a scenario
 
 ```shell
-orchestrator -consul 127.0.0.1:8500 -from-file "./resources/scenarios/simple.json"
+orchestrator -mqtt tcp://ADVERTISED_HOST:1884 -from-file "./resources/scenarios/simple.json"
 ```
 
 # Quickstart
@@ -62,56 +62,17 @@ Git clone the project (you don't need to have go installed to launch the tools).
 
 To start the tools you need to have [docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/).
 
-## Environment variables
-
-Add this environment variables :
-
-* **LORHAMMER_CONSUL_IP** : the ip address used to contact consul
-* **LORHAMMER_PROMETHEUS_IP** : the ip address used to run prometheus
-* **LORHAMMER_MQTT_IP** : the ip address used to run mqtt used for cross tool communication
-* **LORHAMMER_GRAFANA_IP** : the ip address used to access grafana
-
-Most of the time, this variables will point at `127.0.0.1`.
-
-> If you use the docker-compose file shipped with lorhammer you need to have **LORHAMMER_MQTT_PORT** = 1884 !
-
-Alternatively you can override port variables (in case of double usage/installation, this ports must be free on host) :
-
-* **LORHAMMER_MQTT_PORT** : the port address used for mqtt, default is 1883
-* **LORHAMMER_PROMETHEUS_PORT** : the port used to communicate with prometheus, default is 9090
-* **LORHAMMER_CONSUL_PORT** : the port used to communicate with consul, default is 8500
-* **LORHAMMER_GRAFANA_PORT** : the port used to communicate with grafana, default is 3000
-
 ## Command
 
 Start :
 
 ```shell
-LORHAMMER_PROMETHEUS_IP="ADVERTISED_HOST" LORHAMMER_MQTT_IP="ADVERTISED_HOST" LORHAMMER_MQTT_PORT="1884" LORHAMMER_CONSUL_IP="ADVERTISED_HOST" LORHAMMER_GRAFANA_IP="ADVERTISED_HOST" ./resources/scripts/launchTools.sh
+./resources/scripts/launchTools.sh
 ```
 
 Will launch :
 
-* [Prometheus](https://prometheus.io/) to manage metrics ([web application](http://127.0.0.1:9090/))
-* [Grafana](https://grafana.com/) to chart metrics from prometheus ([web application](http://127.0.0.1:3000/))
-* [Consul](https://www.consul.io/) to discover lorhammer services
 * [Mosquitto](https://mosquitto.org/) mqtt-broker to enable communication between orchestrator and lorhammer
-
-[![lorhammer-schema](/images/Tools-schema.png)](/images/Tools-schema.png)
-
-When all the tools are launched, open a web browser on [127.0.0.1:3000](http://127.0.0.1:3000/). By default login is `admin` and password is `pass`.
-Add a data source with name `prometheus`, type `Prometheus`, url `lorhammer_prometheus_1:9090` and let other params with their default values.
-Load default dashboard, you can find it here :  `resources/grafana/DashboardLora.json`.
-
-Go to the `Lora` dashboard, if all is ok then start a lorhammer
-
-```shell
-lorhammer -nb-gateway 10 -min-nb-node 5 -max-nb-node 5 -ns-address 127.0.0.1:1700 -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
-```
-
-You will see :
-
-[![simple launch illustration](/images/quickstart/simpleLaunch.png)](/images/quickstart/simpleLaunch.png)
 
 # Launch orchestrator
 
@@ -120,20 +81,18 @@ One orchestrator can manage as much lorhammers as you want.
 To start some lorhammers, launch the binary as shown below:
 
 ```shell
-lorhammer -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
-lorhammer -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
-lorhammer -consul 127.0.0.1:8500 -local-ip ADVERTISED_HOST
+lorhammer -mqtt tcp://127.0.0.1:1884
+lorhammer -mqtt tcp://127.0.0.1:1884
+lorhammer -mqtt tcp://127.0.0.1:1884
 ```
 
 Start an orchestrator with a simple scenario :
 
 ```shell
-orchestrator -consul 127.0.0.1:8500 -from-file "./resources/scenarios/simple.json"
+orchestrator -mqtt tcp://127.0.0.1:1884 -from-file "./resources/scenarios/simple.json"
 ```
 
 This scenario will incrementally launch 10 gateways (going from 0 to 10 in 5 minutes). Each gateway will have 50 nodes. After 10 minutes `orchestrator` will check some numbers in prometheus and exit 1 if some check fails.
-
-Don't forget to open grafana dashboard to see what happens.
 
 # Full example
 
@@ -226,7 +185,6 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "pathFile": "./build/lorhammer",
       "cleanPreviousInstances": true,
       "nbInstanceToLaunch": 1,
-      "localIp": "127.0.0.1",
       "port": 1234
     },
     "config": {
@@ -572,7 +530,7 @@ Type : **string/enum**
 Can be `none`, `local`, `distant` or `amazon`
 
 * `none` no deployment is made
-* `local` runs a sub-process with lorhammer on the same consul that has the current orchestrator
+* `local` runs a sub-process with lorhammer on the same mqtt that has the current orchestrator
 * `distant` performs an scp to send `deploy.config.pathFile` to a distant server and runs ssh to start it
 * `amazon` uses amazon api to create aws instances and run lorhammers on the go
 
@@ -601,8 +559,8 @@ docker-compose logs
 
 ## Orchestrator cli
 
-You can launch orchestrator in cli mode to have some utilities (stop current scenarios, shutdown lorhammers, count lorhammers...)
+You can launch orchestrator in cli mode to have some utilities (stop current scenarios, shutdown lorhammers...)
 
 ```shell
-ochestrator -consul 127.0.0.1:8500 -cli
+ochestrator -mqtt tcp://127.0.0.1:1883 -cli
 ```

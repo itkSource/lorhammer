@@ -1,19 +1,13 @@
 # Run lorhammer against loraserver
 
-* Launch tools
-
-> LORHAMMER_PROMETHEUS_IP="YOUR_IP" LORHAMMER_MQTT_IP="YOUR_IP" LORHAMMER_MQTT_PORT="1884" LORHAMMER_CONSUL_IP="YOUR_IP" LORHAMMER_GRAFANA_IP="YOUR_IP" ./resources/scripts/launchTools.sh
-
 * Launch loraserver
 
-> docker-compose up
+> ADVERTIZED_HOST=YOUR_LOCAL_IP docker-compose up
 
-* Launc lorhammer
+* Launch lorhammer
 
-> ./build/orchestrator -from-file ./resources/examples/loraserver/scenario.json -consul 127.0.0.1:8500
+> ./build/orchestrator -from-file ./resources/examples/loraserver/scenario.json -mqtt tcp://127.0.0.1:1883
 
-* Open [grafana](http://127.0.0.1:3000)
-
-You must see something like :
-
-![grafana screenshot](screenshotGrafana)
+* Open [prometheus](http://127.0.0.1:9090)
+* You can enter request to have some feedback :
+    * Number of lorawan request witch receive an ACK before 1 minute `sum(delta(lorhammer_durations_bucket{le=\"+Inf\"}[1m]))`

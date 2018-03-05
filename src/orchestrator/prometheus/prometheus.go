@@ -1,7 +1,6 @@
 package prometheus
 
 import (
-	"lorhammer/src/tools"
 	"time"
 
 	client "github.com/prometheus/client_golang/api"
@@ -17,15 +16,6 @@ type APIClient interface {
 
 type apiClientImpl struct {
 	queryAPI api.API
-}
-
-//NewAPIClientFromConsul return an APIClient of prometheus with infos from consul
-func NewAPIClientFromConsul(consulClient tools.Consul) (APIClient, error) {
-	address, err := consulClient.ServiceFirst("prometheus", "http://")
-	if err != nil {
-		return nil, err
-	}
-	return NewAPIClient(address)
 }
 
 //NewAPIClient return an APIClient of prometheus

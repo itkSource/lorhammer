@@ -54,7 +54,7 @@ type deployer interface {
 	RunAfter() error
 }
 
-var deployers = make(map[Type]func(config json.RawMessage, consulClient tools.Consul) (deployer, error))
+var deployers = make(map[Type]func(config json.RawMessage, mqttClient tools.Mqtt) (deployer, error))
 
 func init() {
 	deployers[typeNone] = newNone
@@ -64,12 +64,12 @@ func init() {
 }
 
 //Start launch a deployement
-func Start(model Model, consulClient tools.Consul) error {
+func Start(model Model, mqttClient tools.Mqtt) error {
 	dep, ok := deployers[model.Type]
 	if !ok {
 		return fmt.Errorf("Unknown type %s for deployer", model.Type)
 	}
-	d, err := dep(model.Config, consulClient)
+	d, err := dep(model.Config, mqttClient)
 	if err != nil {
 		return err
 	}

@@ -9,12 +9,11 @@ import (
 
 //TestReport is a struct which encapsulate all information about a test
 type TestReport struct {
-	StartDate          time.Time         `json:"startDate"`
-	EndDate            time.Time         `json:"endDate"`
-	Input              *TestSuite        `json:"input"`
-	ChecksSuccess      []checker.Success `json:"checksSuccess"`
-	ChecksError        []checker.Error   `json:"checksError"`
-	GrafanaSnapshotURL string            `json:"grafanaSnapshotUrl"`
+	StartDate     time.Time         `json:"startDate"`
+	EndDate       time.Time         `json:"endDate"`
+	Input         *TestSuite        `json:"input"`
+	ChecksSuccess []checker.Success `json:"checksSuccess"`
+	ChecksError   []checker.Error   `json:"checksError"`
 }
 
 //WriteFile write the report in json into the file located at pathReportFile

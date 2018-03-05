@@ -134,30 +134,6 @@
   version = "0.2"
 
 [[projects]]
-  name = "github.com/hashicorp/consul"
-  packages = ["api"]
-  revision = "9a494b5fb9c86180a5702e29c485df1507a47198"
-  version = "v1.0.6"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/hashicorp/go-cleanhttp"
-  packages = ["."]
-  revision = "d5fe4b57a186c716b0e00b8c301cbd9b4182694d"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/hashicorp/go-rootcerts"
-  packages = ["."]
-  revision = "6bb64b370b90e7ef1fa532be9e591a81c3493e00"
-
-[[projects]]
-  name = "github.com/hashicorp/serf"
-  packages = ["coordinate"]
-  revision = "d6574a5bb1226678d7010325fb6c985db20ee458"
-  version = "v0.8.1"
-
-[[projects]]
   branch = "master"
   name = "github.com/jacobsa/crypto"
   packages = [
@@ -176,12 +152,6 @@
   packages = ["pbutil"]
   revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
   version = "v1.0.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/mitchellh/go-homedir"
-  packages = ["."]
-  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
 
 [[projects]]
   name = "github.com/pierrec/lz4"
@@ -336,6 +306,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "75625d864fa400c77c27323ffef1172bb84dcac9afb634366290d4f7d90060a7"
+  inputs-digest = "1be786695df98444f1318825f75598648553a642d230261945d1910ba60beb36"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -21,6 +21,7 @@ var logMqtt = logrus.WithField("logger", "tools/mqtt")
 type Mqtt interface {
 	Connect() error
 	Disconnect()
+	GetAddress() string
 	Handle(topics []string, handle func(message []byte)) error
 	HandleCmd(topics []string, handle func(cmd model.CMD)) error
 	PublishCmd(topic string, cmdName model.CommandName) error
@@ -28,19 +29,14 @@ type Mqtt interface {
 }
 
 type mqttImpl struct {
+	url    string
 	client mqttLib.Client
 }
 
-//NewMqtt return a Mqtt based on consul `mqtt` service and set clientID with hostname
-func NewMqtt(hostname string, consulClient Consul) (Mqtt, error) {
-	url, err := consulClient.ServiceFirst("mqtt", "tcp://")
-
-	if err != nil {
-		return nil, err
-	}
-
+//NewMqtt return a Mqtt based on mqttAddr (protocol://ip:port) and set clientID with hostname
+func NewMqtt(hostname string, mqttAddr string) (Mqtt, error) {
 	clientID := hostname + "_" + string(RandomBytes(8))
-	return NewMqttBasic(url, clientID)
+	return NewMqttBasic(mqttAddr, clientID)
 }
 
 //NewMqttBasic return a Mqtt client
@@ -57,8 +53,13 @@ func NewMqttBasic(url string, clientID string) (Mqtt, error) {
 	client := mqttLib.NewClient(connOpts)
 
 	return &mqttImpl{
+		url:    url,
 		client: client,
 	}, nil
+}
+
+func (mqtt *mqttImpl) GetAddress() string {
+	return mqtt.url
 }
 
 func (mqtt *mqttImpl) Disconnect() {

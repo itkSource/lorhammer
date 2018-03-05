@@ -25,7 +25,7 @@ var logger = logrus.WithField("logger", "orchestrator/main")
 
 func main() {
 	showVersion := flag.Bool("version", false, "Show current version and build time")
-	consulAddr := flag.String("consul", "", "The ip:port of consul")
+	mqttAddr := flag.String("mqtt", "", "The protocol://ip:port of mqtt")
 	scenarioFromFile := flag.String("from-file", "", "A file containing a scenario to launch")
 	reportFile := flag.String("report-file", "./report.json", "A file to fill reports tests in json")
 	startCli := flag.Bool("cli", false, "Enter in cli mode and access to menu (stop/kill all lorhammers...)")
@@ -45,13 +45,9 @@ func main() {
 	host := "orchestrator"
 
 	// CONSUL PART
-	if *consulAddr == "" {
-		logger.Error("You need to specify at least -consul with ip:port")
+	if *mqttAddr == "" {
+		logger.Error("You need to specify at least -mqtt with protocol://ip:port")
 		return
-	}
-	consulClient, err := tools.NewConsul(*consulAddr)
-	if err != nil {
-		logger.WithError(err).Panic("Can't build consul")
 	}
 
 	logrus.Warn("Welcome to the Lorhammer's Orchestrator")
@@ -59,7 +55,7 @@ func main() {
 	var currentTestSuite testsuite.TestSuite
 
 	// MQTT PART
-	mqttClient, err := tools.NewMqtt(host, consulClient)
+	mqttClient, err := tools.NewMqtt(host, *mqttAddr)
 	if err != nil {
 		logger.WithError(err).Error("Can't build mqtt client")
 	} else {
@@ -79,12 +75,6 @@ func main() {
 		}
 	}
 
-	// GRAFANA
-	grafanaClient, err := tools.NewGrafana(consulClient)
-	if err != nil {
-		logger.WithError(err).Error("Error while constructing new grafana api client")
-	}
-
 	// SCENARIO
 	if *scenarioFromFile != "" {
 		configFile, err := ioutil.ReadFile(*scenarioFromFile)
@@ -99,7 +89,7 @@ func main() {
 		nbErr := 0
 		for _, test := range tests {
 			currentTestSuite = test
-			testReport, err := test.LaunchTest(consulClient, mqttClient, grafanaClient)
+			testReport, err := test.LaunchTest(mqttClient)
 			if err != nil {
 				logger.WithError(err).Error("Error during test")
 				nbErr++
@@ -114,6 +104,6 @@ func main() {
 		os.Exit(len(checkErrors) + nbErr)
 	}
 	if *startCli {
-		cli.Start(mqttClient, consulClient)
+		cli.Start(mqttClient)
 	}
 }

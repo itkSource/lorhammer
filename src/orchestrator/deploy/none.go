@@ -13,6 +13,6 @@ func (none) RunBefore() error { return nil }
 func (none) Deploy() error    { return nil }
 func (none) RunAfter() error  { return nil }
 
-func newNone(json.RawMessage, tools.Consul) (deployer, error) {
+func newNone(json.RawMessage, tools.Mqtt) (deployer, error) {
 	return none{}, nil
 }

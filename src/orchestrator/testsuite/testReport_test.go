@@ -11,12 +11,11 @@ import (
 
 func buildReport(filename string, t *testing.T) {
 	report := &TestReport{
-		StartDate:          time.Now(),
-		EndDate:            time.Now().Add(1 * time.Minute),
-		Input:              nil,
-		ChecksSuccess:      nil,
-		ChecksError:        nil,
-		GrafanaSnapshotURL: "",
+		StartDate:     time.Now(),
+		EndDate:       time.Now().Add(1 * time.Minute),
+		Input:         nil,
+		ChecksSuccess: nil,
+		ChecksError:   nil,
 	}
 
 	err := report.WriteFile(filename)
@@ -46,7 +45,7 @@ func TestCreatingReport(t *testing.T) {
 	buildReport(filename, t)
 	input := readAndCleanData(filename, t)
 
-	var validRe = regexp.MustCompile(`^\{"startDate":"[^\"]+","endDate":"[^\"]+","input":null,"checksSuccess":null,"checksError":null,"grafanaSnapshotUrl":""\}$`)
+	var validRe = regexp.MustCompile(`^\{"startDate":"[^\"]+","endDate":"[^\"]+","input":null,"checksSuccess":null,"checksError":null\}$`)
 
 	if !validRe.Match(input) {
 		t.Log(string(input))
@@ -60,7 +59,7 @@ func TestMultipleEntry(t *testing.T) {
 	buildReport(filename, t)
 	input := readAndCleanData(filename, t)
 
-	var validRe = regexp.MustCompile(`^(:?\{"startDate":"[^\"]+","endDate":"[^\"]+","input":null,"checksSuccess":null,"checksError":null,"grafanaSnapshotUrl":""\}){2}$`)
+	var validRe = regexp.MustCompile(`^(:?\{"startDate":"[^\"]+","endDate":"[^\"]+","input":null,"checksSuccess":null,"checksError":null\}){2}$`)
 
 	if !validRe.Match(input) {
 		t.Log(string(input))
@@ -70,12 +69,11 @@ func TestMultipleEntry(t *testing.T) {
 
 func TestNotAuthorizedFilepath(t *testing.T) {
 	report := &TestReport{
-		StartDate:          time.Now(),
-		EndDate:            time.Now().Add(1 * time.Minute),
-		Input:              nil,
-		ChecksSuccess:      nil,
-		ChecksError:        nil,
-		GrafanaSnapshotURL: "",
+		StartDate:     time.Now(),
+		EndDate:       time.Now().Add(1 * time.Minute),
+		Input:         nil,
+		ChecksSuccess: nil,
+		ChecksError:   nil,
 	}
 
 	err := report.WriteFile("/")
