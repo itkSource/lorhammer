@@ -25,7 +25,7 @@ make
 ## start 1 lorhammer worker
 
 ```shell
-lorhammer -mqtt tcp://ADVERTISED_HOST:1884 -local-ip ADVERTISED_HOST
+lorhammer -mqtt tcp://ADVERTISED_HOST:1884
 ```
 
 ## launch a scenario
@@ -81,9 +81,9 @@ One orchestrator can manage as much lorhammers as you want.
 To start some lorhammers, launch the binary as shown below:
 
 ```shell
-lorhammer -mqtt tcp://127.0.0.1:1884 -local-ip ADVERTISED_HOST
-lorhammer -mqtt tcp://127.0.0.1:1884 -local-ip ADVERTISED_HOST
-lorhammer -mqtt tcp://127.0.0.1:1884 -local-ip ADVERTISED_HOST
+lorhammer -mqtt tcp://127.0.0.1:1884
+lorhammer -mqtt tcp://127.0.0.1:1884
+lorhammer -mqtt tcp://127.0.0.1:1884
 ```
 
 Start an orchestrator with a simple scenario :
@@ -185,7 +185,6 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "pathFile": "./build/lorhammer",
       "cleanPreviousInstances": true,
       "nbInstanceToLaunch": 1,
-      "localIp": "127.0.0.1",
       "port": 1234
     },
     "config": {

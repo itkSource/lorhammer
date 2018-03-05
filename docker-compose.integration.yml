@@ -11,7 +11,7 @@ services:
 
   lorhammer:
     image: ${CI_REGISTRY_IMAGE}/lorhammer:${CI_PIPELINE_ID}
-    command: -mqtt tcp://mqtt:1883 -local-ip lorhammer -port 1234 -vvv
+    command: -mqtt tcp://mqtt:1883 -port 1234 -vvv
     depends_on:
       - mqtt
 

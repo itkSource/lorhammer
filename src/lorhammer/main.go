@@ -22,7 +22,6 @@ var logger = logrus.WithField("logger", "lorhammer/main")
 
 func main() {
 	showVersion := flag.Bool("version", false, "Show current version and build time")
-	localIP := flag.String("local-ip", "", "The address used by others tools to access lorhammer instance")
 	port := flag.Int("port", 0, "The port to use to expose prometheus metrics, default 0 means random")
 	mqttAddr := flag.String("mqtt", "", "The protocol://ip:port of mqtt")
 	nbGateway := flag.Int("nb-gateway", 0, "The number of gateway to launch")
@@ -66,16 +65,8 @@ func main() {
 		httpPort = *port
 	}
 
-	// IP
-	ip, err := tools.DetectIP(*localIP)
-	if err != nil {
-		logger.WithError(err).Error("Ip error")
-	} else {
-		logger.WithField("ip", ip).Info("Ip discovered")
-	}
-
 	// HOSTNAME
-	hostname, err := tools.Hostname(ip, httpPort)
+	hostname, err := tools.Hostname(httpPort)
 	if err != nil {
 		logger.WithError(err).Error("Hostname error")
 	} else {

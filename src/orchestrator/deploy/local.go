@@ -17,7 +17,6 @@ type localImpl struct {
 	PathFile               string `json:"pathFile"`
 	NbInstanceToLaunch     int    `json:"nbInstanceToLaunch"`
 	CleanPreviousInstances bool   `json:"cleanPreviousInstances"`
-	LocalIP                string `json:"localIp"`
 	Port                   int    `json:"port"`
 
 	mqttAddress string
@@ -50,9 +49,6 @@ func (local *localImpl) Deploy() error {
 	for i := 0; i < local.NbInstanceToLaunch; i++ {
 		go func() {
 			args := []string{"-mqtt", local.mqttAddress}
-			if local.LocalIP != "" {
-				args = append(args, "-local-ip", local.LocalIP)
-			}
 			if local.Port != 0 {
 				args = append(args, "-port", strconv.Itoa(local.Port))
 			}

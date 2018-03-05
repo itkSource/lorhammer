@@ -104,7 +104,7 @@ func (client *amazonImpl) RunAfter() error {
 	for _, reservation := range res.Reservations {
 		for _, instance := range reservation.Instances {
 			client.distantDeployer.IPServer = *instance.PublicDnsName
-			client.distantDeployer.AfterCmd = fmt.Sprintf("nohup %s/lorhammer -mqtt %s -local-ip %s > lorahmmer.log 2>&1 &", client.distantDeployer.PathWhereScp, client.mqttAddress, *instance.PublicDnsName)
+			client.distantDeployer.AfterCmd = fmt.Sprintf("nohup %s/lorhammer -mqtt %s > lorahmmer.log 2>&1 &", client.distantDeployer.PathWhereScp, client.mqttAddress)
 			err := client.distantDeployer.Deploy()
 			if err != nil {
 				logAmazon.WithError(err).Error("Lorhammer not deployed")
