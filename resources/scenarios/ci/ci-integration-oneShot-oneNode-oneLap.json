@@ -8,7 +8,7 @@
   "sleepBeforeCheckTime": "2m",
   "shutdownAllLorhammerTime": "0",
   "sleepAtEndTime": "0",
-  "init": {
+  "init": [{
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 1,
     "nbNodePerGateway": [1, 1],
@@ -50,7 +50,7 @@
       {"value": "01B501002919000006018403131313121566", "date": 1488931230},
       {"value": "01B501002919000006018403131313121577", "date": 1488931231}
     ]
-  },
+  }],
   "provisioning": {
     "type": "none"
   },

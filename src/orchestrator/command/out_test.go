@@ -19,7 +19,8 @@ func TestLaunchLaunchScenario(t *testing.T) {
 			publishPayload: string(serialized),
 		},
 	}
-	err = LaunchScenario(mqtt, init)
+	NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
+	err = LaunchScenario(mqtt, []model.Init{init})
 	if err != nil {
 		t.Fatal("A valid model.init should not return err")
 	}
@@ -33,7 +34,8 @@ func TestLaunchLaunchScenarioError(t *testing.T) {
 			publishError: true,
 		},
 	}
-	err := LaunchScenario(mqtt, init)
+	NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
+	err := LaunchScenario(mqtt, []model.Init{init})
 	if err == nil {
 		t.Fatal("If mqtt return err out should return err")
 	}

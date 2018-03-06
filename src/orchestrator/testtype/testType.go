@@ -44,17 +44,16 @@ func (test *Test) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-var testers = make(map[Type]func(test Test, init model.Init, mqttClient tools.Mqtt))
+var testers = make(map[Type]func(test Test, init []model.Init, mqttClient tools.Mqtt))
 
 func init() {
 	testers[typeNone] = startNone
 	testers[typeOneShot] = startOneShot
 	testers[typeRepeat] = startRepeat
-	testers[typeRamp] = startRamp
 }
 
 //Start launch a test
-func Start(test Test, init model.Init, mqttClient tools.Mqtt) error {
+func Start(test Test, init []model.Init, mqttClient tools.Mqtt) error {
 	if tester := testers[test.testType]; tester != nil {
 		go tester(test, init, mqttClient)
 		return nil

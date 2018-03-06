@@ -7,6 +7,7 @@ import (
 	"lorhammer/src/tools"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -14,10 +15,29 @@ import (
 var logger = logrus.WithField("logger", "lorhammer/command/in")
 var scenarios = sync.Map{}
 
+//Start send model.NEWLORHAMMER command every second until orchestrator has respond model.LORHAMMERADDED command
+func Start(mqtt tools.Mqtt, hostname string) chan bool {
+	lorhammerAddedChan := make(chan bool)
+	go func() {
+		defer close(lorhammerAddedChan)
+		for {
+			select {
+			case <-time.After(1 * time.Second): //TODO make this time in conf
+				mqtt.PublishSubCmd(tools.MqttOrchestratorTopic, model.NEWLORHAMMER, model.NewLorhammer{CallbackTopic: tools.MqttLorhammerTopic + "/" + hostname})
+			case <-lorhammerAddedChan:
+				return
+			}
+		}
+	}()
+	return lorhammerAddedChan
+}
+
 //ApplyCmd take a model.CMD and execute it
-func ApplyCmd(command model.CMD, mqtt tools.Mqtt, hostname string, prometheus tools.Prometheus) {
+func ApplyCmd(command model.CMD, mqtt tools.Mqtt, hostname string, lorhammerAddedChan chan bool, prometheus tools.Prometheus) {
 	var err error
 	switch command.CmdName {
+	case model.LORHAMMERADDED:
+		lorhammerAddedChan <- true
 	case model.INIT:
 		err = applyInitCmd(command, mqtt, hostname)
 	case model.START:
@@ -59,7 +79,7 @@ func applyInitCmd(command model.CMD, mqtt tools.Mqtt, hostname string) error {
 	}
 
 	registerCmd := model.Register{
-		CallBackTopic: tools.MqttStartTopic + "/" + hostname,
+		CallBackTopic: tools.MqttLorhammerTopic + "/" + hostname,
 		Gateways:      gateways,
 		ScenarioUUID:  sc.UUID,
 	}

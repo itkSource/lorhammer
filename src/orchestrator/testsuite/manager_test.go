@@ -3,6 +3,7 @@ package testsuite
 import (
 	"fmt"
 	"lorhammer/src/model"
+	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/provisioning"
 	"testing"
 )
@@ -33,7 +34,7 @@ var testsLaunch = []testLaunch{
 		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
-		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		init:             `[{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}]`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
@@ -47,7 +48,7 @@ var testsLaunch = []testLaunch{
 		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
-		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		init:             `[{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}]`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
@@ -61,7 +62,7 @@ var testsLaunch = []testLaunch{
 		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
-		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		init:             `[{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}]`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
@@ -75,7 +76,7 @@ var testsLaunch = []testLaunch{
 		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
-		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		init:             `[{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}]`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
@@ -89,7 +90,7 @@ var testsLaunch = []testLaunch{
 		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
-		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		init:             `[{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}]`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
 		check:            `{"type": "none"}`,
@@ -103,7 +104,7 @@ var testsLaunch = []testLaunch{
 		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
-		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		init:             `[{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}]`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
 		check:            `{"type": "prometheus", "config": {"checks": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb messages"}]}}`,
@@ -117,7 +118,7 @@ var testsLaunch = []testLaunch{
 		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
-		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		init:             `[{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}]`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
 		check:            `{"type": "prometheus", "config": {"checks": [{"query": "sum(lorhammer_long_request) + sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"}]}}`,
@@ -131,7 +132,7 @@ var testsLaunch = []testLaunch{
 		beforeCheck:      "0",
 		shutdownAll:      "0",
 		sleep:            "0",
-		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		init:             `[{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}]`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: false,
 		check:            `{"type": "fake"}`,
@@ -145,7 +146,7 @@ var testsLaunch = []testLaunch{
 		beforeCheck:      "0",
 		shutdownAll:      "1ms",
 		sleep:            "0",
-		init:             `{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}`,
+		init:             `[{"nsAddress": "127.0.0.1:1700","nbGateway": 1,"nbNodePerGateway": [1, 1],"sleepTime": [100, 500]}]`,
 		provisioning:     `{"type": "none"}`,
 		needProvisioning: true,
 		check:            `{"type": "none"}`,
@@ -171,6 +172,7 @@ func TestLaunchTest(t *testing.T) {
 			if test.needProvisioning {
 				provisioning.Provision(tests[0].UUID, tests[0].Provisioning, model.Register{})
 			}
+			command.NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
 			report, err := tests[0].LaunchTest(&fakeMqtt{})
 			if ct.testValid && err != nil {
 				t.Fatalf("valid test should not throw err %s", ct.description)

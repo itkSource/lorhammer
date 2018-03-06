@@ -88,7 +88,10 @@ func main() {
 		if err := mqttClient.Connect(); err != nil {
 			logger.WithError(err).Warn("Can't connect to mqtt, lorhammer is in standalone mode")
 		}
-		listenMqtt(mqttClient, []string{tools.MqttInitTopic, tools.MqttStartTopic + "/" + hostname}, hostname, prometheus)
+
+		// LINK TO ORCHESTRATOR
+		lorhammerAddedChan := command.Start(mqttClient, hostname)
+		listenMqtt(mqttClient, []string{tools.MqttLorhammerTopic, tools.MqttLorhammerTopic + "/" + hostname}, hostname, lorhammerAddedChan, prometheus)
 	}
 
 	// SCENARIO
@@ -114,8 +117,8 @@ func main() {
 				CmdName: model.STOP,
 			}
 			logger.WithField("cmd ", cmd).Info("Apply Cmd Called")
-			// mqtt client is unneeded in case of shutdown command
-			command.ApplyCmd(cmd, nil, hostname, prometheus)
+			// mqtt client and lorhammerAddedChan are unneeded in case of shutdown command
+			command.ApplyCmd(cmd, nil, hostname, nil, prometheus)
 		}()
 	} else {
 		logger.Warn("No gateway, orchestrator will start scenarii")
@@ -126,9 +129,9 @@ func main() {
 	logger.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil))
 }
 
-func listenMqtt(mqttClient tools.Mqtt, topics []string, hostname string, prometheus tools.Prometheus) {
+func listenMqtt(mqttClient tools.Mqtt, topics []string, hostname string, lorhammerAddedChan chan bool, prometheus tools.Prometheus) {
 	if err := mqttClient.HandleCmd(topics, func(cmd model.CMD) {
-		command.ApplyCmd(cmd, mqttClient, hostname, prometheus)
+		command.ApplyCmd(cmd, mqttClient, hostname, lorhammerAddedChan, prometheus)
 	}); err != nil {
 		logger.WithError(err).WithField("topics", topics).Error("Error while subscribing")
 	} else {

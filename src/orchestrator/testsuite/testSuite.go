@@ -20,7 +20,7 @@ type TestSuite struct {
 	SleepBeforeCheckTime     time.Duration      `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime time.Duration      `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           time.Duration      `json:"sleepAtEndTime"`
-	Init                     model.Init         `json:"init"`
+	Init                     []model.Init       `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
 	Deploy                   deploy.Model       `json:"deploy"`
@@ -32,7 +32,7 @@ type jsonTestSuite struct {
 	SleepBeforeCheckTime     string             `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime string             `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           string             `json:"sleepAtEndTime"`
-	Init                     model.Init         `json:"init"`
+	Init                     []model.Init       `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
 	Deploy                   deploy.Model       `json:"deploy"`
