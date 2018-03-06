@@ -7,21 +7,9 @@
   "sleepBeforeCheckTime": "0",
   "shutdownAllLorhammerTime": "6m",
   "sleepAtEndTime": "0",
-  "requieredLorhammer": 2,
+  "requieredLorhammer": 1,
   "maxWaitLorhammeTime": "10s",
   "init": [{
-    "nsAddress": "127.0.0.1:1700",
-    "nbGatewayPerLorhammer": 5,
-    "nbNodePerGateway": [10, 10],
-    "nbScenarioReplayLaps": 0,
-    "scenarioSleepTime": ["3s", "3s"],
-    "receiveTimeoutTime": "2s",
-    "gatewaySleepTime": ["100ms", "500ms"],
-    "withJoin" : true,
-    "appskey" : "93a4841d7203287d0929ad56bde3d7a8",
-    "nwskey" : "d7e6611c4572fc0d331d7d388cace84a",
-    "payloads" : []
-  },{
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 5,
     "nbNodePerGateway": [10, 10],
@@ -52,14 +40,14 @@
     "config": {
       "address": "http://127.0.0.1:9090",
       "checks": [
-        {"query": "count(lorhammer_durations_count)", "resultMin": 2, "resultMax": 2, "description": "nb lorhammer"},
-        {"query": "sum(lorhammer_gateway)", "resultMin": 10, "resultMax": 10, "description": "nb gateways"},
-        {"query": "sum(lorhammer_node)", "resultMin": 100, "resultMax": 100, "description": "nb nodes"}
+        {"query": "count(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb lorhammer"},
+        {"query": "sum(lorhammer_gateway)", "resultMin": 5, "resultMax": 5, "description": "nb gateways"},
+        {"query": "sum(lorhammer_node)", "resultMin": 50, "resultMax": 50, "description": "nb nodes"}
       ]
     }
   },
   "deploy": {
-    "type": "none",
+    "type": "local",
     "config": {
       "pathFile": "./build/lorhammer",
       "cleanPreviousInstances": true,
