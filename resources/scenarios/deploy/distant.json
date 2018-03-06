@@ -27,7 +27,6 @@
   },
   "deploy": {
     "type": "distant",
-    "sleepAfterDeployTime": "20s",
     "config": {
       "sshKeyPath": "",
       "user": "",

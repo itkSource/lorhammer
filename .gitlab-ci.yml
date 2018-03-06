@@ -63,10 +63,9 @@ test:docker:
     - docker:dind
   script:
     - LORHAMMER_MQTT_IP="mqtt" ./resources/scripts/launchTools.sh
-    - sleep 10
+    - sleep 3
     - echo "Start 1 lorhammer"
     - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_JOB_ID} up -d lorhammer prometheus
-    - sleep 30
     - echo "Start orchestrator to launch scenario and check all is ok"
     - docker-compose -f docker-compose.yml -f docker-compose.integration.yml -p ${CI_JOB_ID} run orchestrator
   after_script:

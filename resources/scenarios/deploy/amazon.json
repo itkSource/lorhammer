@@ -27,7 +27,6 @@
   },
   "deploy": {
     "type": "amazon",
-    "sleepAfterDeployTime": "20s",
     "config": {
       "region": "eu-west-2",
       "imageId": "ami-87848ee3",

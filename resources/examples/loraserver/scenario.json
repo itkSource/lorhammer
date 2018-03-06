@@ -61,7 +61,6 @@
   },
   "deploy": {
     "type": "none",
-    "sleepAfterDeployTime": "5s",
     "config": {
       "pathFile": "./build/lorhammer",
       "cleanPreviousInstances": true,
