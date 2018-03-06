@@ -1,7 +1,6 @@
 [{
   "test": {
     "type": "oneShot",
-    "rampTime": "0",
     "repeatTime": "0"
   },
   "stopAllLorhammerTime": "0",

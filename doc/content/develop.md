@@ -64,7 +64,7 @@ Each time you modify a doc file, the doc will be refresh in your browser.
 
 A test type is a launcher of gateways. It describes how the orchestrator will build gateways to trigger the scenario.
 
-Today we have 4 types of tests, the 'none' type does nothing, the 'one shot' type builds and launches nbGateway, the 'repeat' type is the same as 'one shot' but creates nbGateway of gateways every repeatTime.  The 'ramp' type does the same but distributes the creation of gateways to have nbGateway reached incrementally after the rampTime.
+Today we have 3 types of tests, the 'none' type does nothing, the 'one shot' type builds and launches nbGateway, the 'repeat' type is the same as 'one shot' but creates nbGateway of gateways every repeatTime.
 
 A test type is a function that takes a Test, a model.Init and a client tool.mqtt. This function is started in a go routine and must call command.LaunchScenario(mqttClient, model.init) when nbGateway need to be launched.
 

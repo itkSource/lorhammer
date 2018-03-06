@@ -33,15 +33,13 @@ func TestNewTester(t *testing.T) {
 	testers["other"] = func(test Test, _ []model.Init, _ tools.Mqtt) {
 		if test.repeatTime != time.Duration(1*time.Minute) {
 			callMeMaybe <- errors.New("Test in json was 1m must be equal to diration 1 minute")
-		} else if test.rampTime != time.Duration(1*time.Minute) {
-			callMeMaybe <- errors.New("Test in json was 1m must be equal to diration 1 minute")
 		} else {
 			callMeMaybe <- nil
 		}
 	}
 
 	var test Test
-	if err := json.Unmarshal([]byte(`{"type": "other", "rampTime": "1m", "repeatTime": "1m"}`), &test); err != nil {
+	if err := json.Unmarshal([]byte(`{"type": "other", "repeatTime": "1m"}`), &test); err != nil {
 		t.Fatal("Unmarshalling test must work")
 	}
 

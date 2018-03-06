@@ -1,7 +1,6 @@
 [{
   "test": {
     "type": "repeat",
-    "rampTime": "0",
     "repeatTime": "1m"
   },
   "stopAllLorhammerTime": "0",

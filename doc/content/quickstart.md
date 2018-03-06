@@ -105,8 +105,7 @@ A scenario is an array of tests. A test is the description needed by the orchest
 ```json
 [{
   "test": {
-    "type": "oneShot | repeat | ramp",
-    "rampTime": "5m",
+    "type": "none | oneShot | repeat",
     "repeatTime": "0"
   },
   "stopAllLorhammerTime": "0",
@@ -229,18 +228,11 @@ On object to describe test parameters
 
 Type : **string/enum**
 
-Can be `none`, `oneShot`, `repeat` or `ramp`
+Can be `none`, `oneShot` or `repeat`
 
 * `none` no test will be launched, useful to use an orchestrator to deploy lorhammer instances for a future use
 * `oneShot` starts init.nbGatewayPerLorhammer with init.nbNodePerGateway[0] >= nbNode <= init.nbNodePerGateway[1]
 * `repeat` starts init.nbGatewayPerLorhammer every `repeatTime`
-* `ramp` starts init.nbGatewayPerLorhammer / rampTime every minute during `rampTime`
-
-### rampTime
-
-Type : **string/duration**
-
-If `testType` == `ramp` then init.nbGatewayPerLorhammer reached incrementally throughout the duration of the scenario
 
 ### repeatTime
 

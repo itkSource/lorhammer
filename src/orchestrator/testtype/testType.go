@@ -15,13 +15,11 @@ type Type string
 type Test struct {
 	testType   Type
 	repeatTime time.Duration
-	rampTime   time.Duration
 }
 
 type testJSON struct {
 	TestType   Type   `json:"type"`
 	RepeatTime string `json:"repeatTime"`
-	RampTime   string `json:"rampTime"`
 }
 
 //UnmarshalJSON permit to load a Test from a json
@@ -34,9 +32,6 @@ func (test *Test) UnmarshalJSON(b []byte) error {
 	test.testType = serialized.TestType
 
 	var err error
-	if test.rampTime, err = time.ParseDuration(serialized.RampTime); err != nil {
-		return err
-	}
 	if test.repeatTime, err = time.ParseDuration(serialized.RepeatTime); err != nil {
 		return err
 	}
