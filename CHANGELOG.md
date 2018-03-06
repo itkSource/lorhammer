@@ -2,6 +2,11 @@
 
 ## Version 0.6.0 - UNRELEASED
 
+* **SCENARIO** new feature : launch multiple scenarios (payloads) with 1 orchestrator [issues/69](https://gitlab.com/itk.fr/lorhammer/issues/69) :
+  * **BREAKING** before scenario file have 'init' property now its an array of init
+  * **BREAKING** remove 'sleepAfterDeployTime' in deploy
+  * **BREAKING** add 'requieredLorhammer' and 'maxWaitLorhammeTime' in scenario file
+  * **BREAKING** remove ramp tytpe test because too complexe to manage in multiple scenarios
 * **CONSUL** remove consul and pass mqtt url directly, permit to deploy more easily and to launch multiple orchestrator [issues/66](https://gitlab.com/itk.fr/lorhammer/issues/66)
 * **LORHAMMER** allow to set port used to be scrapped by prometheus [issues/64](https://gitlab.com/itk.fr/lorhammer/issues/64)
 * **ORCHESTRATOR** exit(1) if an error occur during scenario (previously exit > 0 only when checker fail) [issues/67](https://gitlab.com/itk.fr/lorhammer/issues/67) + repair bug on ramp type test
