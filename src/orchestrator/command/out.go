@@ -20,6 +20,13 @@ func NewLorhammer(newLorhammer model.NewLorhammer) error {
 	return nil
 }
 
+//NbLorhammer return the current number of lorhammer listening for init scenario
+func NbLorhammer() int {
+	muLorhammers.Lock()
+	defer muLorhammers.Unlock()
+	return len(lorhammers)
+}
+
 //LaunchScenario emit a model.INIT command for lorhammers over mqtt
 func LaunchScenario(mqttClient tools.Mqtt, inits []model.Init) error {
 	muLorhammers.Lock()

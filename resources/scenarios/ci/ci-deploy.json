@@ -8,6 +8,8 @@
   "sleepBeforeCheckTime": "0",
   "shutdownAllLorhammerTime": "0",
   "sleepAtEndTime": "0",
+  "requieredLorhammer": 0,
+  "maxWaitLorhammeTime": "0",
   "init": [{}],
   "provisioning": {
     "type": "none"

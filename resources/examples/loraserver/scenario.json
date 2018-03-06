@@ -8,6 +8,8 @@
   "sleepBeforeCheckTime": "0",
   "shutdownAllLorhammerTime": "6m",
   "sleepAtEndTime": "0",
+  "requieredLorhammer": 2,
+  "maxWaitLorhammeTime": "10s",
   "init": [{
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 5,

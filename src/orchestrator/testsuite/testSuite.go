@@ -20,6 +20,8 @@ type TestSuite struct {
 	SleepBeforeCheckTime     time.Duration      `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime time.Duration      `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           time.Duration      `json:"sleepAtEndTime"`
+	RequieredLorhammer       int                `json:"requieredLorhammer"`
+	MaxWaitLorhammeTime      time.Duration      `json:"maxWaitLorhammeTime"`
 	Init                     []model.Init       `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
@@ -32,6 +34,8 @@ type jsonTestSuite struct {
 	SleepBeforeCheckTime     string             `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime string             `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           string             `json:"sleepAtEndTime"`
+	RequieredLorhammer       int                `json:"requieredLorhammer"`
+	MaxWaitLorhammeTime      string             `json:"maxWaitLorhammeTime"`
 	Init                     []model.Init       `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
@@ -62,6 +66,10 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 		if err != nil {
 			return nil, err
 		}
+		maxWaitLorhammeTime, err := time.ParseDuration(test.MaxWaitLorhammeTime)
+		if err != nil {
+			return nil, err
+		}
 		res[i] = TestSuite{
 			UUID:                     uuid.New().String(),
 			Test:                     test.Test,
@@ -69,6 +77,8 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 			SleepBeforeCheckTime:     sleepBeforeCheckTime,
 			ShutdownAllLorhammerTime: shutdownAllLorhammerTime,
 			SleepAtEndTime:           sleepAtEndTime,
+			RequieredLorhammer:       test.RequieredLorhammer,
+			MaxWaitLorhammeTime:      maxWaitLorhammeTime,
 			Init:                     test.Init,
 			Check:                    test.Check,
 			Provisioning:             test.Provisioning,
