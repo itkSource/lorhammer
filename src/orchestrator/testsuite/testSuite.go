@@ -21,7 +21,7 @@ type TestSuite struct {
 	ShutdownAllLorhammerTime time.Duration      `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           time.Duration      `json:"sleepAtEndTime"`
 	RequieredLorhammer       int                `json:"requieredLorhammer"`
-	MaxWaitLorhammeTime      time.Duration      `json:"maxWaitLorhammeTime"`
+	MaxWaitLorhammerTime     time.Duration      `json:"maxWaitLorhammerTime"`
 	Init                     []model.Init       `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
@@ -35,7 +35,7 @@ type jsonTestSuite struct {
 	ShutdownAllLorhammerTime string             `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           string             `json:"sleepAtEndTime"`
 	RequieredLorhammer       int                `json:"requieredLorhammer"`
-	MaxWaitLorhammeTime      string             `json:"maxWaitLorhammeTime"`
+	MaxWaitLorhammerTime     string             `json:"maxWaitLorhammerTime"`
 	Init                     []model.Init       `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
@@ -66,7 +66,7 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 		if err != nil {
 			return nil, err
 		}
-		maxWaitLorhammeTime, err := time.ParseDuration(test.MaxWaitLorhammeTime)
+		maxWaitLorhammerTime, err := time.ParseDuration(test.MaxWaitLorhammerTime)
 		if err != nil {
 			return nil, err
 		}
@@ -78,7 +78,7 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 			ShutdownAllLorhammerTime: shutdownAllLorhammerTime,
 			SleepAtEndTime:           sleepAtEndTime,
 			RequieredLorhammer:       test.RequieredLorhammer,
-			MaxWaitLorhammeTime:      maxWaitLorhammeTime,
+			MaxWaitLorhammerTime:     maxWaitLorhammerTime,
 			Init:                     test.Init,
 			Check:                    test.Check,
 			Provisioning:             test.Provisioning,

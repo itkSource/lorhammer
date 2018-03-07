@@ -34,8 +34,8 @@ func (test *TestSuite) LaunchTest(mqttClient tools.Mqtt) (*TestReport, error) {
 		if command.NbLorhammer() >= test.RequieredLorhammer {
 			break
 		}
-		if time.Now().Sub(startDate) > test.MaxWaitLorhammeTime {
-			loggerManager.WithField("MaxWaitLorhammeTime", test.MaxWaitLorhammeTime).Error("No requiered lorhammer after time")
+		if time.Now().Sub(startDate) > test.MaxWaitLorhammerTime {
+			loggerManager.WithField("MaxWaitLorhammerTime", test.MaxWaitLorhammerTime).Error("No requiered lorhammer after time")
 			return nil, errors.New("no required lorhammer")
 		}
 		time.Sleep(100 * time.Millisecond)
