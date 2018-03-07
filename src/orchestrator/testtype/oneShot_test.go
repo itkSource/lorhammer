@@ -2,6 +2,7 @@ package testtype
 
 import (
 	"lorhammer/src/model"
+	"lorhammer/src/orchestrator/command"
 	"sync"
 	"testing"
 	"time"
@@ -9,7 +10,8 @@ import (
 
 func TestOneShot(t *testing.T) {
 	mqtt := &fakeMqtt{mu: sync.Mutex{}}
-	go startOneShot(Test{testType: typeOneShot}, model.Init{}, mqtt)
+	command.NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
+	go startOneShot(Test{testType: typeOneShot}, []model.Init{{}}, mqtt)
 
 	time.Sleep(100 * time.Millisecond)
 

@@ -1,13 +1,14 @@
 [{
   "test": {
     "type": "oneShot",
-    "rampTime": "0",
     "repeatTime": "0"
   },
   "stopAllLorhammerTime": "10s",
   "sleepBeforeCheckTime": "0",
   "shutdownAllLorhammerTime": "0",
   "sleepAtEndTime": "10m",
+  "requieredLorhammer": 1,
+  "maxWaitLorhammerTime": "5s",
   "init": {
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 1,

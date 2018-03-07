@@ -1,13 +1,14 @@
 [{
   "test": {
-    "type": "ramp",
-    "rampTime": "30m",
-    "repeatTime": "0"
+    "type": "repeat",
+    "repeatTime": "1m"
   },
   "stopAllLorhammerTime": "40m",
   "sleepBeforeCheckTime": "0",
   "shutdownAllLorhammerTime": "40m",
   "sleepAtEndTime": "0",
+  "requieredLorhammer": 1,
+  "maxWaitLorhammerTime": "5s",
   "init": {
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 1000,
@@ -25,7 +26,6 @@
   },
   "deploy": {
     "type": "amazon",
-    "sleepAfterDeployTime": "20s",
     "config": {
       "region": "eu-west-2",
       "imageId": "ami-87848ee3",

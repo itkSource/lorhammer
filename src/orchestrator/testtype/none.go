@@ -11,6 +11,6 @@ const typeNone Type = "none"
 
 var logNone = logrus.WithField("logger", "orchestrator/testType/none")
 
-func startNone(_ Test, _ model.Init, _ tools.Mqtt) {
+func startNone(_ Test, _ []model.Init, _ tools.Mqtt) {
 	logNone.WithField("type", "none").Warn("Nothing to test")
 }

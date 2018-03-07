@@ -1,13 +1,14 @@
 [{
   "test": {
-    "type": "ramp",
-    "rampTime": "5m",
-    "repeatTime": "0"
+    "type": "repeat",
+    "repeatTime": "1m"
   },
   "stopAllLorhammerTime": "0",
   "sleepBeforeCheckTime": "10m",
   "shutdownAllLorhammerTime": "10m",
   "sleepAtEndTime": "0",
+  "requieredLorhammer": 1,
+  "maxWaitLorhammerTime": "5s",
   "init": {
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 10,

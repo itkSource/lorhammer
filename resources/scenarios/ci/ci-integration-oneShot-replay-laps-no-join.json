@@ -1,14 +1,15 @@
 [{
   "test": {
     "type": "oneShot",
-    "rampTime": "0",
     "repeatTime": "0"
   },
   "stopAllLorhammerTime": "0",
   "sleepBeforeCheckTime": "2m",
   "shutdownAllLorhammerTime": "0",
   "sleepAtEndTime": "0",
-  "init": {
+  "requieredLorhammer": 1,
+  "maxWaitLorhammerTime": "10s",
+  "init": [{
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 1,
     "nbNodePerGateway": [5, 5],
@@ -23,7 +24,7 @@
       {"value": "01B501002919000006018403131313121255", "date": 1488931202},
       {"value": "01B501002919000006018403131313121266", "date": 1488931203}
     ]
-  },
+  }],
   "provisioning": {
     "type": "none"
   },

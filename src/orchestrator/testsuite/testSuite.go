@@ -20,7 +20,9 @@ type TestSuite struct {
 	SleepBeforeCheckTime     time.Duration      `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime time.Duration      `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           time.Duration      `json:"sleepAtEndTime"`
-	Init                     model.Init         `json:"init"`
+	RequieredLorhammer       int                `json:"requieredLorhammer"`
+	MaxWaitLorhammerTime     time.Duration      `json:"maxWaitLorhammerTime"`
+	Init                     []model.Init       `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
 	Deploy                   deploy.Model       `json:"deploy"`
@@ -32,7 +34,9 @@ type jsonTestSuite struct {
 	SleepBeforeCheckTime     string             `json:"sleepBeforeCheckTime"`
 	ShutdownAllLorhammerTime string             `json:"shutdownAllLorhammerTime"`
 	SleepAtEndTime           string             `json:"sleepAtEndTime"`
-	Init                     model.Init         `json:"init"`
+	RequieredLorhammer       int                `json:"requieredLorhammer"`
+	MaxWaitLorhammerTime     string             `json:"maxWaitLorhammerTime"`
+	Init                     []model.Init       `json:"init"`
 	Check                    checker.Model      `json:"check"`
 	Provisioning             provisioning.Model `json:"provisioning"`
 	Deploy                   deploy.Model       `json:"deploy"`
@@ -62,6 +66,10 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 		if err != nil {
 			return nil, err
 		}
+		maxWaitLorhammerTime, err := time.ParseDuration(test.MaxWaitLorhammerTime)
+		if err != nil {
+			return nil, err
+		}
 		res[i] = TestSuite{
 			UUID:                     uuid.New().String(),
 			Test:                     test.Test,
@@ -69,6 +77,8 @@ func FromFile(configFile []byte) ([]TestSuite, error) {
 			SleepBeforeCheckTime:     sleepBeforeCheckTime,
 			ShutdownAllLorhammerTime: shutdownAllLorhammerTime,
 			SleepAtEndTime:           sleepAtEndTime,
+			RequieredLorhammer:       test.RequieredLorhammer,
+			MaxWaitLorhammerTime:     maxWaitLorhammerTime,
 			Init:                     test.Init,
 			Check:                    test.Check,
 			Provisioning:             test.Provisioning,

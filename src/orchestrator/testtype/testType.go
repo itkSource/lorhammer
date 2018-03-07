@@ -15,13 +15,11 @@ type Type string
 type Test struct {
 	testType   Type
 	repeatTime time.Duration
-	rampTime   time.Duration
 }
 
 type testJSON struct {
 	TestType   Type   `json:"type"`
 	RepeatTime string `json:"repeatTime"`
-	RampTime   string `json:"rampTime"`
 }
 
 //UnmarshalJSON permit to load a Test from a json
@@ -34,9 +32,6 @@ func (test *Test) UnmarshalJSON(b []byte) error {
 	test.testType = serialized.TestType
 
 	var err error
-	if test.rampTime, err = time.ParseDuration(serialized.RampTime); err != nil {
-		return err
-	}
 	if test.repeatTime, err = time.ParseDuration(serialized.RepeatTime); err != nil {
 		return err
 	}
@@ -44,17 +39,16 @@ func (test *Test) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-var testers = make(map[Type]func(test Test, init model.Init, mqttClient tools.Mqtt))
+var testers = make(map[Type]func(test Test, init []model.Init, mqttClient tools.Mqtt))
 
 func init() {
 	testers[typeNone] = startNone
 	testers[typeOneShot] = startOneShot
 	testers[typeRepeat] = startRepeat
-	testers[typeRamp] = startRamp
 }
 
 //Start launch a test
-func Start(test Test, init model.Init, mqttClient tools.Mqtt) error {
+func Start(test Test, init []model.Init, mqttClient tools.Mqtt) error {
 	if tester := testers[test.testType]; tester != nil {
 		go tester(test, init, mqttClient)
 		return nil

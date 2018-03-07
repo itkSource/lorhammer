@@ -1,13 +1,14 @@
 [{
   "test": {
     "type": "oneShot",
-    "rampTime": "0",
     "repeatTime": "0"
   },
   "stopAllLorhammerTime": "0",
   "sleepBeforeCheckTime": "0",
   "shutdownAllLorhammerTime": "0",
   "sleepAtEndTime": "0",
+  "requieredLorhammer": 1,
+  "maxWaitLorhammerTime": "5s",
   "init": {
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 1,
@@ -25,7 +26,6 @@
   },
   "deploy": {
     "type": "distant",
-    "sleepAfterDeployTime": "20s",
     "config": {
       "sshKeyPath": "",
       "user": "",

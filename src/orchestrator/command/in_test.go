@@ -17,6 +17,7 @@ type mqttTest struct {
 	publishError   bool
 	publishCmdName model.CommandName
 	publishPayload string
+	provisionError error
 }
 
 var tests = []mqttTest{
@@ -28,18 +29,32 @@ var tests = []mqttTest{
 		publishError:   false,
 		publishCmdName: model.START,
 		publishPayload: `{"scenarioid":"1"}`,
+		provisionError: nil,
 	}, {
-		valid:   false,
-		cmdName: model.REGISTER,
-		payload: ``,
+		valid:          false,
+		cmdName:        model.REGISTER,
+		payload:        ``,
+		provisionError: nil,
 	}, {
-		valid:        false,
-		cmdName:      model.REGISTER,
-		payload:      `{}`,
-		publishError: true,
+		valid:          false,
+		cmdName:        model.REGISTER,
+		payload:        `{}`,
+		publishError:   true,
+		provisionError: nil,
 	}, {
-		valid:   false,
-		cmdName: model.CommandName(""),
+		valid:          false,
+		cmdName:        model.CommandName(""),
+		provisionError: nil,
+	}, {
+		valid:          false,
+		cmdName:        model.NEWLORHAMMER,
+		payload:        `{`,
+		provisionError: nil,
+	}, {
+		valid:          false,
+		cmdName:        model.REGISTER,
+		payload:        `{"scenarioid":"1","gateways":[],"callBackTopic":"cbt"}`,
+		provisionError: errors.New("fake error provisioning"),
 	},
 }
 
@@ -101,8 +116,12 @@ func TestRegister(t *testing.T) {
 			test: test,
 		}
 		hasCallProvision := false
+		hasCallNewLorhammer := false
 		err := ApplyCmd(cmd, mqtt, func(register model.Register) error {
 			hasCallProvision = true
+			return test.provisionError
+		}, func(instance model.NewLorhammer) error {
+			hasCallNewLorhammer = true
 			return nil
 		})
 
@@ -115,5 +134,46 @@ func TestRegister(t *testing.T) {
 		if test.valid && test.provision && !hasCallProvision {
 			t.Fatalf("a valid test should call provision() method for test %d", i)
 		}
+
+		if hasCallNewLorhammer {
+			t.Fatal("a valid test don't call new lorhammer")
+		}
+	}
+}
+
+func TestNewLorhammer(t *testing.T) {
+	logrus.SetOutput(fakeWriter{}) // shut up logrus 🙊
+
+	cmd := model.CMD{
+		CmdName: model.NEWLORHAMMER,
+		Payload: json.RawMessage([]byte(`{"CallbackTopic":"topic1"}`)),
+	}
+	mqtt := &fakeMqtt{
+		t: t,
+		test: mqttTest{
+			valid:          true,
+			publishCmdName: model.LORHAMMERADDED,
+		},
+	}
+	hasCallProvision := false
+	hasCallNewLorhammer := false
+	err := ApplyCmd(cmd, mqtt, func(register model.Register) error {
+		hasCallProvision = true
+		return nil
+	}, func(instance model.NewLorhammer) error {
+		hasCallNewLorhammer = true
+		return nil
+	})
+
+	if err != nil {
+		t.Fatal("a valid test should not return err", err)
+	}
+
+	if hasCallProvision {
+		t.Fatal("new lorhammer must not call provision")
+	}
+
+	if !hasCallNewLorhammer {
+		t.Fatal("a valid test should call new lorhammer")
 	}
 }

@@ -32,7 +32,7 @@ func (f *fakeMqtt) PublishSubCmd(topic string, cmdName model.CommandName, subCmd
 
 func TestRepeat(t *testing.T) {
 	mqtt := &fakeMqtt{mu: sync.Mutex{}}
-	go startRepeat(Test{testType: typeRepeat, repeatTime: time.Duration(1 * time.Second)}, model.Init{}, mqtt)
+	go startRepeat(Test{testType: typeRepeat, repeatTime: time.Duration(1 * time.Second)}, []model.Init{{}}, mqtt)
 
 	time.Sleep(3500 * time.Millisecond)
 

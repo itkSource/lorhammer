@@ -4,7 +4,40 @@ import (
 	"encoding/json"
 	"lorhammer/src/model"
 	"testing"
+	"time"
 )
+
+func TestNbLorhammer(t *testing.T) {
+	nbLorhammer := NbLorhammer()
+	if nbLorhammer != 0 {
+		t.Fatal("At start no lorhammer")
+	}
+	NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
+	NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
+	NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
+	nbLorhammer = NbLorhammer()
+	if nbLorhammer != 3 {
+		t.Fatal("Should have 3 lorhammers")
+	}
+
+	lorhammers = make([]model.NewLorhammer, 0) // reinitialize lorhammers
+	nbToLaunch := 100
+	go func() {
+		for i := 0; i < nbToLaunch; i++ {
+			NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
+			time.Sleep(1 * time.Millisecond)
+		}
+	}()
+	for {
+		nbLorhammer = NbLorhammer()
+		if nbLorhammer > nbToLaunch {
+			t.Fatal("Too much lorhammer")
+		} else if nbLorhammer == nbToLaunch {
+			break
+		}
+		time.Sleep(1 * time.Microsecond)
+	}
+}
 
 func TestLaunchLaunchScenario(t *testing.T) {
 	init := model.Init{}
@@ -19,7 +52,9 @@ func TestLaunchLaunchScenario(t *testing.T) {
 			publishPayload: string(serialized),
 		},
 	}
-	err = LaunchScenario(mqtt, init)
+	lorhammers = make([]model.NewLorhammer, 0) // reinitialize lorhammers
+	NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
+	err = LaunchScenario(mqtt, []model.Init{init, init, init})
 	if err != nil {
 		t.Fatal("A valid model.init should not return err")
 	}
@@ -33,7 +68,8 @@ func TestLaunchLaunchScenarioError(t *testing.T) {
 			publishError: true,
 		},
 	}
-	err := LaunchScenario(mqtt, init)
+	NewLorhammer(model.NewLorhammer{CallbackTopic: "topic1"})
+	err := LaunchScenario(mqtt, []model.Init{init})
 	if err == nil {
 		t.Fatal("If mqtt return err out should return err")
 	}

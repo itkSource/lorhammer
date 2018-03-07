@@ -10,8 +10,7 @@ import (
 
 //Channels mqtt to use
 const (
-	MqttStartTopic        = "/lorhammer"
-	MqttInitTopic         = "/lorhammer/all"
+	MqttLorhammerTopic    = "/lorhammer"
 	MqttOrchestratorTopic = "/lorhammer/orchestrator"
 )
 

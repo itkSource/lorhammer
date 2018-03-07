@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"lorhammer/src/tools"
-	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -16,15 +15,13 @@ type Type string
 
 //Model represent a deployer in config file
 type Model struct {
-	Type                 Type
-	SleepAfterDeployTime time.Duration
-	Config               json.RawMessage
+	Type   Type
+	Config json.RawMessage
 }
 
 type modelJSON struct {
-	Type                 Type            `json:"type"`
-	SleepAfterDeployTime string          `json:"sleepAfterDeployTime"`
-	Config               json.RawMessage `json:"config"`
+	Type   Type            `json:"type"`
+	Config json.RawMessage `json:"config"`
 }
 
 //UnmarshalJSON permit to json to object a depoyer
@@ -36,15 +33,6 @@ func (m *Model) UnmarshalJSON(b []byte) error {
 	}
 	m.Type = mjson.Type
 	m.Config = mjson.Config
-	if mjson.SleepAfterDeployTime == "" {
-		m.SleepAfterDeployTime, _ = time.ParseDuration("0")
-		return nil
-	}
-	d, err := time.ParseDuration(mjson.SleepAfterDeployTime)
-	if err != nil {
-		return err
-	}
-	m.SleepAfterDeployTime = d
 	return nil
 }
 
@@ -79,10 +67,5 @@ func Start(model Model, mqttClient tools.Mqtt) error {
 	if err := d.Deploy(); err != nil {
 		return err
 	}
-	if err := d.RunAfter(); err != nil {
-		return err
-	}
-	logDeploy.WithField("duration", model.SleepAfterDeployTime).Info("Sleep to lets new lorhammer start")
-	time.Sleep(model.SleepAfterDeployTime)
-	return nil
+	return d.RunAfter()
 }

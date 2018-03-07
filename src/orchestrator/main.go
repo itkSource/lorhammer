@@ -65,7 +65,7 @@ func main() {
 		if errHandleCmd := mqttClient.HandleCmd([]string{tools.MqttOrchestratorTopic}, func(cmd model.CMD) {
 			if errApplyCmd := command.ApplyCmd(cmd, mqttClient, func(register model.Register) error {
 				return provisioning.Provision(currentTestSuite.UUID, currentTestSuite.Provisioning, register)
-			}); errApplyCmd != nil {
+			}, command.NewLorhammer); errApplyCmd != nil {
 				logger.WithField("cmd", string(cmd.Payload)).WithError(errApplyCmd).Error("ApplyCmd error")
 			}
 		}); errHandleCmd != nil {

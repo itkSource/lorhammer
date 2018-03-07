@@ -19,21 +19,6 @@ func TestModel_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestModel_UnmarshalJSONWithDuration(t *testing.T) {
-	json := []byte(`{"type": "none", "sleepAfterDeployTime": "10s"}`)
-	m := Model{}
-	err := m.UnmarshalJSON(json)
-	if err != nil {
-		t.Fatal("unmarshal none should not throw error")
-	}
-	if m.Type != typeNone {
-		t.Fatal("json none deploy type should return none type")
-	}
-	if m.SleepAfterDeployTime.Seconds() != 10 {
-		t.Fatal("duration 20seconds in json should return 20 second in go")
-	}
-}
-
 func TestModel_UnmarshalJSONError(t *testing.T) {
 	json := []byte(`{`)
 	m := Model{}
@@ -43,19 +28,9 @@ func TestModel_UnmarshalJSONError(t *testing.T) {
 	}
 }
 
-func TestModel_UnmarshalJSONErrorDuration(t *testing.T) {
-	json := []byte(`{"type": "none", "sleepAfterDeployTime": "sc"}`)
-	m := Model{}
-	err := m.UnmarshalJSON(json)
-	if err == nil {
-		t.Fatal("unmarshal bad json duration should throw error")
-	}
-}
-
 func TestFake(t *testing.T) {
 	m := Model{
-		Type:                 Type("fake"),
-		SleepAfterDeployTime: 0,
+		Type: Type("fake"),
 	}
 
 	err := Start(m, nil)
@@ -67,8 +42,7 @@ func TestFake(t *testing.T) {
 
 func TestNone(t *testing.T) {
 	m := Model{
-		Type:                 Type("none"),
-		SleepAfterDeployTime: 0,
+		Type: Type("none"),
 	}
 
 	err := Start(m, nil)
@@ -90,8 +64,7 @@ func (o otherDeploy) RunAfter() error  { return o.errAfter }
 
 func TestOther(t *testing.T) {
 	m := Model{
-		Type:                 Type("other"),
-		SleepAfterDeployTime: 0,
+		Type: Type("other"),
 	}
 
 	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {
@@ -109,8 +82,7 @@ func TestOther(t *testing.T) {
 
 func TestOtherErr(t *testing.T) {
 	m := Model{
-		Type:                 Type("other"),
-		SleepAfterDeployTime: 0,
+		Type: Type("other"),
 	}
 
 	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {
@@ -128,8 +100,7 @@ func TestOtherErr(t *testing.T) {
 
 func TestOtherErrBefore(t *testing.T) {
 	m := Model{
-		Type:                 Type("other"),
-		SleepAfterDeployTime: 0,
+		Type: Type("other"),
 	}
 
 	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {
@@ -147,8 +118,7 @@ func TestOtherErrBefore(t *testing.T) {
 
 func TestOtherErrDeploy(t *testing.T) {
 	m := Model{
-		Type:                 Type("other"),
-		SleepAfterDeployTime: 0,
+		Type: Type("other"),
 	}
 
 	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {
@@ -166,8 +136,7 @@ func TestOtherErrDeploy(t *testing.T) {
 
 func TestOtherErrAfter(t *testing.T) {
 	m := Model{
-		Type:                 Type("other"),
-		SleepAfterDeployTime: 0,
+		Type: Type("other"),
 	}
 
 	other := func(json.RawMessage, tools.Mqtt) (deployer, error) {

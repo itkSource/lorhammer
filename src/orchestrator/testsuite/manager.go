@@ -1,6 +1,7 @@
 package testsuite
 
 import (
+	"errors"
 	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/deploy"
@@ -27,6 +28,18 @@ func (test *TestSuite) LaunchTest(mqttClient tools.Mqtt) (*TestReport, error) {
 		return nil, err
 	}
 	startDate := time.Now()
+
+	//wait until all required lorhammers are here
+	for {
+		if command.NbLorhammer() >= test.RequieredLorhammer {
+			break
+		}
+		if time.Now().Sub(startDate) > test.MaxWaitLorhammerTime {
+			loggerManager.WithField("MaxWaitLorhammerTime", test.MaxWaitLorhammerTime).Error("No requiered lorhammer after time")
+			return nil, errors.New("no required lorhammer")
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
 
 	if err := testtype.Start(test.Test, test.Init, mqttClient); err != nil {
 		loggerManager.WithError(err).Error("Error to start test")
