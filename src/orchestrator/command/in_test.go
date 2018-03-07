@@ -17,6 +17,7 @@ type mqttTest struct {
 	publishError   bool
 	publishCmdName model.CommandName
 	publishPayload string
+	provisionError error
 }
 
 var tests = []mqttTest{
@@ -28,18 +29,32 @@ var tests = []mqttTest{
 		publishError:   false,
 		publishCmdName: model.START,
 		publishPayload: `{"scenarioid":"1"}`,
+		provisionError: nil,
 	}, {
-		valid:   false,
-		cmdName: model.REGISTER,
-		payload: ``,
+		valid:          false,
+		cmdName:        model.REGISTER,
+		payload:        ``,
+		provisionError: nil,
 	}, {
-		valid:        false,
-		cmdName:      model.REGISTER,
-		payload:      `{}`,
-		publishError: true,
+		valid:          false,
+		cmdName:        model.REGISTER,
+		payload:        `{}`,
+		publishError:   true,
+		provisionError: nil,
 	}, {
-		valid:   false,
-		cmdName: model.CommandName(""),
+		valid:          false,
+		cmdName:        model.CommandName(""),
+		provisionError: nil,
+	}, {
+		valid:          false,
+		cmdName:        model.NEWLORHAMMER,
+		payload:        `{`,
+		provisionError: nil,
+	}, {
+		valid:          false,
+		cmdName:        model.REGISTER,
+		payload:        `{"scenarioid":"1","gateways":[],"callBackTopic":"cbt"}`,
+		provisionError: errors.New("fake error provisioning"),
 	},
 }
 
@@ -104,7 +119,7 @@ func TestRegister(t *testing.T) {
 		hasCallNewLorhammer := false
 		err := ApplyCmd(cmd, mqtt, func(register model.Register) error {
 			hasCallProvision = true
-			return nil
+			return test.provisionError
 		}, func(instance model.NewLorhammer) error {
 			hasCallNewLorhammer = true
 			return nil

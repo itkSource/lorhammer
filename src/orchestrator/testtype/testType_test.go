@@ -55,3 +55,15 @@ func TestNewTester(t *testing.T) {
 		t.Fatal("callMeMaybe must be called")
 	}
 }
+
+func TestUnmarshalJsonError(t *testing.T) {
+	var test Test
+	err := json.Unmarshal([]byte(`{"type": "other", "repeatTime": "{"}`), &test)
+	if err == nil {
+		t.Fatal("Bad repeat time should throw error")
+	}
+	err = test.UnmarshalJSON([]byte(`{`))
+	if err == nil {
+		t.Fatal("Bad repeat time should throw error")
+	}
+}

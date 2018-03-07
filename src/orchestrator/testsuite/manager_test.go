@@ -3,6 +3,7 @@ package testsuite
 import (
 	"fmt"
 	"lorhammer/src/model"
+	"lorhammer/src/orchestrator/checker"
 	"lorhammer/src/orchestrator/command"
 	"lorhammer/src/orchestrator/provisioning"
 	"testing"
@@ -234,4 +235,49 @@ func (m *fakeMqtt) HandleCmd(topics []string, handle func(cmd model.CMD)) error 
 func (m *fakeMqtt) PublishCmd(topic string, cmdName model.CommandName) error    { return nil }
 func (m *fakeMqtt) PublishSubCmd(topic string, cmdName model.CommandName, subCmd interface{}) error {
 	return nil
+}
+
+type fakeReport struct{}
+
+func (fakeReport) Details() map[string]interface{} {
+	return make(map[string]interface{})
+}
+
+type fakeChecker struct {
+	nbOk  int
+	nbErr int
+}
+
+func (fakeChecker) Start() error {
+	return nil
+}
+
+func (f fakeChecker) Check() ([]checker.Success, []checker.Error) {
+	ok := make([]checker.Success, f.nbOk)
+	for index := range ok {
+		ok[index] = fakeReport{}
+	}
+	err := make([]checker.Error, f.nbErr)
+	for index := range err {
+		err[index] = fakeReport{}
+	}
+	return ok, err
+}
+
+func TestCheckResults(t *testing.T) {
+	tests := make([]fakeChecker, 5)
+	tests[0] = fakeChecker{nbOk: 0, nbErr: 0}
+	tests[1] = fakeChecker{nbOk: 1, nbErr: 0}
+	tests[2] = fakeChecker{nbOk: 0, nbErr: 1}
+	tests[3] = fakeChecker{nbOk: 8, nbErr: 10}
+	tests[4] = fakeChecker{nbOk: 10, nbErr: 10}
+	for _, test := range tests {
+		ok, err := checkResults(test)
+		if len(ok) != test.nbOk {
+			t.Fatalf("Should return ok %d instead of %d", test.nbOk, len(ok))
+		}
+		if len(err) != test.nbErr {
+			t.Fatalf("Should return err %d instead of %d", test.nbErr, len(err))
+		}
+	}
 }
