@@ -16,14 +16,19 @@ var logger = logrus.WithField("logger", "lorhammer/command/in")
 var scenarios = sync.Map{}
 
 //Start send model.NEWLORHAMMER command every second until orchestrator has respond model.LORHAMMERADDED command
-func Start(mqtt tools.Mqtt, hostname string) chan bool {
+func Start(mqtt tools.Mqtt, hostname string, maxWaitOrchestratorTime time.Duration) chan bool {
 	lorhammerAddedChan := make(chan bool)
 	go func() {
 		defer close(lorhammerAddedChan)
+		start := time.Now()
 		for {
 			select {
-			case <-time.After(1 * time.Second): //TODO make this time in conf
+			case <-time.After(1 * time.Second):
 				mqtt.PublishSubCmd(tools.MqttOrchestratorTopic, model.NEWLORHAMMER, model.NewLorhammer{CallbackTopic: tools.MqttLorhammerTopic + "/" + hostname})
+				if time.Now().Sub(start) > maxWaitOrchestratorTime {
+					logger.Error("Max time to wait ended, I will not registered on an orchestrator...")
+					return
+				}
 			case <-lorhammerAddedChan:
 				return
 			}
