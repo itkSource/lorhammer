@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.6.0 - UNRELEASED
+## Version 0.6.0 - 2018-03-14
 
 * **SCENARIO** new feature : launch multiple scenarios (payloads) with 1 orchestrator [issues/69](https://gitlab.com/itk.fr/lorhammer/issues/69) :
   * **BREAKING** before scenario file have 'init' property now its an array of init
