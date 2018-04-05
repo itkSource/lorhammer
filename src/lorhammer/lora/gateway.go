@@ -14,6 +14,7 @@ import (
 
 var loggerGateway = logrus.WithField("logger", "lorhammer/lora/gateway")
 
+//LorhammerGateway : internal gateway for pointer receiver usage
 type LorhammerGateway struct {
 	Nodes                 []*model.Node
 	NsAddress             string
@@ -343,6 +344,7 @@ func (gateway *LorhammerGateway) sendTxAckPacket(conn net.Conn, data []byte) {
 	}
 }
 
+//ConvertToGateway : convert internal gateway to model gateway
 func (gateway LorhammerGateway) ConvertToGateway() model.Gateway {
 	return model.Gateway{
 		Nodes:                 gateway.Nodes,
