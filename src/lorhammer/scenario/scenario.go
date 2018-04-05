@@ -17,7 +17,7 @@ var logger = logrus.WithField("logger", "lorhammer/scenario/scenario")
 //Scenario struc define scenari with metadata
 type Scenario struct {
 	UUID                 string
-	Gateways             []*model.Gateway
+	Gateways             []*lora.LorhammerGateway
 	poison               chan bool
 	ScenarioSleepTime    [2]time.Duration
 	GatewaySleepTime     [2]time.Duration
@@ -32,7 +32,7 @@ type Scenario struct {
 
 //NewScenario provide new Scenario with param defined in model.Init
 func NewScenario(init model.Init) (*Scenario, error) {
-	gateways := make([]*model.Gateway, init.NbGateway)
+	gateways := make([]*lora.LorhammerGateway, init.NbGateway)
 	for i := 0; i < len(gateways); i++ {
 		if _, err := time.ParseDuration(init.ReceiveTimeoutTime); err != nil {
 			return nil, err
@@ -106,8 +106,8 @@ func (p *Scenario) Stop(prometheus tools.Prometheus) {
 func (p *Scenario) Join(prometheus tools.Prometheus) {
 	logger.WithField("nbGateways", len(p.Gateways)).Info("All gateways are joining the application server")
 
-	for i := 0; i < len(p.Gateways); i++ {
-		lora.Join(p.Gateways[i], prometheus, p.WithJoin)
+	for _, gateway := range p.Gateways {
+		gateway.Join(prometheus, p.WithJoin)
 	}
 }
 
@@ -121,9 +121,9 @@ func (p *Scenario) start(prometheus tools.Prometheus, cancelFunction context.Can
 
 	logger.WithField("nbGateways", len(p.Gateways)).Info("Gateways started")
 
-	for i := 0; i < len(p.Gateways); i++ {
+	for _, gateway := range p.Gateways {
 		time.Sleep(tools.RandomDuration(p.GatewaySleepTime[0], p.GatewaySleepTime[1]))
-		go lora.Start(p.Gateways[i], prometheus, p.MessageFcnt)
+		go gateway.Start(prometheus, p.MessageFcnt)
 		p.MessageFcnt++
 	}
 }
