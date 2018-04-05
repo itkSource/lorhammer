@@ -23,7 +23,7 @@ type Prometheus interface {
 
 type prometheusImpl struct {
 	udpPushAckDuration    prometheus.Histogram
-	udpPullRespDuration    prometheus.Histogram
+	udpPullRespDuration   prometheus.Histogram
 	nbGateways            prometheus.Gauge
 	nbNodes               prometheus.Gauge
 	nbPushAckLongRequest  prometheus.Counter
@@ -65,7 +65,7 @@ func NewPrometheus() Prometheus {
 	})
 	prometheus.MustRegister(nbPullRespLongRequest)
 	return &prometheusImpl{
-		udpPullRespDuration:udpPullRespDuration,
+		udpPullRespDuration:   udpPullRespDuration,
 		udpPushAckDuration:    udpPushAckDuration,
 		nbGateways:            nbGateways,
 		nbNodes:               nbNodes,

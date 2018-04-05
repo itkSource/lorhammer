@@ -1,13 +1,13 @@
 package lora
 
 import (
-	"testing"
+	"errors"
 	"lorhammer/src/model"
 	"lorhammer/src/tools"
-	"time"
 	"net"
-	"errors"
 	"sync"
+	"testing"
+	"time"
 )
 
 type fakeConn struct {
@@ -36,7 +36,7 @@ func (fc *fakeConn) SetWriteDeadline(t time.Time) error { return nil }
 type fakeConnErrorReading struct {
 	writed bool
 	readed bool
-	mutex sync.Mutex
+	mutex  sync.Mutex
 }
 
 func (fc *fakeConnErrorReading) Read(b []byte) (n int, err error) {
@@ -369,11 +369,11 @@ func TestReadLoraPacketsNoPacket(t *testing.T) {
 		t.Fatal("Received messages different from 0")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 
@@ -405,11 +405,11 @@ func TestReadLoraPacketsPushAcks(t *testing.T) {
 		t.Fatal("Wrong number of received messages")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 
@@ -441,11 +441,11 @@ func TestReadLoraPacketsWrongPacket(t *testing.T) {
 		t.Fatal("Wrong number of received messages")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 
@@ -478,11 +478,11 @@ func TestReadLoraPacketsPullResp(t *testing.T) {
 		t.Fatal("Wrong number of received messages")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 
@@ -517,11 +517,11 @@ func TestReadLoraPushPacketsPushAck(t *testing.T) {
 		t.Fatal("Wrong number in Prometheus")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 
@@ -557,11 +557,11 @@ func TestReadLoraPushPacketsPullResp(t *testing.T) {
 		t.Fatal("Wrong number in Prometheus")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 
@@ -596,11 +596,11 @@ func TestReadLoraJoinPacketsPushAck(t *testing.T) {
 		t.Fatal("Wrong number in Prometheus")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 
@@ -635,11 +635,11 @@ func TestReadLoraJoinPacketsPushAckWithJoin(t *testing.T) {
 		t.Fatal("Wrong number in Prometheus")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 
@@ -675,11 +675,11 @@ func TestReadLoraJoinPacketsPullResp(t *testing.T) {
 		t.Fatal("Wrong number in Prometheus")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 
@@ -715,11 +715,11 @@ func TestReadLoraJoinPacketsPullRespWithJoin(t *testing.T) {
 		t.Fatal("Wrong number in Prometheus")
 	}
 
-	if ! <-poison {
+	if !<-poison {
 		t.Fatal("Poison channel not contains true")
 	}
 
-	if ! <-next {
+	if !<-next {
 		t.Fatal("Next channel not contains true")
 	}
 

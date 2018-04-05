@@ -57,13 +57,13 @@ type fakePrometheus struct {
 	nbNodes   chan int
 }
 
-func (prom *fakePrometheus) StartPushAckTimer() func()    { return nil }
+func (prom *fakePrometheus) StartPushAckTimer() func()     { return nil }
 func (prom *fakePrometheus) StartPullRespTimer() func()    { return nil }
-func (prom *fakePrometheus) AddGateway(nb int)     { go func() { prom.nbGateway <- nb }() }
-func (prom *fakePrometheus) SubGateway(nb int)     { go func() { prom.nbGateway <- nb }() }
-func (prom *fakePrometheus) AddNodes(nb int)       { go func() { prom.nbNodes <- nb }() }
-func (prom *fakePrometheus) SubNodes(nb int)       { go func() { prom.nbNodes <- nb }() }
-func (prom *fakePrometheus) AddPushAckLongRequest(nb int) {}
+func (prom *fakePrometheus) AddGateway(nb int)             { go func() { prom.nbGateway <- nb }() }
+func (prom *fakePrometheus) SubGateway(nb int)             { go func() { prom.nbGateway <- nb }() }
+func (prom *fakePrometheus) AddNodes(nb int)               { go func() { prom.nbNodes <- nb }() }
+func (prom *fakePrometheus) SubNodes(nb int)               { go func() { prom.nbNodes <- nb }() }
+func (prom *fakePrometheus) AddPushAckLongRequest(nb int)  {}
 func (prom *fakePrometheus) AddPullRespLongRequest(nb int) {}
 
 type fakeWriter struct{}

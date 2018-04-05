@@ -8,8 +8,8 @@ import (
 	"time"
 
 	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
-	"github.com/sirupsen/logrus"
 	"github.com/brocaar/lorawan"
+	"github.com/sirupsen/logrus"
 )
 
 var loggerGateway = logrus.WithField("logger", "lorhammer/lora/gateway")
@@ -211,7 +211,7 @@ func (gateway *LorhammerGateway) readLoraJoinPackets(conn net.Conn, poison chan 
 		"ref":      "lora/gateway:Join()",
 		"withJoin": withJoin,
 		"nb":       nbEmittedMsg - nbReceivedAckMsg,
-		"msgType": "Push Ack",
+		"msgType":  "Push Ack",
 	}).Warn("Receive PullData or Join Request ack after 2 seconds")
 	prometheus.AddPushAckLongRequest(nbEmittedMsg - nbReceivedAckMsg)
 
@@ -219,12 +219,12 @@ func (gateway *LorhammerGateway) readLoraJoinPackets(conn net.Conn, poison chan 
 		"ref":      "lora/gateway:Join()",
 		"withJoin": withJoin,
 		"nb":       nbEmittedMsg - nbReceivedPullRespMsg,
-		"msgType": "Pull Resp",
+		"msgType":  "Pull Resp",
 	}).Warn("Receive PullData or Join Request ack after 2 seconds")
 	prometheus.AddPullRespLongRequest(nbEmittedMsg - nbReceivedPullRespMsg)
 }
 
-func (gateway *LorhammerGateway) readLoraPushPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte, endPushAckTimer func(), endPullRespTimer func(),  prometheus tools.Prometheus) {
+func (gateway *LorhammerGateway) readLoraPushPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte, endPushAckTimer func(), endPullRespTimer func(), prometheus tools.Prometheus) {
 	nbReceivedAckMsg, nbReceivedPullRespMsg := gateway.readLoraPackets(conn, poison, next, threadListenUDP, endPushAckTimer, endPullRespTimer)
 	if len(gateway.Nodes)-nbReceivedAckMsg > 0 {
 		loggerGateway.WithFields(logrus.Fields{
@@ -322,8 +322,8 @@ func (gateway *LorhammerGateway) sendTxAckPacket(conn net.Conn, data []byte) {
 	if err := pullRespPacket.UnmarshalBinary(data); err == nil {
 		txAckPacket := loraserver_structs.TXACKPacket{
 			ProtocolVersion: 2,
-			RandomToken: pullRespPacket.RandomToken,
-			GatewayMAC: gateway.MacAddress,
+			RandomToken:     pullRespPacket.RandomToken,
+			GatewayMAC:      gateway.MacAddress,
 			Payload: &loraserver_structs.TXACKPayload{
 				TXPKACK: loraserver_structs.TXPKACK{
 					Error: "NONE",
@@ -343,14 +343,14 @@ func (gateway *LorhammerGateway) sendTxAckPacket(conn net.Conn, data []byte) {
 	}
 }
 
-func (gateway LorhammerGateway) ConvertToGateway() (model.Gateway) {
+func (gateway LorhammerGateway) ConvertToGateway() model.Gateway {
 	return model.Gateway{
-		Nodes: gateway.Nodes,
-		NsAddress: gateway.NsAddress,
-		MacAddress: gateway.MacAddress,
-		RxpkDate: gateway.RxpkDate,
+		Nodes:                 gateway.Nodes,
+		NsAddress:             gateway.NsAddress,
+		MacAddress:            gateway.MacAddress,
+		RxpkDate:              gateway.RxpkDate,
 		PayloadsReplayMaxLaps: gateway.PayloadsReplayMaxLaps,
-		AllLapsCompleted: gateway.AllLapsCompleted,
-		ReceiveTimeoutTime: gateway.ReceiveTimeoutTime,
+		AllLapsCompleted:      gateway.AllLapsCompleted,
+		ReceiveTimeoutTime:    gateway.ReceiveTimeoutTime,
 	}
 }
