@@ -1,5 +1,16 @@
 # Changelog
 
+## Version latest :
+
+* **PROMETHEUS** : change of metrics name and add new
+  * Now support `PUSH_ACK` and `PULL_RESP` duration and overtime long request :
+    * *lorhammer_pushack_durations* : Lora push ack latency distributions.
+    * *lorhammer_pullresp_durations* : Lora pull resp latency distributions.
+    * *lorhammer_pushack_long_request* : Lora nb lora push ack request witch take more than 2sc.
+    * *lorhammer_pullresp_long_request* : Lora nb lora pull resp request witch take more than 2sc.
+* **PULL_RESP** : proper support of `PULL_RESP` with `TX_ACK`  
+* Add tests on *gateway* part
+
 ## Version 0.6.0 - 2018-03-14
 
 * **SCENARIO** new feature : launch multiple scenarios (payloads) with 1 orchestrator [issues/69](https://gitlab.com/itk.fr/lorhammer/issues/69) :
