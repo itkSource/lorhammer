@@ -24,4 +24,4 @@ scrape_configs:
   scheme: http
   static_configs:
   - targets:
-    - 10.0.9.55:1234
+    - lorhammer:1234
