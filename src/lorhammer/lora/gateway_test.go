@@ -190,11 +190,11 @@ func TestReadPackets(t *testing.T) {
 	var fakeConnect net.Conn = &fakeConn{}
 	gateway := &LorhammerGateway{}
 
-	var poison, next, threadListenUDP = make(chan bool), make(chan bool), make(chan []byte)
+	var poison, next, threadListenUDP = make(chan bool), make(chan bool), make(chan []byte, 1)
 	go gateway.readPackets(fakeConnect, poison, next, threadListenUDP)
 	next <- true
 
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 1)
 	select {
 	case data := <-threadListenUDP:
 		if len(data) != 6 {
