@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.7.0 - [UNRELEASED]
+
+* **DEP** Update [issues/80](https://gitlab.com/itk.fr/lorhammer/issues/80) :
+  * golang to 1.10.1
+  * docker-compose to 1.20.1
+  * hugo to 0.38.1 and repair site static"
+
 ## Version 0.6.0 - 2018-03-14
 
 * **SCENARIO** new feature : launch multiple scenarios (payloads) with 1 orchestrator [issues/69](https://gitlab.com/itk.fr/lorhammer/issues/69) :
