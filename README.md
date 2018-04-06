@@ -2,6 +2,10 @@
 
 > Stress your lora network-server
 
+[![status](https://gitlab.com/itk.fr/lorhammer/badges/master/build.svg)](https://gitlab.com/itk.fr/lorhammer/commits/master)
+[![coverage report](https://gitlab.com/itk.fr/lorhammer/badges/master/coverage.svg)](https://gitlab.com/itk.fr/lorhammer/commits/master)
+[![Go Report Card](https://goreportcard.com/badge/gitlab.com/itk.fr/lorhammer)](https://goreportcard.com/report/gitlab.com/itk.fr/lorhammer)
+
 When building a big iot lora platform handling millions of messages per seconds, how to be sure we handle all the messages in time ? Today, no publicly accessible tool enables us to simulate the behavior of a wide lora infrastructure along with the messages.
 
 Lorhammer is here to do that. You can launch as much lorhammers as you want to stress and test your network-server.
