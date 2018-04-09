@@ -5,7 +5,8 @@
 * **DEP** Update [issues/80](https://gitlab.com/itk.fr/lorhammer/issues/80) :
   * golang to 1.10.1
   * docker-compose to 1.20.1
-  * hugo to 0.38.1 and repair site static"
+  * hugo to 0.38.1 and repair site static
+* **SCENARIO** update examples scenario [issues/75](https://gitlab.com/itk.fr/lorhammer/issues/75)
 
 ## Version 0.6.0 - 2018-03-14
 
