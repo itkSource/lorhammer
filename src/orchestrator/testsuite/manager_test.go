@@ -210,7 +210,7 @@ func TestLaunchTest(t *testing.T) {
 			if test.needProvisioning {
 				provisioning.Provision(tests[0].UUID, tests[0].Provisioning, model.Register{})
 			}
-			report, err := tests[0].LaunchTest(&fakeMqtt{})
+			report, err := tests[0].LaunchTest(&fakeMqtt{}, nil)
 			if ct.testValid && err != nil {
 				t.Fatalf("valid test should not throw err %s", ct.description)
 			} else if ct.testValid && report == nil {

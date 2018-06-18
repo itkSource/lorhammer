@@ -8,8 +8,21 @@ import (
 	"testing"
 )
 
+type fakePrometheus struct {
+	mqttOk   bool
+	mqttFail bool
+}
+
+func (prom *fakePrometheus) AddMQTTMessageOK() {
+	prom.mqttOk = true
+}
+
+func (prom *fakePrometheus) AddMQTTMessageFailed() {
+	prom.mqttFail = true
+}
+
 func TestNewMqtt(t *testing.T) {
-	k, err := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)))
+	k, err := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)), &fakePrometheus{})
 	if err != nil {
 		t.Fatalf("Good config should not return err : %s", err.Error())
 	}
@@ -19,7 +32,7 @@ func TestNewMqtt(t *testing.T) {
 }
 
 func TestNewMqttError(t *testing.T) {
-	k, err := newMqtt(json.RawMessage([]byte(`{`)))
+	k, err := newMqtt(json.RawMessage([]byte(`{`)), &fakePrometheus{})
 	if err == nil {
 		t.Fatal("Bad config should return err")
 	}
@@ -29,7 +42,7 @@ func TestNewMqttError(t *testing.T) {
 }
 
 func TestStartMqttError(t *testing.T) {
-	k, _ := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)))
+	k, _ := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)), &fakePrometheus{})
 	k.(*mqttChecker).clientFactory = func(url string, clientID string) (tools.Mqtt, error) {
 		return nil, errors.New("error mqtt")
 	}
@@ -62,7 +75,7 @@ func (m *fakeMqtt) PublishSubCmd(topic string, cmdName model.CommandName, subCmd
 }
 
 func TestStartMqttHandleError(t *testing.T) {
-	k, _ := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)))
+	k, _ := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883"}`)), &fakePrometheus{})
 	k.(*mqttChecker).clientFactory = func(url string, clientID string) (tools.Mqtt, error) {
 		return &fakeMqtt{t: t, errorHandle: errors.New("fake error")}, nil
 	}
@@ -73,7 +86,8 @@ func TestStartMqttHandleError(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	k, err := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883", "checks": [{"description": "test", "text": "hi", "remove": [" from test"]}]}`)))
+	prom := &fakePrometheus{}
+	k, err := newMqtt(json.RawMessage([]byte(`{"address": "127.0.0.1:1883", "checks": [{"description": "test", "text": "hi", "remove": [" from test"]}]}`)), prom)
 	if err != nil {
 		t.Fatal("Good conf should not return err", err)
 	}
@@ -85,11 +99,18 @@ func TestCheck(t *testing.T) {
 	fakeMqttInstance.handlers[0]([]byte("hi from test"))
 	fakeMqttInstance.handlers[0]([]byte("fail"))
 
-	success, errors := k.Check()
+	success, errs := k.Check()
 	if len(success) != 1 || len(success[0].Details()) != 1 {
 		t.Fatal("1 good result should return 1 success")
 	}
-	if len(errors) != 1 || len(errors[0].Details()) != 2 {
+	if len(errs) != 1 || len(errs[0].Details()) != 2 {
 		t.Fatal("1 error result should return 1 error")
 	}
+	if !prom.mqttFail {
+		t.Fatal("MQTT not failed")
+	}
+	if !prom.mqttOk {
+		t.Fatal("MQTT not OK")
+	}
+
 }

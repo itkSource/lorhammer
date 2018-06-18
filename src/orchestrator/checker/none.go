@@ -2,13 +2,14 @@ package checker
 
 import (
 	"encoding/json"
+	"lorhammer/src/orchestrator/metrics"
 )
 
 const noneType = Type("none")
 
 type none struct{}
 
-func newNone(_ json.RawMessage) (Checker, error) {
+func newNone(_ json.RawMessage, _ metrics.Prometheus) (Checker, error) {
 	return none{}, nil
 }
 

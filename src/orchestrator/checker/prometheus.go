@@ -2,6 +2,7 @@ package checker
 
 import (
 	"encoding/json"
+	"lorhammer/src/orchestrator/metrics"
 	"lorhammer/src/orchestrator/prometheus"
 )
 
@@ -53,7 +54,7 @@ func (err prometheusCheckError) Details() map[string]interface{} {
 	return details
 }
 
-func newPrometheus(rawConfig json.RawMessage) (Checker, error) {
+func newPrometheus(rawConfig json.RawMessage, _ metrics.Prometheus) (Checker, error) {
 	var checker = &prometheusChecker{
 		prometheusClientFactory: prometheus.NewAPIClient,
 	}

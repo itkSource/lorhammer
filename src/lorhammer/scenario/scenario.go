@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"lorhammer/src/lorhammer/metrics"
 )
 
 var logger = logrus.WithField("logger", "lorhammer/scenario/scenario")
@@ -37,7 +38,7 @@ func NewScenario(init model.Init) (*Scenario, error) {
 		if _, err := time.ParseDuration(init.ReceiveTimeoutTime); err != nil {
 			return nil, err
 		}
-		gateways[i] = lora.NewGateway(tools.Random(init.NbNode[0], init.NbNode[1]), init)
+		gateways[i] = lora.NewGateway(int(tools.Random64(int64(init.NbNode[0]), int64(init.NbNode[1]))), init)
 	}
 	scenarioSleepTimeMin, err := time.ParseDuration(init.ScenarioSleepTime[0])
 	if err != nil {
@@ -71,7 +72,7 @@ func NewScenario(init model.Init) (*Scenario, error) {
 }
 
 //Cron start scenario in go routine and start gateway every `scenario.ScenarioSleepTime`
-func (p *Scenario) Cron(prometheus tools.Prometheus) context.Context {
+func (p *Scenario) Cron(prometheus metrics.Prometheus) context.Context {
 	prometheus.AddGateway(p.nbGateways())
 	prometheus.AddNodes(p.nbNodes())
 	ctx, cancel := context.WithCancel(context.Background())
@@ -95,7 +96,7 @@ func (p *Scenario) Cron(prometheus tools.Prometheus) context.Context {
 }
 
 //Stop stop scenario launched in Start
-func (p *Scenario) Stop(prometheus tools.Prometheus) {
+func (p *Scenario) Stop(prometheus metrics.Prometheus) {
 	p.poison <- true
 	defer close(p.poison)
 	prometheus.SubGateway(p.nbGateways())
@@ -103,7 +104,7 @@ func (p *Scenario) Stop(prometheus tools.Prometheus) {
 }
 
 //Join launch all gateways join method
-func (p *Scenario) Join(prometheus tools.Prometheus) {
+func (p *Scenario) Join(prometheus metrics.Prometheus) {
 	logger.WithField("nbGateways", len(p.Gateways)).Info("All gateways are joining the application server")
 
 	for _, gateway := range p.Gateways {
@@ -111,7 +112,7 @@ func (p *Scenario) Join(prometheus tools.Prometheus) {
 	}
 }
 
-func (p *Scenario) start(prometheus tools.Prometheus, cancelFunction context.CancelFunc) {
+func (p *Scenario) start(prometheus metrics.Prometheus, cancelFunction context.CancelFunc) {
 	// all gateways have ended, the scenario is stopped properly by calling the stop method
 	if doAllGatewaysHaveEnded(p) {
 		cancelFunction()

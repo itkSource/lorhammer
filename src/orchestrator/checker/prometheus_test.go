@@ -28,7 +28,7 @@ func initPrometheusClientAPI(res []float64, err error) prometheus.APIClient {
 }
 
 func TestNewPrometheus(t *testing.T) {
-	check, err := newPrometheus(json.RawMessage([]byte(`{}`)))
+	check, err := newPrometheus(json.RawMessage([]byte(`{}`)), nil)
 	if err != nil {
 		t.Fatal("Valid config for prometheus should not return error")
 	}
@@ -38,7 +38,7 @@ func TestNewPrometheus(t *testing.T) {
 }
 
 func TestNewPrometheusError(t *testing.T) {
-	check, err := newPrometheus(json.RawMessage([]byte(`{`)))
+	check, err := newPrometheus(json.RawMessage([]byte(`{`)), nil)
 	if err == nil {
 		t.Fatal("Invalid config for prometheus should return error")
 	}
@@ -48,7 +48,7 @@ func TestNewPrometheusError(t *testing.T) {
 }
 
 func TestNewPrometheusErrorConsul(t *testing.T) {
-	check, _ := newPrometheus(json.RawMessage([]byte(`{"Address":""}`)))
+	check, _ := newPrometheus(json.RawMessage([]byte(`{"Address":""}`)), nil)
 	check.(*prometheusChecker).prometheusClientFactory = func(string) (prometheus.APIClient, error) {
 		return nil, errors.New("error fake prometheus client")
 	}
@@ -58,7 +58,7 @@ func TestNewPrometheusErrorConsul(t *testing.T) {
 }
 
 func TestPrometheusChecker_Start(t *testing.T) {
-	check, _ := newPrometheus(json.RawMessage([]byte(`{"Address":"http://127.0.0.1:9090"}`)))
+	check, _ := newPrometheus(json.RawMessage([]byte(`{"Address":"http://127.0.0.1:9090"}`)), nil)
 	if err := check.Start(); err != nil {
 		t.Fatal("Prometheus checker should not return error on start")
 	}
