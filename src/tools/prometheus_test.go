@@ -25,8 +25,8 @@ func (f fakePrometheusHistogram) Observe(observedTime float64) {
 
 func TestPrometheusImpl_StartTimer(t *testing.T) {
 	p := NewPrometheus()
-	p.(*prometheusImpl).udpDuration = fakePrometheusHistogram{start: time.Now(), t: t}
-	f := p.StartTimer()
+	p.(*prometheusImpl).udpPushAckDuration = fakePrometheusHistogram{start: time.Now(), t: t}
+	f := p.StartPushAckTimer()
 	time.Sleep(100 * time.Millisecond)
 	f()
 }

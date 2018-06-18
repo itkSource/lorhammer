@@ -5,13 +5,11 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"lorhammer/src/model"
 	"lorhammer/src/tools"
 	"math"
 	"time"
 
 	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
-	"github.com/brocaar/lorawan"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,7 +17,7 @@ type packet struct {
 	Rxpk []loraserver_structs.RXPK `json:"rxpk,omitempty"`
 }
 
-func newRxpk(data []byte, date int64, gateway *model.Gateway) loraserver_structs.RXPK {
+func newRxpk(data []byte, date int64, gateway *LorhammerGateway) loraserver_structs.RXPK {
 
 	rxpk := loraserver_structs.RXPK{
 		Tmst: 123456,
@@ -49,7 +47,7 @@ func newRxpk(data []byte, date int64, gateway *model.Gateway) loraserver_structs
 	return rxpk
 }
 
-func (p packet) prepare(gateway *model.Gateway) ([]byte, error) {
+func (p packet) prepare(gateway *LorhammerGateway) ([]byte, error) {
 
 	//payload
 	payload, err := json.Marshal(p)
@@ -72,7 +70,6 @@ func (p packet) prepare(gateway *model.Gateway) ([]byte, error) {
 }
 
 func handlePacket(data []byte) error {
-
 	pt, err := loraserver_structs.GetPacketType(data)
 	if err != nil {
 		return err
@@ -111,9 +108,9 @@ func handlePullRespPacket(data []byte) error {
 	if err != nil {
 		return errors.New("Can't Decode base64 JoinAccept Data")
 	}
-
-	var phyPayload lorawan.PHYPayload
-	phyPayload.UnmarshalBinary(payloadBytes)
+	if len(payloadBytes) == 0 {
+		return errors.New("Pull Resp TXPK length must not be null")
+	}
 
 	return nil
 

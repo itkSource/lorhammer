@@ -2,7 +2,6 @@ package lora
 
 import (
 	"encoding/base64"
-	"lorhammer/src/model"
 	"lorhammer/src/tools"
 	"testing"
 	"time"
@@ -64,7 +63,7 @@ func TestHandlePacket(t *testing.T) {
 func TestPacket_Prepare(t *testing.T) {
 	rxpks := make([]gateway.RXPK, 1)
 	data := []byte{2, 165, 210, 1}
-	gw := &model.Gateway{
+	gw := &LorhammerGateway{
 		NsAddress:  "127.0.0.1",
 		MacAddress: tools.Random8Bytes(),
 	}
@@ -91,7 +90,7 @@ func TestPacket_Prepare(t *testing.T) {
 
 func TestNewRxpk(t *testing.T) {
 	data := []byte{2, 165, 210, 1}
-	gw := &model.Gateway{
+	gw := &LorhammerGateway{
 		NsAddress:  "127.0.0.1",
 		MacAddress: tools.Random8Bytes(),
 		RxpkDate:   1488931200,

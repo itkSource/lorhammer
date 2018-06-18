@@ -80,7 +80,7 @@ func applyInitCmd(command model.CMD, mqtt tools.Mqtt, hostname string) error {
 
 	gateways := make([]model.Gateway, len(sc.Gateways))
 	for i, gateway := range sc.Gateways {
-		gateways[i] = *gateway
+		gateways[i] = gateway.ConvertToGateway()
 	}
 
 	registerCmd := model.Register{
