@@ -33,9 +33,9 @@
     "config": {
       "address": "http://prometheus:9090",
       "checks": [
-        {"query": "sum(lorhammer_long_request)", "resultMin": 41, "resultMax": 41, "description": "1 Pull Data + 5 join ack + (4 messages / node) * 2 laps "},
-        {"query": "sum(lorhammer_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"},
-        {"query": "count(lorhammer_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb lorhammer"},
+        {"query": "sum(lorhammer_pushack_long_request)", "resultMin": 41, "resultMax": 41, "description": "1 Pull Data + 5 join ack + (4 messages / node) * 2 laps "},
+        {"query": "sum(lorhammer_pushack_durations_count)", "resultMin": 0, "resultMax": 0, "description": "nb messages"},
+        {"query": "count(lorhammer_pushack_durations_count)", "resultMin": 1, "resultMax": 1, "description": "nb lorhammer"},
         {"query": "sum(lorhammer_gateway)", "resultMin": 0, "resultMax": 0, "description": "nb gateways"},
         {"query": "sum(lorhammer_node)", "resultMin": 0, "resultMax": 0, "description": "nb nodes"}
       ]

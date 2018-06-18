@@ -207,6 +207,7 @@ func TestReadPackets(t *testing.T) {
 		t.Fatal("No data received")
 	}
 
+	poison <- true
 	close(poison)
 	close(next)
 	close(threadListenUDP)
