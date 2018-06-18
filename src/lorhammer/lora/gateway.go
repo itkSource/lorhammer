@@ -8,15 +8,27 @@ import (
 	"time"
 
 	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
+	"github.com/brocaar/lorawan"
 	"github.com/sirupsen/logrus"
 )
 
 var loggerGateway = logrus.WithField("logger", "lorhammer/lora/gateway")
 
+//LorhammerGateway : internal gateway for pointer receiver usage
+type LorhammerGateway struct {
+	Nodes                 []*model.Node
+	NsAddress             string
+	MacAddress            lorawan.EUI64
+	RxpkDate              int64
+	PayloadsReplayMaxLaps int
+	AllLapsCompleted      bool
+	ReceiveTimeoutTime    time.Duration
+}
+
 //NewGateway return a new gateway with node configured
-func NewGateway(nbNode int, init model.Init) *model.Gateway {
+func NewGateway(nbNode int, init model.Init) *LorhammerGateway {
 	parsedTime, _ := time.ParseDuration(init.ReceiveTimeoutTime)
-	gateway := &model.Gateway{
+	gateway := &LorhammerGateway{
 		NsAddress:             init.NsAddress,
 		MacAddress:            tools.Random8Bytes(),
 		ReceiveTimeoutTime:    parsedTime,
@@ -35,25 +47,25 @@ func NewGateway(nbNode int, init model.Init) *model.Gateway {
 
 //Join send first pull datata to be discovered by network server
 //Then send a JoinRequest packet if `withJoin` is set in scenario file
-func Join(gateway *model.Gateway, prometheus tools.Prometheus, withJoin bool) {
-	Conn, err := net.Dial("udp", gateway.NsAddress)
-	defer Conn.Close()
-
+func (gateway *LorhammerGateway) Join(prometheus tools.Prometheus, withJoin bool) error {
+	conn, err := net.Dial("udp", gateway.NsAddress)
 	if err != nil {
-		loggerGateway.WithError(err).Error("Can't Dial Udp when join")
+		return err
 	}
+	defer conn.Close()
 
 	//WRITE
-	endTimer := prometheus.StartTimer()
+	endPushAckTimer := prometheus.StartPushAckTimer()
+	endPullRespTimer := prometheus.StartPullRespTimer()
 
 	/**
 	 ** We send pull Data for the gateway to be recognized by the NS
 	 ** when sending JoinRequest or any other type of packet
 	 **/
-	sendPullData(gateway, Conn)
+	gateway.sendPullData(conn)
 
 	if withJoin {
-		sendJoinRequestPackets(gateway, Conn)
+		gateway.sendJoinRequestPackets(conn)
 	}
 
 	threadListenUDP := make(chan []byte, 1)
@@ -63,24 +75,27 @@ func Join(gateway *model.Gateway, prometheus tools.Prometheus, withJoin bool) {
 	poison := make(chan bool, 1)
 	defer close(poison)
 
-	go readPackets(Conn, poison, next, threadListenUDP)
-	readLoraJoinPackets(gateway, poison, next, threadListenUDP, endTimer, prometheus, withJoin)
+	go gateway.readPackets(conn, poison, next, threadListenUDP)
+	gateway.readLoraJoinPackets(conn, poison, next, threadListenUDP, endPushAckTimer, endPullRespTimer, prometheus, withJoin)
+	return nil
 }
 
 //Start send push data packet and listen for ack
-func Start(gateway *model.Gateway, prometheus tools.Prometheus, fcnt uint32) {
-	Conn, err := net.Dial("udp", gateway.NsAddress)
-	defer Conn.Close()
-
+func (gateway *LorhammerGateway) Start(prometheus tools.Prometheus, fcnt uint32) error {
+	conn, err := net.Dial("udp", gateway.NsAddress)
 	if err != nil {
-		loggerGateway.WithError(err).Error("Can't Dial Udp qhen start")
+		return err
 	}
+	defer conn.Close()
 
 	//WRITE
-	endTimer := prometheus.StartTimer()
+	endPushAckTimer := prometheus.StartPushAckTimer()
+	endPullRespTimer := prometheus.StartPullRespTimer()
+
+	gateway.sendPullData(conn)
 
 	//Send pushDataPackets
-	sendPushPackets(gateway, Conn, fcnt)
+	gateway.sendPushPackets(conn, fcnt)
 
 	//READ
 	threadListenUDP := make(chan []byte, 1)
@@ -90,11 +105,13 @@ func Start(gateway *model.Gateway, prometheus tools.Prometheus, fcnt uint32) {
 	poison := make(chan bool, 1)
 	defer close(poison)
 
-	go readPackets(Conn, poison, next, threadListenUDP)
-	readLoraPushPackets(gateway, poison, next, threadListenUDP, endTimer, prometheus)
+	go gateway.readPackets(conn, poison, next, threadListenUDP)
+	gateway.readLoraPushPackets(conn, poison, next, threadListenUDP, endPushAckTimer, endPullRespTimer, prometheus)
+	return nil
 }
 
-func sendPullData(gateway *model.Gateway, Conn net.Conn) {
+func (gateway *LorhammerGateway) sendPullData(conn net.Conn) {
+	loggerGateway.Info("Sending Pull data message")
 
 	pullDataPacket, err := loraserver_structs.PullDataPacket{
 		ProtocolVersion: 2,
@@ -106,57 +123,60 @@ func sendPullData(gateway *model.Gateway, Conn net.Conn) {
 		loggerGateway.WithError(err).Error("can't marshall pull data message")
 	}
 
-	if _, err = Conn.Write(pullDataPacket); err != nil {
+	if _, err = conn.Write(pullDataPacket); err != nil {
 		loggerGateway.WithError(err).Error("Can't write pullDataPacket udp")
 	}
 }
 
-func sendJoinRequestPackets(gateway *model.Gateway, Conn net.Conn) {
+func (gateway *LorhammerGateway) sendJoinRequestPackets(conn net.Conn) {
 	loggerGateway.Info("Sending JoinRequest messages for all the nodes")
 
-	rxpk := make([]loraserver_structs.RXPK, 1)
 	for _, node := range gateway.Nodes {
 		if !node.JoinedNetwork {
-
-			rxpk[0] = newRxpk(getJoinRequestDataPayload(node), 0, gateway)
-			packet, err := packet{Rxpk: rxpk}.prepare(gateway)
+			packet, err := packet{
+				Rxpk: []loraserver_structs.RXPK{
+					newRxpk(getJoinRequestDataPayload(node), 0, gateway),
+				},
+			}.prepare(gateway)
 
 			if err != nil {
 				loggerGateway.WithError(err).Error("Can't prepare lora packet in SendJoinRequest")
 			}
-			if _, err = Conn.Write(packet); err != nil {
+			if _, err = conn.Write(packet); err != nil {
 				loggerGateway.WithError(err).Error("Can't write udp in SendJoinRequest")
 			}
 		}
 	}
 }
 
-func sendPushPackets(gateway *model.Gateway, Conn net.Conn, fcnt uint32) {
-	rxpk := make([]loraserver_structs.RXPK, 1)
+func (gateway *LorhammerGateway) sendPushPackets(conn net.Conn, fcnt uint32) {
 	for _, node := range gateway.Nodes {
 		if node.PayloadsReplayLap < gateway.PayloadsReplayMaxLaps || gateway.PayloadsReplayMaxLaps == 0 {
 			buf, date, err := GetPushDataPayload(node, fcnt)
 			if err != nil {
 				loggerGateway.WithError(err).Error("Can't get next lora packet to send")
 			}
-			rxpk[0] = newRxpk(buf, date, gateway)
-			packet, err := packet{Rxpk: rxpk}.prepare(gateway)
+			packet, err := packet{
+				Rxpk: []loraserver_structs.RXPK{
+					newRxpk(buf, date, gateway),
+				},
+			}.prepare(gateway)
 
 			if err != nil {
 				loggerGateway.WithError(err).Error("Can't prepare lora packet in sendPushPackets")
 			}
-			if _, err = Conn.Write(packet); err != nil {
+			if _, err = conn.Write(packet); err != nil {
 				loggerGateway.WithError(err).Error("Can't write udp in sendPushPackets")
 			}
 		}
 	}
-	if isGatewayScenarioCompleted(gateway) {
+	if gateway.isGatewayScenarioCompleted() {
 		gateway.AllLapsCompleted = true
 		return
 	}
 }
 
-func readPackets(Conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte) {
+func (gateway *LorhammerGateway) readPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte) {
 	for {
 		quit := false
 		select {
@@ -165,8 +185,8 @@ func readPackets(Conn net.Conn, poison chan bool, next chan bool, threadListenUD
 			break
 		case <-next:
 			buf := make([]byte, 65507) // max udp data size
-			// TODO handle Conn.SetReadDeadline with time max - current time to gracefully kill conn
-			n, err := Conn.Read(buf)
+			// TODO handle conn.SetReadDeadline with time max - current time to gracefully kill conn
+			n, err := conn.Read(buf)
 
 			if err != nil {
 				loggerGateway.WithError(err).Debug("Can't read udp")
@@ -182,8 +202,8 @@ func readPackets(Conn net.Conn, poison chan bool, next chan bool, threadListenUD
 	}
 }
 
-func readLoraJoinPackets(gateway *model.Gateway, poison chan bool, next chan bool, threadListenUDP chan []byte, endTimer func(), prometheus tools.Prometheus, withJoin bool) {
-	nbReceivedAckMsg := readLoraPackets(gateway, poison, next, threadListenUDP, endTimer, prometheus)
+func (gateway *LorhammerGateway) readLoraJoinPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte, endPushAckTimer func(), endPullRespTimer func(), prometheus tools.Prometheus, withJoin bool) {
+	nbReceivedAckMsg, nbReceivedPullRespMsg := gateway.readLoraPackets(conn, poison, next, threadListenUDP, endPushAckTimer, endPullRespTimer)
 	nbEmittedMsg := 1 // One PullData request has been sent
 	if withJoin {
 		nbEmittedMsg += len(gateway.Nodes)
@@ -192,23 +212,41 @@ func readLoraJoinPackets(gateway *model.Gateway, poison chan bool, next chan boo
 		"ref":      "lora/gateway:Join()",
 		"withJoin": withJoin,
 		"nb":       nbEmittedMsg - nbReceivedAckMsg,
+		"msgType":  "Push Ack",
 	}).Warn("Receive PullData or Join Request ack after 2 seconds")
-	prometheus.AddLongRequest(nbEmittedMsg - nbReceivedAckMsg)
+	prometheus.AddPushAckLongRequest(nbEmittedMsg - nbReceivedAckMsg)
+
+	loggerGateway.WithFields(logrus.Fields{
+		"ref":      "lora/gateway:Join()",
+		"withJoin": withJoin,
+		"nb":       nbEmittedMsg - nbReceivedPullRespMsg,
+		"msgType":  "Pull Resp",
+	}).Warn("Receive PullData or Join Request ack after 2 seconds")
+	prometheus.AddPullRespLongRequest(nbEmittedMsg - nbReceivedPullRespMsg)
 }
 
-func readLoraPushPackets(gateway *model.Gateway, poison chan bool, next chan bool, threadListenUDP chan []byte, endTimer func(), prometheus tools.Prometheus) {
-	nbReceivedAckMsg := readLoraPackets(gateway, poison, next, threadListenUDP, endTimer, prometheus)
+func (gateway *LorhammerGateway) readLoraPushPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte, endPushAckTimer func(), endPullRespTimer func(), prometheus tools.Prometheus) {
+	nbReceivedAckMsg, nbReceivedPullRespMsg := gateway.readLoraPackets(conn, poison, next, threadListenUDP, endPushAckTimer, endPullRespTimer)
 	if len(gateway.Nodes)-nbReceivedAckMsg > 0 {
 		loggerGateway.WithFields(logrus.Fields{
-			"ref": "lora/gateway:Start()",
-			"nb":  len(gateway.Nodes) - nbReceivedAckMsg,
+			"ref":     "lora/gateway:Start()",
+			"nb":      len(gateway.Nodes) - nbReceivedAckMsg,
+			"msgType": "Push Ack",
 		}).Warn("Receive data after 2 second")
-		prometheus.AddLongRequest(len(gateway.Nodes) - nbReceivedAckMsg)
+		prometheus.AddPushAckLongRequest(len(gateway.Nodes) - nbReceivedAckMsg)
+	}
+	if len(gateway.Nodes)-nbReceivedPullRespMsg > 0 {
+		loggerGateway.WithFields(logrus.Fields{
+			"ref":     "lora/gateway:Start()",
+			"nb":      len(gateway.Nodes) - nbReceivedPullRespMsg,
+			"msgType": "Pull Resp",
+		}).Warn("Receive data after 2 second")
+		prometheus.AddPullRespLongRequest(len(gateway.Nodes) - nbReceivedPullRespMsg)
 	}
 }
 
-func readLoraPackets(gateway *model.Gateway, poison chan bool, next chan bool, threadListenUDP chan []byte, endTimer func(), prometheus tools.Prometheus) int {
-	nbReceivedAckMsg := 0
+func (gateway *LorhammerGateway) readLoraPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte, endPushAckTimer func(), endPullRespTimer func()) (int, int) {
+	nbReceivedAckMsg, nbReceivedPullRespMsg := 0, 0
 	localPoison := make(chan bool)
 
 	go func() {
@@ -220,20 +258,28 @@ func readLoraPackets(gateway *model.Gateway, poison chan bool, next chan bool, t
 				quit = true
 				break
 			case res := <-threadListenUDP:
-				endTimer()
 				err := handlePacket(res)
 				if err != nil {
 					loggerGateway.WithError(err).Error("Can't handle packet")
-				}
-				loggerGateway.WithFields(logrus.Fields{
-					"ProtocolVersion": res[0],
-					"Token":           res[1:2],
-					"ack":             res[3],
-					"ackOk?":          res[3] == byte(1),
-					"time":            gateway.ReceiveTimeoutTime,
-				}).Debug("Receive data before time")
-				if res[3] == byte(1) {
-					nbReceivedAckMsg++
+				} else if packetType, err := loraserver_structs.GetPacketType(res); err != nil {
+					loggerGateway.WithError(err).Error("Can't handle packet type")
+				} else {
+					if packetType == loraserver_structs.PushACK {
+						endPushAckTimer()
+						nbReceivedAckMsg++
+					} else if packetType == loraserver_structs.PullResp {
+						endPullRespTimer()
+						nbReceivedPullRespMsg++
+						gateway.sendTxAckPacket(conn, res)
+					}
+
+					loggerGateway.WithFields(logrus.Fields{
+						"ProtocolVersion": res[0],
+						"Token":           res[1:2],
+						"ack":             res[3],
+						"ackOk?":          res[3] == byte(1),
+						"time":            gateway.ReceiveTimeoutTime,
+					}).Debug("Receive data before time")
 				}
 			}
 			if quit {
@@ -247,10 +293,10 @@ func readLoraPackets(gateway *model.Gateway, poison chan bool, next chan bool, t
 	<-time.After(gateway.ReceiveTimeoutTime)
 	poison <- true
 	localPoison <- true
-	return nbReceivedAckMsg
+	return nbReceivedAckMsg, nbReceivedPullRespMsg
 }
 
-func isGatewayScenarioCompleted(gateway *model.Gateway) bool {
+func (gateway *LorhammerGateway) isGatewayScenarioCompleted() bool {
 	//infinite case when PayloadsReplayMaxRound is set to 0 or inferior
 	if gateway.PayloadsReplayMaxLaps <= 0 {
 		return false
@@ -268,6 +314,45 @@ func isGatewayScenarioCompleted(gateway *model.Gateway) bool {
 	}
 	loggerGateway.WithFields(logrus.Fields{
 		"MacAddress": gateway.MacAddress.String(),
-	}).Debugf("Gateway scenario is completed")
+	}).Debug("Gateway scenario is completed")
 	return true
+}
+
+func (gateway *LorhammerGateway) sendTxAckPacket(conn net.Conn, data []byte) {
+	var pullRespPacket loraserver_structs.PullRespPacket
+	if err := pullRespPacket.UnmarshalBinary(data); err == nil {
+		txAckPacket := loraserver_structs.TXACKPacket{
+			ProtocolVersion: 2,
+			RandomToken:     pullRespPacket.RandomToken,
+			GatewayMAC:      gateway.MacAddress,
+			Payload: &loraserver_structs.TXACKPayload{
+				TXPKACK: loraserver_structs.TXPKACK{
+					Error: "NONE",
+				},
+			},
+		}
+		loggerGateway.WithField("TxAckPacket", txAckPacket).Info("Send TxAck packet")
+		if dataToSend, err := txAckPacket.MarshalBinary(); err == nil {
+			if _, err = conn.Write(dataToSend); err != nil {
+				loggerGateway.WithError(err).Debug("Can't send Tx Ack packet")
+			}
+		} else {
+			loggerGateway.WithError(err).Debug("Can't marshal Tx Ack packet")
+		}
+	} else {
+		loggerGateway.WithError(err).Error("Can't unmarshal Pull Resp packet")
+	}
+}
+
+//ConvertToGateway : convert internal gateway to model gateway
+func (gateway LorhammerGateway) ConvertToGateway() model.Gateway {
+	return model.Gateway{
+		Nodes:                 gateway.Nodes,
+		NsAddress:             gateway.NsAddress,
+		MacAddress:            gateway.MacAddress,
+		RxpkDate:              gateway.RxpkDate,
+		PayloadsReplayMaxLaps: gateway.PayloadsReplayMaxLaps,
+		AllLapsCompleted:      gateway.AllLapsCompleted,
+		ReceiveTimeoutTime:    gateway.ReceiveTimeoutTime,
+	}
 }
