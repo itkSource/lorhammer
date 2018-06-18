@@ -9,7 +9,7 @@
   "sleepAtEndTime": "10m",
   "requieredLorhammer": 1,
   "maxWaitLorhammerTime": "5s",
-  "init": {
+  "init": [{
     "nsAddress": "127.0.0.1:1700",
     "nbGatewayPerLorhammer": 1,
     "nbNodePerGateway": [1, 1],
@@ -22,7 +22,7 @@
     "nwskey" : "NWSKEY",
     "description": "node-desc",
     "payloads" : []
-  },
+  }],
   "provisioning": {
     "type": "http",
     "config": {

@@ -60,14 +60,14 @@ if [ ! -d "doc/themes/hugorha" ]; then
 fi
 
 clean() {
-    rm doc/content/README.md
+    rm doc/content/_index.md
     rm doc/content/CHANGELOG.md
     rm doc/content/CONTRIBUTING.md
     rm doc/content/LICENCE.md
     rm doc/content/godoc.md
 }
 
-addFile README.md doc/content/README.md "Lorhammer" 1 "true"
+addFile README.md doc/content/_index.md "Lorhammer" 1 "true"
 addFile CHANGELOG.md doc/content/CHANGELOG.md "Changelog" 10 "true"
 addFile CONTRIBUTING.md doc/content/CONTRIBUTING.md "Contributing" 20 "true"
 addFile LICENCE.md doc/content/LICENCE.md "Licence" 30 "false"

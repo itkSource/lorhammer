@@ -8,8 +8,19 @@
     * *lorhammer_pullresp_durations* : Lora pull resp latency distributions.
     * *lorhammer_pushack_long_request* : Lora nb lora push ack request witch take more than 2sc.
     * *lorhammer_pullresp_long_request* : Lora nb lora pull resp request witch take more than 2sc.
+    * *orchestrator_mqtt_ok* : Count of validated MQTT messages
+    * *orchestrator_mqtt_failed* : Count of validation failed MQTT messages 
 * **PULL_RESP** : proper support of `PULL_RESP` with `TX_ACK`  
 * Add tests on *gateway* part
+
+## Version 0.7.0 - [UNRELEASED]
+
+* **DEP** Update [issues/80](https://gitlab.com/itk.fr/lorhammer/issues/80) :
+  * golang to 1.10.1
+  * docker-compose to 1.20.1
+  * hugo to 0.38.1 and repair site static
+* **SCENARIO** update examples scenario [issues/75](https://gitlab.com/itk.fr/lorhammer/issues/75)
+
 
 ## Version 0.6.0 - 2018-03-14
 
