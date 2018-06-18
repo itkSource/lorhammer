@@ -10,7 +10,7 @@
 * **PULL_RESP** : proper support of `PULL_RESP` with `TX_ACK` [issues/81](https://gitlab.com/itk.fr/lorhammer/issues/81)
   * Add tests on *gateway* part
 * **PROMETHEUS** : change of metrics name and add new. 
-  * Now support `PUSH_ACK` and `PULL_RESP` duration and overtime long request :
+  * Now support `PUSH_ACK` and `PULL_RESP` duration and overtime long request : [issues/84](https://gitlab.com/itk.fr/lorhammer/issues/84)
     * *lorhammer_pushack_durations* : Lora push ack latency distributions.
     * *lorhammer_pullresp_durations* : Lora pull resp latency distributions.
     * *lorhammer_pushack_long_request* : Lora nb lora push ack request witch take more than 2sc.
