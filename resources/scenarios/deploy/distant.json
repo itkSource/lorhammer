@@ -1,40 +1,57 @@
-[{
-  "test": {
-    "type": "oneShot",
-    "repeatTime": "0"
-  },
-  "stopAllLorhammerTime": "0",
-  "sleepBeforeCheckTime": "0",
-  "shutdownAllLorhammerTime": "0",
-  "sleepAtEndTime": "0",
-  "requieredLorhammer": 1,
-  "maxWaitLorhammerTime": "5s",
-  "init": [{
-    "nsAddress": "127.0.0.1:1700",
-    "nbGatewayPerLorhammer": 1,
-    "nbNodePerGateway": [1, 1],
-    "nbScenarioReplayLaps": 0,
-    "scenarioSleepTime": ["10s", "10s"],
-    "receiveTimeoutTime": "1s",
-    "gatewaySleepTime": ["100ms", "500ms"]
-  }],
-  "provisioning": {
-    "type": "none"
-  },
-  "check": {
-    "type": "none"
-  },
-  "deploy": {
-    "type": "distant",
-    "config": {
-      "sshKeyPath": "",
-      "user": "",
-      "ipServer": "",
-      "pathFile": "",
-      "pathWhereScp": "",
-      "beforeCmd": "",
-      "afterCmd": "",
-      "nbDistantToLaunch": 0
+[
+  {
+    "test": {
+      "type": "oneShot",
+      "repeatTime": "0"
+    },
+    "stopAllLorhammerTime": "0",
+    "sleepBeforeCheckTime": "0",
+    "shutdownAllLorhammerTime": "0",
+    "sleepAtEndTime": "0",
+    "requieredLorhammer": 1,
+    "maxWaitLorhammerTime": "5s",
+    "init": [
+      {
+        "nsAddress": "127.0.0.1:1700",
+        "nbGatewayPerLorhammer": 1,
+        "nbNodePerGateway": [
+          1,
+          1
+        ],
+        "nbScenarioReplayLaps": 0,
+        "scenarioSleepTime": [
+          "10s",
+          "10s"
+        ],
+        "receiveTimeoutTime": "1s",
+        "gatewaySleepTime": [
+          "100ms",
+          "500ms"
+        ]
+      }
+    ],
+    "provisioning": {
+      "type": "none"
+    },
+    "check": {
+      "type": "none"
+    },
+    "deploy": {
+      "type": "distant",
+      "config": {
+        "instances": [
+          {
+            "sshKeyPath": "",
+            "user": "",
+            "ipServer": "",
+            "pathFile": "",
+            "pathWhereScp": "",
+            "beforeCmd": "",
+            "afterCmd": "",
+            "nbDistantToLaunch": 0
+          }
+        ]
+      }
     }
   }
-}]
+]

@@ -17,6 +17,7 @@
 * **PROMETHEUS** : add metric for mqtt checker to be able to count messages after loraserver [issues/84](https://gitlab.com/itk.fr/lorhammer/issues/84)
   * *orchestrator_mqtt_ok* : Count of validated MQTT messages
   * *orchestrator_mqtt_failed* : Count of validation failed MQTT messages  
+* **DEPLOYER** add multi ssh deployer [issues/85](https://gitlab.com/itk.fr/lorhammer/issues/85)
 
 ## Version 0.6.0 - 2018-03-14
 

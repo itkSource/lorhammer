@@ -33,12 +33,12 @@ func TestNewDistantFromJsonError(t *testing.T) {
 }
 
 func TestDistantImpl_RunBefore(t *testing.T) {
-	d, err := newDistantFromJSONTest(`{"beforeCmd": "/", "nbDistantToLaunch": 1}`)
+	d, err := newDistantFromJSONTest(`{ "instances": [ { "beforeCmd": "/", "nbDistantToLaunch": 1 } ] }`)
 	if err != nil {
-		t.Fatal("good local deployer json should not throw error")
+		t.Fatalf("good local deployer json should not throw error : %s", err)
 	}
 	hasBeenCalledWith := ""
-	d.(*distantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
+	d.(*arrayDistantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
 		hasBeenCalledWith = name
 		return exec.Command("ls")
 	}
@@ -51,11 +51,11 @@ func TestDistantImpl_RunBefore(t *testing.T) {
 }
 
 func TestDistantImpl_RunBeforeError(t *testing.T) {
-	d, err := newDistantFromJSONTest(`{"beforeCmd": "/", "nbDistantToLaunch": 2}`)
+	d, err := newDistantFromJSONTest(`{ "instances": [ {"beforeCmd": "/", "nbDistantToLaunch": 2} ] } `)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
-	d.(*distantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
+	d.(*arrayDistantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
 		return exec.Command("")
 	}
 	if err := d.RunBefore(); err == nil {
@@ -71,11 +71,11 @@ func TestDistantImpl_RunBeforeError(t *testing.T) {
 }
 
 func TestDistantImpl_Deploy(t *testing.T) {
-	d, err := newDistantFromJSONTest(`{"beforeCmd": "/", "nbDistantToLaunch": 2}`)
+	d, err := newDistantFromJSONTest(`{ "instances": [ {"beforeCmd": "/", "nbDistantToLaunch": 2} ] }`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
-	d.(*distantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
+	d.(*arrayDistantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
 		return exec.Command("ls")
 	}
 	if err := d.Deploy(); err != nil {
@@ -84,11 +84,11 @@ func TestDistantImpl_Deploy(t *testing.T) {
 }
 
 func TestDistantImpl_DeployError(t *testing.T) {
-	d, err := newDistantFromJSONTest(`{"beforeCmd": "/", "nbDistantToLaunch": 2}`)
+	d, err := newDistantFromJSONTest(`{ "instances": [ {"beforeCmd": "/", "nbDistantToLaunch": 2} ] }`)
 	if err != nil {
-		t.Fatal("good local deployer json should not throw error")
+		t.Fatalf("good local deployer json should not throw error : %s", err)
 	}
-	d.(*distantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
+	d.(*arrayDistantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
 		return exec.Command("")
 	}
 	if err := d.Deploy(); err == nil {
@@ -97,12 +97,12 @@ func TestDistantImpl_DeployError(t *testing.T) {
 }
 
 func TestDistantImpl_RunAfter(t *testing.T) {
-	d, err := newDistantFromJSONTest(`{"afterCmd": "/", "nbDistantToLaunch": 1}`)
+	d, err := newDistantFromJSONTest(`{ "instances": [ {"afterCmd": "/", "nbDistantToLaunch": 1} ] }`)
 	if err != nil {
-		t.Fatal("good local deployer json should not throw error")
+		t.Fatalf("good local deployer json should not throw error %s", err)
 	}
 	hasBeenCalledWith := ""
-	d.(*distantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
+	d.(*arrayDistantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
 		hasBeenCalledWith = name
 		return exec.Command("ls")
 	}
@@ -115,11 +115,11 @@ func TestDistantImpl_RunAfter(t *testing.T) {
 }
 
 func TestDistantImpl_RunAfterError(t *testing.T) {
-	d, err := newDistantFromJSONTest(`{"afterCmd": "/", "nbDistantToLaunch": 2}`)
+	d, err := newDistantFromJSONTest(`{ "instances": [ {"afterCmd": "/", "nbDistantToLaunch": 2} ] }`)
 	if err != nil {
 		t.Fatal("good local deployer json should not throw error")
 	}
-	d.(*distantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
+	d.(*arrayDistantImpl).cmdFabric = func(name string, arg ...string) *exec.Cmd {
 		return exec.Command("")
 	}
 	if err := d.RunAfter(); err == nil {
