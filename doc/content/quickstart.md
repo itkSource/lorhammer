@@ -186,15 +186,20 @@ A scenario is an array of tests. A test is the description needed by the orchest
       "nbInstanceToLaunch": 1,
       "port": 1234
     },
-    "config": {
-      "sshKeyPath": "",
-      "user": "",
-      "ipServer": "",
-      "pathFile": "",
-      "pathWhereScp": "",
-      "beforeCmd": "",
-      "afterCmd": "",
-      "nbDistantToLaunch": 0
+    "config": { 
+      "instances": [
+        {
+          "sshKeyPath": "",
+          "user": "",
+          "ipServer": "",
+          "pathFile": "",
+          "pathWhereScp": "",
+          "beforeCmd": "",
+          "afterCmd": "",
+          "nbDistantToLaunch": 0
+        }
+      ]
+    }
     },
     "config": {
       "region": "eu-west-2",

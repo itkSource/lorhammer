@@ -13,6 +13,11 @@ const typeDistant = "distant"
 
 var logDistant = logrus.WithField("logger", "orchestrator/deploy/distant")
 
+type arrayDistantImpl struct {
+	Instances []distantImpl `json:"instances"`
+	cmdFabric func(name string, arg ...string) *exec.Cmd
+}
+
 type distantImpl struct {
 	SSHKeyPath        string `json:"sshKeyPath"`
 	User              string `json:"user"`
@@ -22,8 +27,6 @@ type distantImpl struct {
 	BeforeCmd         string `json:"beforeCmd"`
 	AfterCmd          string `json:"afterCmd"`
 	NbDistantToLaunch int    `json:"nbDistantToLaunch"`
-
-	cmdFabric func(name string, arg ...string) *exec.Cmd
 }
 
 func newDistantFromJSON(serialized json.RawMessage, _ tools.Mqtt) (deployer, error) {
@@ -34,8 +37,8 @@ func newDistantFromJSON(serialized json.RawMessage, _ tools.Mqtt) (deployer, err
 	return d, nil
 }
 
-func newDistantImpl(serialized json.RawMessage) (*distantImpl, error) {
-	d := &distantImpl{}
+func newDistantImpl(serialized json.RawMessage) (*arrayDistantImpl, error) {
+	d := &arrayDistantImpl{}
 	if err := json.Unmarshal(serialized, d); err != nil {
 		return nil, err
 	}
@@ -43,23 +46,38 @@ func newDistantImpl(serialized json.RawMessage) (*distantImpl, error) {
 	return d, nil
 }
 
-func (distant *distantImpl) RunBefore() error {
-	return distant.runCmd(distant.BeforeCmd)
-}
-
-func (distant *distantImpl) Deploy() error {
-	c := fmt.Sprintf("%s@%s:%s", distant.User, distant.IPServer, distant.PathWhereScp)
-	logDistant.WithField("cmd", "scp -q -i "+distant.SSHKeyPath+" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "+distant.PathFile+" "+c).Info("Will exec cmd")
-	cmd := distant.cmdFabric("scp", "-q", "-i", distant.SSHKeyPath, "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", distant.PathFile, c)
-	if stdoutStderr, err := cmd.CombinedOutput(); err != nil {
-		logDistant.WithField("output", fmt.Sprintf("%s", stdoutStderr)).Info("Scp output")
-		return err
+func (distant *arrayDistantImpl) RunBefore() error {
+	for _, instance := range distant.Instances {
+		err := instance.runCmd(instance.BeforeCmd, distant.cmdFabric)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (distant *distantImpl) RunAfter() error {
-	return distant.runCmd(distant.AfterCmd)
+func (distant *arrayDistantImpl) Deploy() error {
+
+	for _, instance := range distant.Instances {
+		c := fmt.Sprintf("%s@%s:%s", instance.User, instance.IPServer, instance.PathWhereScp)
+		logDistant.WithField("cmd", "scp -q -i "+instance.SSHKeyPath+" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "+instance.PathFile+" "+c).Info("Will exec cmd")
+		cmd := distant.cmdFabric("scp", "-q", "-i", instance.SSHKeyPath, "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", instance.PathFile, c)
+		if stdoutStderr, err := cmd.CombinedOutput(); err != nil {
+			logDistant.WithField("output", fmt.Sprintf("%s", stdoutStderr)).Info("Scp output")
+			return err
+		}
+	}
+	return nil
+}
+
+func (distant *arrayDistantImpl) RunAfter() error {
+	for _, instance := range distant.Instances {
+		err := instance.runCmd(instance.AfterCmd, distant.cmdFabric)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type distantRunError struct {
@@ -74,7 +92,7 @@ func (distErr distantRunError) Error() string {
 	return s
 }
 
-func (distant *distantImpl) runCmd(cmd string) error {
+func (distant *distantImpl) runCmd(cmd string, execFunc func(name string, arg ...string) *exec.Cmd) error {
 	errs := distantRunError{Errors: make([]error, 0)}
 	ip := fmt.Sprintf("%s@%s", distant.User, distant.IPServer)
 	logDistant.WithField("cmd", "ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "+ip+" "+cmd).Info("Will exec cmd")
@@ -84,7 +102,7 @@ func (distant *distantImpl) runCmd(cmd string) error {
 
 	for i := 0; i < distant.NbDistantToLaunch; i++ {
 		go func() {
-			cmd := distant.cmdFabric("ssh", "-q", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", ip, cmd)
+			cmd := execFunc("ssh", "-q", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", ip, cmd)
 			if stdoutStderr, err := cmd.CombinedOutput(); err != nil {
 				logDistant.WithField("output", fmt.Sprintf("%s", stdoutStderr)).Info("Ssh output")
 				chanErr <- err
