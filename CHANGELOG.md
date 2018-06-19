@@ -9,11 +9,12 @@
 * **SCENARIO** update examples scenario [issues/75](https://gitlab.com/itk.fr/lorhammer/issues/75)
 * **PULL_RESP** : proper support of `PULL_RESP` with `TX_ACK` [issues/81](https://gitlab.com/itk.fr/lorhammer/issues/81)
   * Add tests on *gateway* part
-* **PROMETHEUS** : change of metrics name and add new. [issues/84](https://gitlab.com/itk.fr/lorhammer/issues/84)
+* **PROMETHEUS** : change of metrics name and add new to count pushack and pullresp [issues/80](https://gitlab.com/itk.fr/lorhammer/issues/80)
   * *lorhammer_pushack_durations* : Lora push ack latency distributions.
   * *lorhammer_pullresp_durations* : Lora pull resp latency distributions.
   * *lorhammer_pushack_long_request* : Lora nb lora push ack request witch take more than 2sc.
   * *lorhammer_pullresp_long_request* : Lora nb lora pull resp request witch take more than 2sc.
+* **PROMETHEUS** : add metric for mqtt checker to be able to count messages after loraserver [issues/84](https://gitlab.com/itk.fr/lorhammer/issues/84)
   * *orchestrator_mqtt_ok* : Count of validated MQTT messages
   * *orchestrator_mqtt_failed* : Count of validation failed MQTT messages  
 
