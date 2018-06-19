@@ -10,6 +10,7 @@ import (
 	loraserver_structs "github.com/brocaar/lora-gateway-bridge/gateway"
 	"github.com/brocaar/lorawan"
 	"github.com/sirupsen/logrus"
+	"lorhammer/src/lorhammer/metrics"
 )
 
 var loggerGateway = logrus.WithField("logger", "lorhammer/lora/gateway")
@@ -47,7 +48,7 @@ func NewGateway(nbNode int, init model.Init) *LorhammerGateway {
 
 //Join send first pull datata to be discovered by network server
 //Then send a JoinRequest packet if `withJoin` is set in scenario file
-func (gateway *LorhammerGateway) Join(prometheus tools.Prometheus, withJoin bool) error {
+func (gateway *LorhammerGateway) Join(prometheus metrics.Prometheus, withJoin bool) error {
 	conn, err := net.Dial("udp", gateway.NsAddress)
 	if err != nil {
 		return err
@@ -81,7 +82,7 @@ func (gateway *LorhammerGateway) Join(prometheus tools.Prometheus, withJoin bool
 }
 
 //Start send push data packet and listen for ack
-func (gateway *LorhammerGateway) Start(prometheus tools.Prometheus, fcnt uint32) error {
+func (gateway *LorhammerGateway) Start(prometheus metrics.Prometheus, fcnt uint32) error {
 	conn, err := net.Dial("udp", gateway.NsAddress)
 	if err != nil {
 		return err
@@ -115,7 +116,7 @@ func (gateway *LorhammerGateway) sendPullData(conn net.Conn) {
 
 	pullDataPacket, err := loraserver_structs.PullDataPacket{
 		ProtocolVersion: 2,
-		RandomToken:     uint16(tools.Random(math.MinInt16, math.MaxUint16)),
+		RandomToken:     uint16(tools.Random64(int64(math.MinInt16), int64(math.MaxUint16))),
 		GatewayMAC:      gateway.MacAddress,
 	}.MarshalBinary()
 
@@ -202,7 +203,7 @@ func (gateway *LorhammerGateway) readPackets(conn net.Conn, poison chan bool, ne
 	}
 }
 
-func (gateway *LorhammerGateway) readLoraJoinPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte, endPushAckTimer func(), endPullRespTimer func(), prometheus tools.Prometheus, withJoin bool) {
+func (gateway *LorhammerGateway) readLoraJoinPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte, endPushAckTimer func(), endPullRespTimer func(), prometheus metrics.Prometheus, withJoin bool) {
 	nbReceivedAckMsg, nbReceivedPullRespMsg := gateway.readLoraPackets(conn, poison, next, threadListenUDP, endPushAckTimer, endPullRespTimer)
 	nbEmittedMsg := 1 // One PullData request has been sent
 	if withJoin {
@@ -225,7 +226,7 @@ func (gateway *LorhammerGateway) readLoraJoinPackets(conn net.Conn, poison chan 
 	prometheus.AddPullRespLongRequest(nbEmittedMsg - nbReceivedPullRespMsg)
 }
 
-func (gateway *LorhammerGateway) readLoraPushPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte, endPushAckTimer func(), endPullRespTimer func(), prometheus tools.Prometheus) {
+func (gateway *LorhammerGateway) readLoraPushPackets(conn net.Conn, poison chan bool, next chan bool, threadListenUDP chan []byte, endPushAckTimer func(), endPullRespTimer func(), prometheus metrics.Prometheus) {
 	nbReceivedAckMsg, nbReceivedPullRespMsg := gateway.readLoraPackets(conn, poison, next, threadListenUDP, endPushAckTimer, endPullRespTimer)
 	if len(gateway.Nodes)-nbReceivedAckMsg > 0 {
 		loggerGateway.WithFields(logrus.Fields{

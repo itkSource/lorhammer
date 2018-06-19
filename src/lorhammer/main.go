@@ -13,6 +13,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"lorhammer/src/lorhammer/metrics"
 )
 
 var version string // set at build time
@@ -76,7 +77,7 @@ func main() {
 	}
 
 	// PROMETHEUS
-	prometheus := tools.NewPrometheus()
+	prometheus := metrics.NewPrometheus()
 
 	// MQTT
 	if *mqttAddr == "" && *nbGateway <= 0 {
@@ -131,7 +132,7 @@ func main() {
 	logger.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil))
 }
 
-func listenMqtt(mqttClient tools.Mqtt, topics []string, hostname string, lorhammerAddedChan chan bool, prometheus tools.Prometheus) {
+func listenMqtt(mqttClient tools.Mqtt, topics []string, hostname string, lorhammerAddedChan chan bool, prometheus metrics.Prometheus) {
 	if err := mqttClient.HandleCmd(topics, func(cmd model.CMD) {
 		command.ApplyCmd(cmd, mqttClient, hostname, lorhammerAddedChan, prometheus)
 	}); err != nil {

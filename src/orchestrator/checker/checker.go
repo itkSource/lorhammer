@@ -3,6 +3,7 @@ package checker
 import (
 	"encoding/json"
 	"fmt"
+	"lorhammer/src/orchestrator/metrics"
 )
 
 //Type is a type to define a checker
@@ -30,7 +31,7 @@ type Checker interface {
 	Check() ([]Success, []Error)
 }
 
-var checkers = make(map[Type]func(config json.RawMessage) (Checker, error))
+var checkers = make(map[Type]func(config json.RawMessage, prometheus metrics.Prometheus) (Checker, error))
 
 func init() {
 	checkers[noneType] = newNone
@@ -40,11 +41,11 @@ func init() {
 }
 
 //Get return a checker if the Model is an implementation of Checker
-func Get(checker Model) (Checker, error) {
+func Get(checker Model, prometheus metrics.Prometheus) (Checker, error) {
 	if checkers[checker.Type] == nil {
 		return nil, fmt.Errorf("Unknown checker type %s", checker.Type)
 	}
-	c, err := checkers[checker.Type](checker.Config)
+	c, err := checkers[checker.Type](checker.Config, prometheus)
 	if err != nil {
 		return nil, err
 	}

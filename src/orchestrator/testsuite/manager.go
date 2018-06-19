@@ -11,13 +11,14 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"lorhammer/src/orchestrator/metrics"
 )
 
 var loggerManager = logrus.WithField("logger", "orchestrator/testsuite/manager")
 
 //LaunchTest manage life cycle of a test (start, stop, check, report...)
-func (test *TestSuite) LaunchTest(mqttClient tools.Mqtt) (*TestReport, error) {
-	check, err := checker.Get(test.Check) //build checker here because no need to start test if checker is bad configured
+func (test *TestSuite) LaunchTest(mqttClient tools.Mqtt, prometheus metrics.Prometheus) (*TestReport, error) {
+	check, err := checker.Get(test.Check, prometheus) //build checker here because no need to start test if checker is bad configured
 	if err != nil {
 		loggerManager.WithError(err).Error("Error to get checker")
 		return nil, err
@@ -54,7 +55,7 @@ func (test *TestSuite) LaunchTest(mqttClient tools.Mqtt) (*TestReport, error) {
 
 	//wait until check minus time we have already passed in stop
 	time.Sleep(test.SleepBeforeCheckTime - test.StopAllLorhammerTime)
-	success, errors := checkResults(check)
+	success, errs := checkResults(check)
 
 	//wait until shutdown minus time we have already passed in stop and check (0 or negative value means no shutdown)
 	time.Sleep(test.ShutdownAllLorhammerTime - (test.StopAllLorhammerTime + test.SleepBeforeCheckTime))
@@ -76,7 +77,7 @@ func (test *TestSuite) LaunchTest(mqttClient tools.Mqtt) (*TestReport, error) {
 		EndDate:       endDate,
 		Input:         test,
 		ChecksSuccess: success,
-		ChecksError:   errors,
+		ChecksError:   errs,
 	}, nil
 }
 

@@ -14,7 +14,11 @@ import (
 	"runtime"
 	"time"
 
+	"fmt"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"lorhammer/src/orchestrator/metrics"
+	"net/http"
 )
 
 var version string // set at build time
@@ -25,6 +29,7 @@ var logger = logrus.WithField("logger", "orchestrator/main")
 
 func main() {
 	showVersion := flag.Bool("version", false, "Show current version and build time")
+	port := flag.Int("port", 0, "The port to use to expose prometheus metrics, default 0 means random")
 	mqttAddr := flag.String("mqtt", "", "The protocol://ip:port of mqtt")
 	scenarioFromFile := flag.String("from-file", "", "A file containing a scenario to launch")
 	reportFile := flag.String("report-file", "./report.json", "A file to fill reports tests in json")
@@ -40,6 +45,29 @@ func main() {
 		}).Warn("Welcome to the Lorhammer's Orchestrator")
 		return
 	}
+
+	// PORT
+	var httpPort int
+	if *port == 0 {
+		p, err := tools.FreeTCPPort()
+		if err != nil {
+			logger.WithError(err).Error("Free tcp port error")
+		} else {
+			logger.WithField("port", p).Info("Tcp port reserved")
+			httpPort = p
+		}
+	} else {
+		httpPort = *port
+	}
+
+	// HTTP PART
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		logger.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil))
+	}()
+
+	// PROMETHEUS
+	prometheus := metrics.NewPrometheus()
 
 	// HOSTNAME
 	host := "orchestrator"
@@ -89,7 +117,7 @@ func main() {
 		nbErr := 0
 		for _, test := range tests {
 			currentTestSuite = test
-			testReport, err := test.LaunchTest(mqttClient)
+			testReport, err := test.LaunchTest(mqttClient, prometheus)
 			if err != nil {
 				logger.WithError(err).Error("Error during test")
 				nbErr++

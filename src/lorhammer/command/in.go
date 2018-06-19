@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"lorhammer/src/lorhammer/metrics"
 )
 
 var logger = logrus.WithField("logger", "lorhammer/command/in")
@@ -38,7 +39,7 @@ func Start(mqtt tools.Mqtt, hostname string, maxWaitOrchestratorTime time.Durati
 }
 
 //ApplyCmd take a model.CMD and execute it
-func ApplyCmd(command model.CMD, mqtt tools.Mqtt, hostname string, lorhammerAddedChan chan bool, prometheus tools.Prometheus) {
+func ApplyCmd(command model.CMD, mqtt tools.Mqtt, hostname string, lorhammerAddedChan chan bool, prometheus metrics.Prometheus) {
 	var err error
 	switch command.CmdName {
 	case model.LORHAMMERADDED:
@@ -99,7 +100,7 @@ func applyInitCmd(command model.CMD, mqtt tools.Mqtt, hostname string) error {
 	return nil
 }
 
-func applyStartCmd(command model.CMD, prometheus tools.Prometheus) {
+func applyStartCmd(command model.CMD, prometheus metrics.Prometheus) {
 	var startMessage model.Start
 	if err := json.Unmarshal(command.Payload, &startMessage); err != nil {
 		logger.WithError(err).Error("Can't unmarshal init command")
@@ -120,13 +121,13 @@ func applyStartCmd(command model.CMD, prometheus tools.Prometheus) {
 	}
 }
 
-func stopScenario(scenario *scenario.Scenario, prometheus tools.Prometheus) {
+func stopScenario(scenario *scenario.Scenario, prometheus metrics.Prometheus) {
 	logger.WithField("scenario", scenario.UUID).Warn("Stopping scenario")
 	scenario.Stop(prometheus)
 	scenarios.Delete(scenario.UUID)
 }
 
-func applyStopCmd(prometheus tools.Prometheus) {
+func applyStopCmd(prometheus metrics.Prometheus) {
 	logger.Warn("Stop scenarios")
 	scenarios.Range(func(key interface{}, value interface{}) bool {
 		stopScenario(value.(*scenario.Scenario), prometheus)

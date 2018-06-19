@@ -7,6 +7,7 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
+	"lorhammer/src/orchestrator/metrics"
 )
 
 const kafkaType = Type("kafka")
@@ -58,7 +59,7 @@ type kafkaCheck struct {
 	Text        string   `json:"text"`
 }
 
-func newKafka(rawConfig json.RawMessage) (Checker, error) {
+func newKafka(rawConfig json.RawMessage, _ metrics.Prometheus) (Checker, error) {
 	var kafkaConfig = kafkaConfig{}
 	if err := json.Unmarshal(rawConfig, &kafkaConfig); err != nil {
 		return nil, err

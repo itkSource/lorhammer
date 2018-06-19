@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/sirupsen/logrus"
+	"lorhammer/src/orchestrator/metrics"
 )
 
 const mqttType = Type("mqtt")
@@ -16,6 +17,7 @@ type mqttChecker struct {
 	clientFactory func(url string, clientID string) (tools.Mqtt, error)
 	client        tools.Mqtt
 	config        mqttConfig
+	prometheus    metrics.Prometheus
 	success       []Success
 	fails         []Error
 }
@@ -54,7 +56,7 @@ func (m mqttError) Details() map[string]interface{} {
 	return details
 }
 
-func newMqtt(rawConfig json.RawMessage) (Checker, error) {
+func newMqtt(rawConfig json.RawMessage, prometheus metrics.Prometheus) (Checker, error) {
 	conf := mqttConfig{}
 	if err := json.Unmarshal(rawConfig, &conf); err != nil {
 		return nil, err
@@ -62,6 +64,7 @@ func newMqtt(rawConfig json.RawMessage) (Checker, error) {
 	mqtt := &mqttChecker{
 		clientFactory: tools.NewMqttBasic,
 		config:        conf,
+		prometheus:    prometheus,
 		success:       make([]Success, 0),
 		fails:         make([]Error, 0),
 	}
@@ -96,12 +99,14 @@ func (mqtt *mqttChecker) handle(message []byte) {
 			atLeastMatch = true
 			mqtt.success = append(mqtt.success, mqttSuccess{check: check})
 			logMqtt.WithField("description", check.Description).Info("Success")
+			mqtt.prometheus.AddMQTTMessageOK()
 			break
 		}
 	}
 	if !atLeastMatch {
 		logMqtt.Error("Result mismatch")
 		mqtt.fails = append(mqtt.fails, mqttError{reason: "Result mismatch", value: string(message)})
+		mqtt.prometheus.AddMQTTMessageFailed()
 	}
 }
 
