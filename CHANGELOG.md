@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.7.0 - [UNRELEASED]
+## Version 0.7.0 - 2018-07-18
 
 * **DEP** Update [issues/80](https://gitlab.com/itk.fr/lorhammer/issues/80) :
   * golang to 1.10.1
