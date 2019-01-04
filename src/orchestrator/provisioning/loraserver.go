@@ -181,13 +181,21 @@ func (loraserver *loraserver) initOrganizationID() error {
 		// Create Organization
 		if loraserver.OrganizationID == "" {
 			req := struct {
-				CanHaveGateways bool   `json:"canHaveGateways"`
-				DisplayName     string `json:"displayName"`
-				Name            string `json:"name"`
+				Organization struct {
+					CanHaveGateways bool   `json:"canHaveGateways"`
+					DisplayName     string `json:"displayName"`
+					Name            string `json:"name"`
+				} `json:"name"`
 			}{
-				CanHaveGateways: true,
-				DisplayName:     "Lorhammer",
-				Name:            loraserverOrganisationName,
+				Organization: struct {
+					CanHaveGateways bool   `json:"canHaveGateways"`
+					DisplayName     string `json:"displayName"`
+					Name            string `json:"name"`
+				}{
+					CanHaveGateways: true,
+					DisplayName:     "Lorhammer",
+					Name:            loraserverOrganisationName,
+				},
 			}
 
 			resp := struct {
@@ -230,11 +238,18 @@ func (loraserver *loraserver) initNetworkServer() error {
 		// Create NS
 		if loraserver.NetworkServerID == "" {
 			req := struct {
-				Server string `json:"server"`
-				Name   string `json:"name"`
+				NetworkServer struct {
+					Server string `json:"server"`
+					Name   string `json:"name"`
+				} `json:"name"`
 			}{
-				Server: loraserver.NetworkServerAddr,
-				Name:   loraserver.NetworkServerAddr,
+				NetworkServer: struct {
+					Server string `json:"server"`
+					Name   string `json:"name"`
+				}{
+					Server: loraserver.NetworkServerAddr,
+					Name:   loraserver.NetworkServerAddr,
+				},
 			}
 
 			resp := struct {
@@ -255,16 +270,11 @@ func (loraserver *loraserver) initNetworkServer() error {
 func (loraserver *loraserver) initServiceProfile() error {
 	if loraserver.ServiceProfileID == "" {
 		req := struct {
-			Name            string      `json:"name"`
-			NetworkServerID string      `json:"networkServerID"`
-			OrganizationID  string      `json:"organizationID"`
-			ServiceProfile  interface{} `json:"serviceProfile"`
-		}{
-			Name:            "LorhammerServiceProfile",
-			NetworkServerID: loraserver.NetworkServerID,
-			OrganizationID:  loraserver.OrganizationID,
-			ServiceProfile: struct {
-				AddGWMetadata bool `json:"addGWMetadata"`
+			ServiceProfile struct {
+				Name            string `json:"name"`
+				NetworkServerID string `json:"networkServerID"`
+				OrganizationID  string `json:"organizationID"`
+				AddGWMetadata   bool   `json:"addGWMetadata"`
 				// ChannelMask            string `json:"channelMask"`
 				// DevStatusReqFreq       int    `json:"devStatusReqFreq"`
 				// DlBucketSize           int    `json:"dlBucketSize"`
@@ -284,14 +294,24 @@ func (loraserver *loraserver) initServiceProfile() error {
 				// UlBucketSize           int    `json:"ulBucketSize"`
 				// UlRate                 int    `json:"ulRate"`
 				// UlRatePolicy           string `json:"ulRatePolicy"`
-			}{
-				AddGWMetadata: true,
 				// TODO find description and meaning of all fields
+			} `json:"serviceProfile"`
+		}{
+			ServiceProfile: struct {
+				Name            string `json:"name"`
+				NetworkServerID string `json:"networkServerID"`
+				OrganizationID  string `json:"organizationID"`
+				AddGWMetadata   bool   `json:"addGWMetadata"`
+			}{
+				Name:            "LorhammerServiceProfile",
+				NetworkServerID: loraserver.NetworkServerID,
+				OrganizationID:  loraserver.OrganizationID,
+				AddGWMetadata:   true,
 			},
 		}
 
 		resp := struct {
-			ID string `json:"serviceProfileID"`
+			ID string `json:"id"`
 		}{}
 
 		err := loraserver.doRequest(loraserver.APIURL+"/api/service-profiles", "POST", req, &resp)
@@ -330,15 +350,24 @@ func (loraserver *loraserver) initApplication() error {
 		// Create Application
 		if loraserver.AppID == "" {
 			req := struct {
-				Name             string      `json:"name"`
-				Description      string      `json:"description"`
-				OrganizationID   string      `json:"organizationID"`
-				ServiceProfileID interface{} `json:"serviceProfileID"`
+				Application struct {
+					Name             string      `json:"name"`
+					Description      string      `json:"description"`
+					OrganizationID   string      `json:"organizationID"`
+					ServiceProfileID interface{} `json:"serviceProfileID"`
+				} `json:"application"`
 			}{
-				Name:             loraserverApplicationName,
-				Description:      "Lorhammer",
-				OrganizationID:   loraserver.OrganizationID,
-				ServiceProfileID: loraserver.ServiceProfileID,
+				Application: struct {
+					Name             string      `json:"name"`
+					Description      string      `json:"description"`
+					OrganizationID   string      `json:"organizationID"`
+					ServiceProfileID interface{} `json:"serviceProfileID"`
+				}{
+					Name:             loraserverApplicationName,
+					Description:      "Lorhammer",
+					OrganizationID:   loraserver.OrganizationID,
+					ServiceProfileID: loraserver.ServiceProfileID,
+				},
 			}
 
 			resp := struct {
@@ -359,15 +388,13 @@ func (loraserver *loraserver) initApplication() error {
 func (loraserver *loraserver) initDeviceProfile() error {
 	if loraserver.DeviceProfileID == "" {
 		req := struct {
-			Name            string      `json:"name"`
-			OrganizationID  string      `json:"organizationID"`
-			NetworkServerID string      `json:"networkServerID"`
-			DeviceProfile   interface{} `json:"deviceProfile"`
-		}{
-			Name:            "LorhammerDeviceProfile",
-			OrganizationID:  loraserver.OrganizationID,
-			NetworkServerID: loraserver.NetworkServerID,
-			DeviceProfile: struct {
+			DeviceProfile struct {
+				Name            string `json:"name"`
+				OrganizationID  string `json:"organizationID"`
+				NetworkServerID string `json:"networkServerID"`
+				RxDROffset1     int    `json:"rxDROffset1"`
+				RxDataRate2     int    `json:"rxDataRate2"`
+				RxDelay1        int    `json:"rxDelay1"`
 				// ClassBTimeout           int    `json:"classBTimeout"`
 				// ClassCTimeout           int    `json:"classCTimeout"`
 				// FactoryPresetFreqs      []int  `json:"factoryPresetFreqs"`
@@ -379,24 +406,33 @@ func (loraserver *loraserver) initDeviceProfile() error {
 				// PingSlotPeriod          int    `json:"pingSlotPeriod"`
 				// RegParamsRevisionstring string `json:"regParamsRevisionstring"`
 				// RfRegionstring          string `json:"rfRegionstring"`
-				RxDROffset1 int `json:"rxDROffset1"`
-				RxDataRate2 int `json:"rxDataRate2"`
-				RxDelay1    int `json:"rxDelay1"`
 				// RxFreq2           int  `json:"rxFreq2"`
 				// Supports32bitFCnt bool `json:"supports32bitFCnt"`
 				// SupportsClassB    bool `json:"supportsClassB"`
 				// SupportsClassC    bool `json:"supportsClassC"`
 				// SupportsJoin      bool `json:"supportsJoin"`
-			}{
-				RxDROffset1: 0,
-				RxDataRate2: 0,
-				RxDelay1:    0,
 				// TODO find description and meaning of all fields
+			} `json:"deviceProfile"`
+		}{
+			DeviceProfile: struct {
+				Name            string `json:"name"`
+				OrganizationID  string `json:"organizationID"`
+				NetworkServerID string `json:"networkServerID"`
+				RxDROffset1     int    `json:"rxDROffset1"`
+				RxDataRate2     int    `json:"rxDataRate2"`
+				RxDelay1        int    `json:"rxDelay1"`
+			}{
+				Name:            "LorhammerDeviceProfile",
+				OrganizationID:  loraserver.OrganizationID,
+				NetworkServerID: loraserver.NetworkServerID,
+				RxDROffset1:     0,
+				RxDataRate2:     0,
+				RxDelay1:        0,
 			},
 		}
 
 		resp := struct {
-			ID string `json:"deviceProfileID"`
+			ID string `json:"id"`
 		}{}
 
 		err := loraserver.doRequest(loraserver.APIURL+"/api/device-profiles", "POST", req, &resp)
@@ -416,17 +452,30 @@ func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, 
 		case sensor := <-sensorChan:
 			if sensor != nil { // Why sensor is nil sometimes !?
 				req := struct {
-					Name            string `json:"name"`
-					Description     string `json:"description"`
-					ApplicationID   string `json:"applicationID"`
-					DeviceProfileID string `json:"deviceProfileID"`
-					DevEUI          string `json:"devEUI"`
+					Device struct {
+						Name            string `json:"name"`
+						Description     string `json:"description"`
+						ApplicationID   string `json:"applicationID"`
+						DeviceProfileID string `json:"deviceProfileID"`
+						DevEUI          string `json:"devEUI"`
+					} `json:"device"`
 				}{
-					Name:            "STRESSNODE_" + sensor.DevEUI.String(),
-					Description:     sensor.Description,
-					ApplicationID:   loraserver.AppID,
-					DeviceProfileID: loraserver.DeviceProfileID,
-					DevEUI:          sensor.DevEUI.String(),
+					Device: struct {
+						Name            string `json:"name"`
+						Description     string `json:"description"`
+						ApplicationID   string `json:"applicationID"`
+						DeviceProfileID string `json:"deviceProfileID"`
+						DevEUI          string `json:"devEUI"`
+					}{
+						Name:            "STRESSNODE_" + sensor.DevEUI.String(),
+						Description:     sensor.Description,
+						ApplicationID:   loraserver.AppID,
+						DeviceProfileID: loraserver.DeviceProfileID,
+						DevEUI:          sensor.DevEUI.String(),
+					},
+				}
+				if req.Device.Description == "" { // device description is required
+					req.Device.Description = req.Device.Name
 				}
 
 				err := loraserver.doRequest(loraserver.APIURL+"/api/devices", "POST", req, nil)
@@ -437,14 +486,20 @@ func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, 
 				}
 
 				reqKeys := struct {
-					DevEUI     string      `json:"devEUI"`
-					DeviceKeys interface{} `json:"deviceKeys"`
-				}{
-					DevEUI: sensor.DevEUI.String(),
-					DeviceKeys: struct {
+					DeviceKeys struct {
+						DevEUI string `json:"devEUI"`
 						AppKey string `json:"appKey"`
+						NwkKey string `json:"nwkKey"`
+					} `json:"deviceKeys"`
+				}{
+					DeviceKeys: struct {
+						DevEUI string `json:"devEUI"`
+						AppKey string `json:"appKey"`
+						NwkKey string `json:"nwkKey"`
 					}{
+						DevEUI: sensor.DevEUI.String(),
 						AppKey: sensor.AppKey.String(),
+						NwkKey: sensor.AppKey.String(),
 					},
 				}
 
@@ -457,21 +512,42 @@ func (loraserver *loraserver) provisionSensorAsync(sensorChan chan *model.Node, 
 
 				if loraserver.Abp {
 					req := struct {
-						AppSKeystring string `json:"appSKey"`
-						DevAddrstring string `json:"devAddr"`
-						DevEUIstring  string `json:"devEUI"`
-						FCntDown      int    `json:"fCntDown"`
-						FCntUp        int    `json:"fCntUp"`
-						NwkSKeystring string `json:"nwkSKey"`
-						SkipFCntCheck bool   `json:"skipFCntCheck"`
+						DeviceActivation struct {
+							AppSKeystring string `json:"appSKey"`
+							DevAddrstring string `json:"devAddr"`
+							DevEUIstring  string `json:"devEUI"`
+							FCntDown      int    `json:"fCntDown"`
+							FCntUp        int    `json:"fCntUp"`
+							NwkSKeystring string `json:"nwkSKey"`
+							NwkSEncKey    string `json:"nwkSEncKey"`
+							SNwkSEncKey   string `json:"sNwkSIntKey"`
+							FNwkSEncKey   string `json:"fNwkSIntKey"`
+							SkipFCntCheck bool   `json:"skipFCntCheck"`
+						} `json:"deviceActivation"`
 					}{
-						AppSKeystring: sensor.AppSKey.String(),
-						DevAddrstring: sensor.DevAddr.String(),
-						DevEUIstring:  sensor.DevEUI.String(),
-						FCntDown:      0,
-						FCntUp:        0,
-						NwkSKeystring: sensor.NwSKey.String(),
-						SkipFCntCheck: false,
+						DeviceActivation: struct {
+							AppSKeystring string `json:"appSKey"`
+							DevAddrstring string `json:"devAddr"`
+							DevEUIstring  string `json:"devEUI"`
+							FCntDown      int    `json:"fCntDown"`
+							FCntUp        int    `json:"fCntUp"`
+							NwkSKeystring string `json:"nwkSKey"`
+							NwkSEncKey    string `json:"nwkSEncKey"`
+							SNwkSEncKey   string `json:"sNwkSIntKey"`
+							FNwkSEncKey   string `json:"fNwkSIntKey"`
+							SkipFCntCheck bool   `json:"skipFCntCheck"`
+						}{
+							AppSKeystring: sensor.AppSKey.String(),
+							DevAddrstring: sensor.DevAddr.String(),
+							DevEUIstring:  sensor.DevEUI.String(),
+							FCntDown:      0,
+							FCntUp:        0,
+							NwkSKeystring: sensor.NwSKey.String(),
+							NwkSEncKey:    sensor.NwSKey.String(),
+							SNwkSEncKey:   sensor.NwSKey.String(),
+							FNwkSEncKey:   sensor.NwSKey.String(),
+							SkipFCntCheck: false,
+						},
 					}
 					url := loraserver.APIURL + "/api/devices/" + sensor.DevEUI.String() + "/activate"
 					err := loraserver.doRequest(url, "POST", req, nil)
