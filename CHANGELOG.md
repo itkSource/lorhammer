@@ -18,6 +18,7 @@
   * *orchestrator_mqtt_ok* : Count of validated MQTT messages
   * *orchestrator_mqtt_failed* : Count of validation failed MQTT messages  
 * **DEPLOYER** add multi ssh deployer [issues/85](https://gitlab.com/itk.fr/lorhammer/issues/85)
+* **PROVISIONER** support new Brocaar provisioning API [issues/86](https://gitlab.com/itk.fr/lorhammer/issues/86)
 
 ## Version 0.6.0 - 2018-03-14
 
